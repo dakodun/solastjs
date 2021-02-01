@@ -1,0 +1,41 @@
+
+Todo:
+  [X] RenderBatch
+    [X] Initialisation
+    [X] Rendering
+
+  [ ] Shape
+    [X] Rendering
+      [ ] a. Additional Rendering
+        support for different render modes
+    [X] Texturing
+      [ ] a. Cache Coordinates
+        store the calculated coordinates for each frame to reduce
+        processing time (clear on new vertex)
+    [X] Animation
+    [X] Triangulation
+      [X] Implementation
+      [ ] a. Refinement
+        replace the horribly inefficient algorithm
+    [ ] Transformations
+      position, scale, etc managed via affine transformations
+      [ ] 3D Matrix Class
+        include utility functions for various affine transformations
+    [ ] Polygon
+      create a seperate polygon class that shape inherits from
+  
+  [X] ResourceStore
+    add a system to store and allow easy access to expensive resources
+    such as textures
+
+  [ ] User Input
+    [ ] Touch Input
+    [ ] Mouse Input
+
+  [X] Shader
+    [ ] a. Default Shader
+      add a default shader that is easy to reference
+  
+  [X] Local Test Server
+    set up a web server with local network only access in order
+    to test on other devices
