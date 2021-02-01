@@ -1,27 +1,16 @@
 import GL from './gl.js'
 
+import Polygon from './polygon.js';
+import Renderable from './renderable.js';
 import RenderBatchData from './renderbatchdata.js'
 import * as util from './utility.js';
 import Vec2 from './vec2.js';
 import Vec3 from './vec3.js';
 import VBOVertex from './vbovertex.js';
-import Transformable from './transformable.js';
 
-class Shape extends Transformable {
+class Shape extends Renderable(Polygon) {
 	constructor() {
     super();
-
-    this.verts = new Array();
-    this.bounds = new Array(
-        new Vec2(Number.POSITIVE_INFINITY, Number.POSITIVE_INFINITY),
-        new Vec2(Number.NEGATIVE_INFINITY, Number.NEGATIVE_INFINITY)
-    );
-
-    this.color = new Vec3(255, 255, 255);
-    this.alpha = 255;
-    this.depth = -1.0;
-
-    this.renderMode = GL.TRIANGLES;
 
     this.indices = new Array();
 
@@ -38,14 +27,32 @@ class Shape extends Transformable {
   }
   
   copy(other) {
-    this.verts.splice(0, this.verts.length);
-    for (let v of other.verts) {
-      this.verts.push(v.getCopy());
+    super.copy(other);
+
+    this.indices.splice(0, this.indices.length);
+    for (let i of other.indices) {
+      this.indices.push(i);
     }
 
-    this.color = other.color.getCopy();
-    this.alpha = other.alpha;
-    this.depth = other.depth;
+    this.frames.splice(0, this.frames.length);
+    for (let f of other.frames) {
+      let a = new Array();
+      for (let g of f) {
+        a.push(g);
+      }
+      
+      this.indices.push(a);
+    }
+
+    this.currentFrame = other.currentFrame;
+
+    this.animated = other.animated;
+    this.startFrame = other.startFrame;
+    this.endFrame = other.endFrame;
+    this.direction = other.direction;
+    this.loopCount = other.loopCount;
+    this.loopMax = other.loopMax;
+    this.timer = other.timer;
   }
 
   getCopy() {
@@ -95,14 +102,8 @@ class Shape extends Transformable {
   }
 
   pushVert(vert) {
-    this.verts.push(vert.getCopy());
+    super.pushVert(vert);
     this.indices.splice(0, this.indices.length);
-    
-    this.bounds[0].x = Math.min(vert.x, this.bounds[0].x);
-    this.bounds[0].y = Math.min(vert.y, this.bounds[0].y);
-
-    this.bounds[1].x = Math.max(vert.x, this.bounds[1].x);
-    this.bounds[1].y = Math.max(vert.y, this.bounds[1].y);
   }
 
   pushFrame(texture) {
@@ -370,53 +371,10 @@ class Shape extends Transformable {
     return [rbd];
   }
 
-  getWinding() {
-    let area = 0.0;
-    for (let i = 0; i < this.verts.length; ++i) {
-      let ii = (i + 1) % this.verts.length;
-      area += (this.verts[ii].x - this.verts[i].x) *
-          (this.verts[ii].y + this.verts[i].y);
-    }
-    
-    if (area >= 0.0) {
-      return -1;
-    }
-    
-    return 1;
-  }
-
   reverseWinding() {
-    let result = 1;
-    if (this.getWinding() == result) {
-      result = -1;
-    }
+    this.indices.splice(0, this.indices.length);
     
-    if (this.verts.length != 0) {
-      this.verts.reverse();
-      this.indices.splice(0, this.indices.length);
-    }
-    
-    return result;
-  }
-
-  updateGlobalBox() {
-    // get trans mat
-    
-    // transform all points and store min and max
-
-    // update gbox
-  }
-
-  updateGlobalMask() {
-    // get trans mat
-
-    // clear
-    // add all the (transformed) points *shrug*
-  }
-
-  createLocalMask() {
-    // clear
-    // add all the points *shrug*
+    return super.reverseWinding();
   }
 };
 

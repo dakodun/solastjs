@@ -49,8 +49,8 @@ void main() {
     this.shader.initCallback();
 
     let tex = APP.resourceManager.textureStore.
-        addResource(new eng.Texture(), "tst.png");
-    tex.resource.loadImage("tst.png");
+        addResource(new eng.Texture(), "res/tst.png");
+    tex.resource.loadImage("res/tst.png");
 
     this.shape = new eng.Shape;
     

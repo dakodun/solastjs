@@ -1,8 +1,10 @@
 import Mat4 from './mat4.js';
 import Vec2 from './vec2.js';
 
-class Transformable {
+const Transformable = (Transformable) => class extends Transformable {
   constructor() {
+    super();
+
     this.position = new Vec2(0.0, 0.0);
 		this.origin = new Vec2(0.0, 0.0);
 		
@@ -16,6 +18,36 @@ class Transformable {
 		
 	  this.localMask = new Array();
 		this.globalMask = new Array();
+  }
+
+  copy(other) {
+    this.position = other.position.getCopy();
+		this.origin = other.origin.getCopy();
+		
+		this.transMat = other.transMat.getCopy();
+		this.scale = other.scale.getCopy();
+		this.rotation = other.rotation;
+		this.skew = other.skew.getCopy();
+		
+    this.localBox.splice(0, this.localBox.length);
+    for (let i of other.localBox) {
+      this.localBox.push(i);
+    }
+
+    this.globalBox.splice(0, this.globalBox.length);
+    for (let i of other.globalBox) {
+      this.globalBox.push(i);
+    }
+
+    this.localMask.splice(0, this.localMask.length);
+    for (let i of other.localMask) {
+      this.localMask.push(i);
+    }
+
+    this.globalMask.splice(0, this.globalMask.length);
+    for (let i of other.globalMask) {
+      this.globalMask.push(i);
+    }
   }
 
   updateGlobalBox() {

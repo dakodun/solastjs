@@ -11,7 +11,8 @@ Todo:
     [X] Texturing
       [ ] a. Cache Coordinates
         store the calculated coordinates for each frame to reduce
-        processing time (clear on new vertex)
+        processing time (in getRenderBatchData function;
+        clear on new vertex)
     [X] Animation
     [X] Triangulation
       [X] Implementation
@@ -21,8 +22,13 @@ Todo:
       position, scale, etc managed via affine transformations
       [ ] 3D Matrix Class
         include utility functions for various affine transformations
-    [ ] Polygon
+        (can use 4d matrix?)
+    [X] Polygon
       create a seperate polygon class that shape inherits from
+    [X] Transformable and Renderable
+      refactor code into seperate transformable and renderable
+      components
+      [ ] Associate a Shader with a Renderable
   
   [X] ResourceStore
     add a system to store and allow easy access to expensive resources
