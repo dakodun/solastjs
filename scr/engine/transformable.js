@@ -1,4 +1,4 @@
-import Mat4 from './mat4.js';
+import Mat3 from './mat3.js';
 import Vec2 from './vec2.js';
 
 const Transformable = (Transformable) => class extends Transformable {
@@ -8,10 +8,9 @@ const Transformable = (Transformable) => class extends Transformable {
     this.position = new Vec2(0.0, 0.0);
 		this.origin = new Vec2(0.0, 0.0);
 		
-		this.transMat = new Mat4();
+		this.transMat = new Mat3();
 		this.scale = new Vec2(1.0, 1.0);
 		this.rotation = 0;
-		this.skew = new Vec2(0.0, 0.0);
 		
 		this.localBox = new Array();
 		this.globalBox = new Array();
@@ -27,7 +26,6 @@ const Transformable = (Transformable) => class extends Transformable {
 		this.transMat = other.transMat.getCopy();
 		this.scale = other.scale.getCopy();
 		this.rotation = other.rotation;
-		this.skew = other.skew.getCopy();
 		
     this.localBox.splice(0, this.localBox.length);
     for (let i of other.localBox) {
@@ -65,49 +63,42 @@ const Transformable = (Transformable) => class extends Transformable {
   setPosition(position) {
     this.position.copy(position);
 
-    updateGlobalBox();
-	  updateGlobalMask();
+    this.updateGlobalBox();
+	  this.updateGlobalMask();
   }
 
   setOrigin(origin) {
     this.origin.copy(origin);
 
-    updateGlobalBox();
-	  updateGlobalMask();
+    this.updateGlobalBox();
+	  this.updateGlobalMask();
   }
 
   setTransMat(transMat) {
     this.transMat.copy(transMat);
 
-    updateGlobalBox();
-	  updateGlobalMask();
+    this.updateGlobalBox();
+	  this.updateGlobalMask();
   }
 
   setScale(scale) {
     this.scale.copy(scale);
 
-    updateGlobalBox();
-	  updateGlobalMask();
+    this.updateGlobalBox();
+	  this.updateGlobalMask();
   }
 
   setRotation(rotation) {
     this.rotation = rotation;
 
-    updateGlobalBox();
-	  updateGlobalMask();
-  }
-
-  setSkew(skew) {
-    this.skew.copy(skew);
-
-    updateGlobalBox();
-	  updateGlobalMask();
+    this.updateGlobalBox();
+	  this.updateGlobalMask();
   }
 
   setLocalMask(mask) {
     if (newMask == undefined) {
-      createLocalMask();
-	    updateGlobalMask();
+      this.createLocalMask();
+	    this.updateGlobalMask();
     }
     else {
       this.localMask.splice(0, this.localMask.length);
@@ -115,7 +106,7 @@ const Transformable = (Transformable) => class extends Transformable {
         localMask.push(m.getCopy());
       }
 
-      updateGlobalMask();
+      this.updateGlobalMask();
     }
   }
 };

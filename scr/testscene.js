@@ -58,10 +58,15 @@ void main() {
     this.shape.color = new eng.Vec3(255, 255, 255);
     this.shape.alpha = 255;
 
-    this.shape.pushVert(new eng.Vec2( 50.0,  50.0));
-    this.shape.pushVert(new eng.Vec2(100.0,  50.0));
-    this.shape.pushVert(new eng.Vec2(100.0, 100.0));
-    this.shape.pushVert(new eng.Vec2( 50.0, 100.0));
+    this.shape.pushVert(new eng.Vec2( 0.0,  0.0));
+    this.shape.pushVert(new eng.Vec2(50.0,  0.0));
+    this.shape.pushVert(new eng.Vec2(50.0, 50.0));
+    this.shape.pushVert(new eng.Vec2( 0.0, 50.0));
+
+    this.shape.setPosition(new eng.Vec2(50.0, 50.0));
+    this.shape.setOrigin(new eng.Vec2(25.0, 25.0));
+    this.shape.setRotation(Math.PI / 4);
+    this.shape.setScale(new eng.Vec2(2.0, 2.0));
 
     this.shape.pushFrameStrip(tex.resource, 4, 2, 2, 0);
 

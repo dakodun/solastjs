@@ -120,7 +120,7 @@ class Mat4 {
     this.arr = rotMat.arr.slice();
   }
 
-  getScale(scale) {
+  scale(scale) {
     let scaleMat = new Mat4();
     scaleMat.arr[0] = scale.x;
     scaleMat.arr[5] = scale.y;

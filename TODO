@@ -18,11 +18,10 @@ Todo:
       [X] Implementation
       [ ] a. Refinement
         replace the horribly inefficient algorithm
-    [ ] Transformations
+    [X] Transformations
       position, scale, etc managed via affine transformations
-      [ ] 3D Matrix Class
+      [X] 3D Matrix Class
         include utility functions for various affine transformations
-        (can use 4d matrix?)
     [X] Polygon
       create a seperate polygon class that shape inherits from
     [X] Transformable and Renderable

@@ -1,5 +1,6 @@
 import GL from './gl.js'
 
+import Mat3 from './mat3.js';
 import Polygon from './polygon.js';
 import Renderable from './renderable.js';
 import RenderBatchData from './renderbatchdata.js'
@@ -341,13 +342,29 @@ class Shape extends Renderable(Polygon) {
       texID = this.frames[this.currentFrame][0].textureID;
     }
 
+    let transMat = this.transMat.getCopy();
+
+    let offsetPos = new Vec2(this.position.x - this.origin.x,
+        this.position.y - this.origin.y);
+    transMat.translate(offsetPos);
+    
+    transMat.translate(this.origin);
+    transMat.rotate(this.rotation);
+    transMat.scale(this.scale);
+    transMat.translate(this.origin.negate());
+
     let vboVerts = new Array();
     let invMinMax = new Vec2(1 / (this.bounds[1].x - this.bounds[0].x),
         1 / (this.bounds[1].y - this.bounds[0].y));
 
     for (const v of this.verts) {
       let vboVert = new VBOVertex();
-      vboVert.x = v.x; vboVert.y = v.y; vboVert.z = this.depth;
+
+      vboVert.x = (transMat.arr[0] * v.x) + (transMat.arr[3] * v.y) +
+          (transMat.arr[6] * 1.0);
+      vboVert.y = (transMat.arr[1] * v.x) + (transMat.arr[4] * v.y) +
+          (transMat.arr[7] * 1.0);
+      vboVert.z = this.depth;
 
       vboVert.r = this.color.x; vboVert.g = this.color.y;
       vboVert.b = this.color.z; vboVert.a = this.alpha;

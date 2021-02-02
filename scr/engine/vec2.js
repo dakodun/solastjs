@@ -20,6 +20,34 @@ class Vec2 {
     let copy = new Vec2(); copy.copy(this);
     return copy;
   }
+
+  negate() {
+    let negated = new Vec2(-this.x, -this.y);
+    return negated;
+  }
+
+  getArr() {
+    return [this.x, this.y];
+  }
+
+  setArr(arr) {
+    let padValue = 0.0;
+
+    if (arr.length != 0) {
+      padValue = arr[arr.length - 1];
+    }
+    
+    if (arr.length < 2) {
+      let len = arr.length;
+      arr.length = 2;
+      for (let i = len; i < arr.length; ++i) {
+        arr[i] = padValue;
+      }
+    }
+
+    this.x = arr[0];
+    this.y = arr[1];
+  }
 };
 
 export default Vec2;
