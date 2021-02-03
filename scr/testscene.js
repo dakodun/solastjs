@@ -52,7 +52,7 @@ void main() {
         addResource(new eng.Texture(), "res/tst.png");
     tex.resource.loadImage("res/tst.png");
 
-    this.shape = new eng.Shape;
+    this.shape = new eng.Shape();
     
     this.shape.depth = -1.0;
     this.shape.color = new eng.Vec3(255, 255, 255);

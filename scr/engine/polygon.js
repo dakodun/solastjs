@@ -6,10 +6,6 @@ class Polygon extends Transformable(Object) {
     super();
 
     this.verts = new Array();
-    this.bounds = new Array(
-        new Vec2(Number.POSITIVE_INFINITY, Number.POSITIVE_INFINITY),
-        new Vec2(Number.NEGATIVE_INFINITY, Number.NEGATIVE_INFINITY)
-    );
   }
 
   copy(other) {
@@ -18,11 +14,6 @@ class Polygon extends Transformable(Object) {
     this.verts.splice(0, this.verts.length);
     for (let v of other.verts) {
       this.verts.push(v.getCopy());
-    }
-
-    this.bounds.splice(0, this.bounds.length);
-    for (let b of other.bounds) {
-      this.bounds.push(b.getCopy());
     }
   }
 
@@ -34,11 +25,11 @@ class Polygon extends Transformable(Object) {
   pushVert(vert) {
     this.verts.push(vert.getCopy());
     
-    this.bounds[0].x = Math.min(vert.x, this.bounds[0].x);
-    this.bounds[0].y = Math.min(vert.y, this.bounds[0].y);
+    this.localBox[0].x = Math.min(vert.x, this.localBox[0].x);
+    this.localBox[0].y = Math.min(vert.y, this.localBox[0].y);
 
-    this.bounds[1].x = Math.max(vert.x, this.bounds[1].x);
-    this.bounds[1].y = Math.max(vert.y, this.bounds[1].y);
+    this.localBox[1].x = Math.max(vert.x, this.localBox[1].x);
+    this.localBox[1].y = Math.max(vert.y, this.localBox[1].y);
   }
 
   getWinding() {
@@ -70,23 +61,72 @@ class Polygon extends Transformable(Object) {
   }
 
   updateGlobalBox() {
-    // get trans mat
-    
-    // transform all points and store min and max
+    if (this.verts.length > 0) {
+      this.globalBox = new Array(
+          new Vec2(Number.POSITIVE_INFINITY, Number.POSITIVE_INFINITY),
+          new Vec2(Number.NEGATIVE_INFINITY, Number.NEGATIVE_INFINITY)
+      );
 
-    // update gbox
+      let transMat = this.transMat.getCopy();
+
+      let offsetPos = new Vec2(this.position.x - this.origin.x,
+          this.position.y - this.origin.y);
+      transMat.translate(offsetPos);
+      
+      transMat.translate(this.origin);
+      transMat.rotate(this.rotation);
+      transMat.scale(this.scale);
+      transMat.translate(this.origin.negate());
+
+      for (const v of this.verts) {
+        let vert = new Vec2();
+        vert.x = (transMat.arr[0] * v.x) + (transMat.arr[3] * v.y) +
+            (transMat.arr[6] * 1.0);
+        vert.y = (transMat.arr[1] * v.x) + (transMat.arr[4] * v.y) +
+            (transMat.arr[7] * 1.0);
+
+        this.globalBox[0].x = Math.min(vert.x, this.globalBox[0].x);
+        this.globalBox[0].y = Math.min(vert.y, this.globalBox[0].y);
+
+        this.globalBox[1].x = Math.max(vert.x, this.globalBox[1].x);
+        this.globalBox[1].y = Math.max(vert.y, this.globalBox[1].y);
+      }
+    }
   }
 
   updateGlobalMask() {
-    // get trans mat
+    this.globalMask.splice(0, this.globalMask.length);
 
-    // clear
-    // add all the (transformed) points *shrug*
+    if (this.verts.length > 0) {
+      let transMat = this.transMat.getCopy();
+
+      let offsetPos = new Vec2(this.position.x - this.origin.x,
+          this.position.y - this.origin.y);
+      transMat.translate(offsetPos);
+      
+      transMat.translate(this.origin);
+      transMat.rotate(this.rotation);
+      transMat.scale(this.scale);
+      transMat.translate(this.origin.negate());
+      
+      for (const v of this.verts) {
+        let vert = new Vec2();
+        vert.x = (transMat.arr[0] * v.x) + (transMat.arr[3] * v.y) +
+            (transMat.arr[6] * 1.0);
+        vert.y = (transMat.arr[1] * v.x) + (transMat.arr[4] * v.y) +
+            (transMat.arr[7] * 1.0);
+        
+        this.globalMask.push(vert);
+      }
+    }
   }
 
   createLocalMask() {
-    // clear
-    // add all the points *shrug*
+    this.localMask.splice(0, this.localMask.length);
+
+    for (const v of this.verts) {
+      this.localMask.push(v.getCopy());
+    }
   }
 };
 

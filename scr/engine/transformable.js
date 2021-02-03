@@ -12,8 +12,15 @@ const Transformable = (Transformable) => class extends Transformable {
 		this.scale = new Vec2(1.0, 1.0);
 		this.rotation = 0;
 		
-		this.localBox = new Array();
-		this.globalBox = new Array();
+		this.localBox = new Array(
+        new Vec2(Number.POSITIVE_INFINITY, Number.POSITIVE_INFINITY),
+        new Vec2(Number.NEGATIVE_INFINITY, Number.NEGATIVE_INFINITY)
+    );
+
+		this.globalBox = new Array(
+        new Vec2(Number.POSITIVE_INFINITY, Number.POSITIVE_INFINITY),
+        new Vec2(Number.NEGATIVE_INFINITY, Number.NEGATIVE_INFINITY)
+    );
 		
 	  this.localMask = new Array();
 		this.globalMask = new Array();

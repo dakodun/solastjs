@@ -354,8 +354,8 @@ class Shape extends Renderable(Polygon) {
     transMat.translate(this.origin.negate());
 
     let vboVerts = new Array();
-    let invMinMax = new Vec2(1 / (this.bounds[1].x - this.bounds[0].x),
-        1 / (this.bounds[1].y - this.bounds[0].y));
+    let invMinMax = new Vec2(1 / (this.localBox[1].x - this.localBox[0].x),
+        1 / (this.localBox[1].y - this.localBox[0].y));
 
     for (const v of this.verts) {
       let vboVert = new VBOVertex();
@@ -369,8 +369,8 @@ class Shape extends Renderable(Polygon) {
       vboVert.r = this.color.x; vboVert.g = this.color.y;
       vboVert.b = this.color.z; vboVert.a = this.alpha;
 
-      let ratio = new Vec2((v.x - this.bounds[0].x)  * invMinMax.x,
-          (v.y - this.bounds[0].y)  * invMinMax.y);
+      let ratio = new Vec2((v.x - this.localBox[0].x)  * invMinMax.x,
+          (v.y - this.localBox[0].y)  * invMinMax.y);
 
       vboVert.s = (((1 - ratio.x) * texRect[0].x) +
           (ratio.x * texRect[1].x)) * 65535;
