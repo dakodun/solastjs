@@ -11,6 +11,11 @@ class VBOVertex {
 
     this.s = 0;
     this.t = 0;
+
+    this.textureFlag = 0;
+    this.flag2 = 0;
+    this.flag3 = 0;
+    this.flag4 = 0;
 	}
 
 	copy(other) {
@@ -25,6 +30,11 @@ class VBOVertex {
 
     this.s = other.s;
     this.t = other.t;
+
+    this.textureFlag = other.textureFlag;
+    this.flag2 = other.flag2;
+    this.flag3 = other.flag3;
+    this.flag4 = other.flag4;
   }
 
   getCopy() {

@@ -17,6 +17,7 @@ class Shader {
     this.vertexPosition = null;
     this.vertexColor = null;
     this.vertexTexture = null;
+    this.vertexFlags = null;
   }
 
   linkProgram() {
@@ -113,20 +114,25 @@ class Shader {
         GL.getAttribLocation(this.programID, "vertRGBA");
     this.vertexTexture =
         GL.getAttribLocation(this.programID, "vertST");
+    this.vertexFlags =
+        GL.getAttribLocation(this.programID, "vertFlags");
   }
 
   vaCallback() {
       GL.enableVertexAttribArray(this.vertexPosition);
       GL.enableVertexAttribArray(this.vertexColor);
       GL.enableVertexAttribArray(this.vertexTexture);
+      GL.enableVertexAttribArray(this.vertexFlags);
 
-      let byteSize = 20;
+      let byteSize = 24;
       GL.vertexAttribPointer(this.vertexPosition, 3, GL.FLOAT,
           false, byteSize, 0);
       GL.vertexAttribPointer(this.vertexColor, 4, GL.UNSIGNED_BYTE,
           true, byteSize, 12);
       GL.vertexAttribPointer(this.vertexTexture, 2, GL.UNSIGNED_SHORT,
           true, byteSize, 16);
+      GL.vertexAttribPointer(this.vertexFlags, 4, GL.UNSIGNED_BYTE,
+          true, byteSize, 20);
   }
 
   renderCallback() {

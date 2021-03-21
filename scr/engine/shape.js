@@ -336,7 +336,7 @@ class Shape extends Renderable(Polygon) {
     }
 
     let texRect = [new Vec2(0.0, 1.0), new Vec2(1.0, 0.0)];
-    let texID = 0;
+    let texID = null;
     if (this.currentFrame < this.frames.length) {
       texRect = this.frames[this.currentFrame][1];
       texID = this.frames[this.currentFrame][0].textureID;
@@ -376,6 +376,10 @@ class Shape extends Renderable(Polygon) {
           (ratio.x * texRect[1].x)) * 65535;
       vboVert.t = (((1 - ratio.y) * texRect[0].y) +
           (ratio.y * texRect[1].y)) * 65535;
+      
+      if (texID) {
+        vboVert.textureFlag = 255;
+      }
 
       vboVerts.push(vboVert);
     }

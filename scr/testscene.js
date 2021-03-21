@@ -12,11 +12,13 @@ uniform mat4 vertView;
 uniform mat4 vertProj;
 
 attribute vec3 vertXYZ;
-attribute vec2 vertST;
 attribute vec4 vertRGBA;
+attribute vec2 vertST;
+attribute vec4 vertFlags;
 
 varying mediump vec4 fragRGBA;
 varying mediump vec2 fragST;
+varying mediump float fragTextured;
 
 void main() {
   mat4 mvp = vertProj * vertView * vertModel;
@@ -24,6 +26,7 @@ void main() {
   
   fragRGBA = vertRGBA;
   fragST = vertST;
+  fragTextured = vertFlags.x;
 }
 `;
 
@@ -34,9 +37,11 @@ uniform sampler2D fragBaseTex;
 
 varying mediump vec4 fragRGBA;
 varying mediump vec2 fragST;
+varying mediump float fragTextured;
 
 void main() {
-  vec4 texColour = texture2D(fragBaseTex, fragST);
+  vec4 texColour = clamp(texture2D(fragBaseTex, fragST) +
+      (1.0 - fragTextured), 0.0, 1.0);
   gl_FragColor = texColour * vec4(fragRGBA.x, fragRGBA.y, fragRGBA.z, 1.0);
   
   // gl_FragColor = vec4(fragRGBA.x, fragRGBA.y, fragRGBA.z, 1.0);

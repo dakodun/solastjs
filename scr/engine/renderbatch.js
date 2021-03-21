@@ -82,7 +82,7 @@ class RenderBatch {
       segments.push(new VBOSegment(currPass, currTexID,
           currCount, currOffset));
 
-      let byteSize = 20;
+      let byteSize = 24;
       let buffer = new ArrayBuffer(byteSize * vertices.length);
       let dv = new DataView(buffer);
       for (let i = 0; i < vertices.length; ++i) {
@@ -99,6 +99,11 @@ class RenderBatch {
 
         dv.setUint16((byteSize * i) + 16, v.s, true);
         dv.setUint16((byteSize * i) + 18, v.t, true);
+
+        dv.setUint8((byteSize * i) + 20, v.textureFlag);
+        dv.setUint8((byteSize * i) + 21, v.flag2);
+        dv.setUint8((byteSize * i) + 22, v.flag3);
+        dv.setUint8((byteSize * i) + 23, v.flag4);
       }
 
       this.vbo.addData(buffer, indices, segments);
