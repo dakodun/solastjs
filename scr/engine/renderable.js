@@ -11,6 +11,7 @@ const Renderable = (Renderable) => class extends Renderable {
     this.depth = -1.0;
 
     this.renderMode = GL.TRIANGLES;
+    this.shader = null;
  }
 
  copy(other) {
@@ -19,6 +20,7 @@ const Renderable = (Renderable) => class extends Renderable {
     this.depth = other.depth;
 
     this.renderMode = other.renderMode;
+    this.shader = other.shader;
   }
 
   getRenderBatchData() {

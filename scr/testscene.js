@@ -4,55 +4,6 @@ class TestScene extends eng.Scene {
 	constructor(name) {
 		super(name);
 
-    this.shader = new eng.Shader();
-
-    let vertSrc = `
-uniform mat4 vertModel;
-uniform mat4 vertView;
-uniform mat4 vertProj;
-
-attribute vec3 vertXYZ;
-attribute vec4 vertRGBA;
-attribute vec2 vertST;
-attribute vec4 vertFlags;
-
-varying mediump vec4 fragRGBA;
-varying mediump vec2 fragST;
-varying mediump float fragTextured;
-
-void main() {
-  mat4 mvp = vertProj * vertView * vertModel;
-  gl_Position = mvp * vec4(vertXYZ, 1.0);
-  
-  fragRGBA = vertRGBA;
-  fragST = vertST;
-  fragTextured = vertFlags.x;
-}
-`;
-
-    let fragSrc = `
-precision mediump float;
-
-uniform sampler2D fragBaseTex;
-
-varying mediump vec4 fragRGBA;
-varying mediump vec2 fragST;
-varying mediump float fragTextured;
-
-void main() {
-  vec4 texColour = clamp(texture2D(fragBaseTex, fragST) +
-      (1.0 - fragTextured), 0.0, 1.0);
-  gl_FragColor = texColour * vec4(fragRGBA.x, fragRGBA.y, fragRGBA.z, 1.0);
-  
-  // gl_FragColor = vec4(fragRGBA.x, fragRGBA.y, fragRGBA.z, 1.0);
-}
-`;
-
-    this.shader.setVertexSrc(vertSrc);
-    this.shader.setFragmentSrc(fragSrc);
-    this.shader.linkProgram();
-    this.shader.initCallback();
-
     let tex = APP.resourceManager.textureStore.
         addResource(new eng.Texture(), "res/tst.png");
     tex.resource.loadImage("res/tst.png");
@@ -100,7 +51,7 @@ void main() {
       GLStates.viewMatrix.identity();
     }
 
-    this.batch.draw(this.shader, pass);
+    this.batch.draw(pass);
 	}
 	
 	input() {

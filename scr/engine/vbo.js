@@ -60,7 +60,7 @@ class VBO {
     }
   }
 
-  draw(shader, pass) {
+  draw(pass) {
     if (this.segments.has(pass)) {
       GL.bindBuffer(GL.ARRAY_BUFFER, this.vertBufferID);
       GL.bindBuffer(GL.ELEMENT_ARRAY_BUFFER, this.indexBufferID);

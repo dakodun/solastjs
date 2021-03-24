@@ -130,8 +130,8 @@ class RenderBatch {
     }
   }
 
-  draw(shader, pass) {
-    this.vbo.draw(shader, pass);
+  draw(pass) {
+    this.vbo.draw(pass);
   }
 };
 
