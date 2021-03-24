@@ -1,11 +1,13 @@
 export {default as App} from './app.js';
 
 export {default as Error} from './error.js';
+export {default as FrameBuffer} from './framebuffer.js';
 
 export {default as Mat4} from './mat4.js';
 
 export {default as RenderBatch} from './renderbatch.js';
 export {default as RenderBatchData} from './renderbatchdata.js';
+export {default as RenderBuffer} from './renderbuffer.js';
 export {default as Resource} from './resource.js';
 export {default as ResourceManager} from './resourcemanager.js';
 export {default as ResourceStore} from './resourcestore.js';
