@@ -7,6 +7,20 @@ class SceneManager {
 		this.current = null;
 		this.next = null;
 	}
+
+  delete() {
+    if (this.current) {
+      this.current.delete();
+    }
+    
+    if (this.next) {
+      this.next.delete();
+    }
+    
+    for (let s of this.store) {
+			s.delete();
+		}
+  }
   
   // queue up a scene change to a scene of type 'scene'
   //   optionally indicate the current scene should be stored on change
@@ -14,10 +28,11 @@ class SceneManager {
 	requestChange(scene, save, name) {
     let newScene = scene;
 
-    if (name) {
+    if (name != undefined) {
       for (let i = 0; i < this.store.length; ++i) {
         if (this.store[i].name == name) {
           newScene = this.store[i];
+          newScene.loaded = true;
           this.store.splice(i, i + 1);
           break;
         }
@@ -26,7 +41,7 @@ class SceneManager {
 
     this.next = newScene;
     
-    if (this.current) {
+    if (this.current && save != undefined) {
       this.current.saved = save;
     }
 	}
@@ -34,12 +49,22 @@ class SceneManager {
   // perform a previously queued scene change
 	change() {
 		if (this.next) {
-      if (this.current && this.current.saved) {
-        this.store.push(this.current);
+      if (this.current) {
+        this.current.onLeave(this.current.saved);
+
+        if (this.current.saved) {
+          this.store.push(this.current);
+        }
+        else {
+          this.current.delete();
+        }
       }
 
       this.current = this.next;
       this.next = null;
+
+      this.current.onEnter(this.current.loaded);
+      this.current.loaded = false;
 
       if (this.current.saved) {
         this.current.saved = false;
