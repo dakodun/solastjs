@@ -4,26 +4,37 @@ import VBOSegment from './vbosegment.js'
 
 class VBO {
 	constructor() {
-    this.vertBufferID = 0;
-    this.indexBufferID = 0;
+    this.vertBufferID = null;
+    this.indexBufferID = null;
 
-    this.tempIndexCount = 0; // !
     this.segments = new Map();
 	}
 
   init() {
-    if (this.vertBufferID == 0) {
+    if (this.vertBufferID == null) {
       this.vertBufferID = GL.createBuffer();
     }
 
-    if (this.indexBufferID == 0) {
+    if (this.indexBufferID == null) {
       this.indexBufferID = GL.createBuffer();
+    }
+  }
+
+  delete() {
+    if (this.vertBufferID != null) {
+      GL.deleteBuffer(this.vertBufferID);
+      this.vertBufferID = null;
+    }
+
+    if (this.indexBufferID != null) {
+      GL.deleteBuffer(this.indexBufferID);
+      this.indexBufferID = null;
     }
   }
 
   addData(vertices, indices, segments) {
     if (segments == undefined) {
-      addData(vertices, indices, [new VBOSegment(0, 0,
+      addData(vertices, indices, [new VBOSegment(0, null, null,
           indices.length, 0)]);
     }
     else {
@@ -36,7 +47,6 @@ class VBO {
       GL.bufferData(GL.ELEMENT_ARRAY_BUFFER,
           new Uint16Array(indices), GL.STATIC_DRAW);
 
-      this.tempIndexCount = indices.length; // !
       this.segments.clear();
 
       for (let s of segments) {
@@ -52,16 +62,28 @@ class VBO {
 
   draw(shader, pass) {
     if (this.segments.has(pass)) {
-      let segments = this.segments.get(pass);
-      for (let s of segments) {
-        GL.bindBuffer(GL.ARRAY_BUFFER, this.vertBufferID);
-        shader.vaCallback();
-        GL.bindBuffer(GL.ELEMENT_ARRAY_BUFFER, this.indexBufferID);
-        
-        shader.useProgram();
-        shader.renderCallback();
+      GL.bindBuffer(GL.ARRAY_BUFFER, this.vertBufferID);
+      GL.bindBuffer(GL.ELEMENT_ARRAY_BUFFER, this.indexBufferID);
 
-        GL.bindTexture(GL.TEXTURE_2D, s.textureID);
+      let segments = this.segments.get(pass);
+      let currShader = null;
+      let currTex = null;
+
+      for (let s of segments) {
+        if (s.shader.programID != currShader) {
+          s.shader.vaCallback();
+          s.shader.useProgram();
+          s.shader.renderCallback();
+
+          currShader = s.shader.programID;
+        }
+
+        if (s.textureID != currTex) {
+          GL.bindTexture(GL.TEXTURE_2D, s.textureID);
+
+          currTex = s.textureID;
+        }
+        
         GL.drawElements(GL.TRIANGLES, s.count,
             GL.UNSIGNED_SHORT, s.offset * 2);
       }

@@ -31,8 +31,14 @@ class App {
 
     glSetContext(this.context);
     GL.viewport(0, 0, this.canvas.width, this.canvas.height);
+    this.createDefaultShader();
 
     this.frameTimer.reset();
+  }
+
+  delete() {
+    GLStates.defaultShader.delete();
+    this.sceneManager.delete();
   }
 
   run() {
@@ -108,6 +114,13 @@ class App {
     if (this.sceneManager.currentExists()) {
       this.sceneManager.getCurrent().postProcess(dt, count);
     }
+  }
+
+  createDefaultShader() {
+    GLStates.defaultShader.setVertexSrc();
+    GLStates.defaultShader.setFragmentSrc();
+    GLStates.defaultShader.linkProgram();
+    GLStates.defaultShader.initCallback();
   }
 };
 

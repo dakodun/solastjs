@@ -2,25 +2,36 @@ import GL from './gl.js'
 
 class Texture {
 	constructor() {
-		this.textureID = 0;
+		this.textureID = null;
 
     this.width = 1;
     this.height = 1;
 	}
 
-  copy(other) {
-    
-  }
-
-  getCopy() {
-    let copy = new Texture(); copy.copy(this);
-    return copy;
-  }
-
   init() {
-    if (this.textureID == 0) {
+    if (this.textureID == null) {
       this.textureID = GL.createTexture();
     }
+  }
+
+  delete() {
+    if (this.textureID != null) {
+      GL.deleteTexture(this.textureID);
+      this.textureID = null;
+    }
+  }
+
+  create(width, height, data) {
+    this.init();
+    GL.bindTexture(GL.TEXTURE_2D, this.textureID);
+    GL.texImage2D(GL.TEXTURE_2D, 0, GL.RGBA, width, height, 0,
+        GL.RGBA, GL.UNSIGNED_BYTE, data);
+
+    this.width = width; this.height = height;
+    GL.texParameteri(GL.TEXTURE_2D, GL.TEXTURE_WRAP_S, GL.CLAMP_TO_EDGE);
+    GL.texParameteri(GL.TEXTURE_2D, GL.TEXTURE_WRAP_T, GL.CLAMP_TO_EDGE);
+    GL.texParameteri(GL.TEXTURE_2D, GL.TEXTURE_MAG_FILTER, GL.NEAREST);
+    GL.texParameteri(GL.TEXTURE_2D, GL.TEXTURE_MIN_FILTER, GL.NEAREST);
   }
 
   loadImage(url) {

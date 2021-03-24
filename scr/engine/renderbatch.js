@@ -1,3 +1,5 @@
+import GLStates from './glstates.js'
+
 import RenderBatchData from './renderbatchdata.js'
 import VBO from './vbo.js'
 import VBOSegment from './vbosegment.js'
@@ -8,11 +10,16 @@ function renderDataSort(first, second) {
 		result = -1;
 	}
 	else if (first.pass == second.pass) {
-		if (first.textureID < second.textureID) {
+    if (first.shader.programID < second.shader.programID) {
       result = -1;
     }
-    else if (first.textureID == second.textureID) {
-      result = 0;
+    else if (first.shader.programID == second.shader.programID) {
+      if (first.textureID < second.textureID) {
+        result = -1;
+      }
+      else if (first.textureID == second.textureID) {
+        result = 0;
+      }
     }
   }
 
@@ -24,6 +31,10 @@ class RenderBatch {
     this.renderData = new Array();
 		this.vbo = new VBO();
 	}
+
+  delete() {
+    this.vbo.delete();
+  }
 	
 	add(renderable, pass) {
     if (pass == undefined) {
@@ -34,6 +45,10 @@ class RenderBatch {
 
       let renderableData = renderable.getRenderBatchData();
       for (let r of renderableData) {
+        if (r.shader == null) {
+          r.shader = GLStates.defaultShader;
+        }
+        
         r.pass = pass;
         this.renderData.push(r);
       }
@@ -51,6 +66,7 @@ class RenderBatch {
 
       // info for the current vbo segment
       let currPass = this.renderData[0].pass;
+      let currShader = this.renderData[0].shader;
       let currTexID = this.renderData[0].textureID;
       let currCount = 0;
       let currOffset = 0;
@@ -63,11 +79,14 @@ class RenderBatch {
         vertexCount += r.vertices.length;
 
         // if we need to start a new vbo segment...
-        if (r.pass != currPass || r.textureID != currTexID) {
-          segments.push(new VBOSegment(currPass, currTexID,
+        if (r.pass != currPass || r.shader != currShader ||
+            r.textureID != currTexID) {
+        
+          segments.push(new VBOSegment(currPass, currShader, currTexID,
               currCount, currOffset));
 
           currPass = r.pass;
+          currShader = r.shader;
           currTexID = r.textureID;
           currOffset += currCount;
           currCount = 0;
@@ -79,7 +98,7 @@ class RenderBatch {
         indices = indices.concat(r.indices);
       }
 
-      segments.push(new VBOSegment(currPass, currTexID,
+      segments.push(new VBOSegment(currPass, currShader, currTexID,
           currCount, currOffset));
 
       let byteSize = 24;

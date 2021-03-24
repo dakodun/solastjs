@@ -3,7 +3,7 @@ import GLStates from './glstates.js'
 
 class Shader {
   constructor() {
-    this.programID = 0;
+    this.programID = null;
 
     this.vertSrc = null;
     this.fragSrc = null;
@@ -18,6 +18,19 @@ class Shader {
     this.vertexColor = null;
     this.vertexTexture = null;
     this.vertexFlags = null;
+  }
+
+  init() {
+    if (this.programID == null) {
+      this.programID = GL.createProgram();
+    }
+  }
+
+  delete() {
+    if (this.programID != null) {
+      GL.deleteProgram(this.programID);
+      this.programID = null;
+    }
   }
 
   linkProgram() {
@@ -86,11 +99,59 @@ class Shader {
   }
 
   setVertexSrc(shaderStr) {
-    this.vertSrc = shaderStr;
+    let vertSrc = shaderStr;
+    if (vertSrc == undefined) {
+      vertSrc = `
+uniform mat4 vertModel;
+uniform mat4 vertView;
+uniform mat4 vertProj;
+
+attribute vec3 vertXYZ;
+attribute vec4 vertRGBA;
+attribute vec2 vertST;
+attribute vec4 vertFlags;
+
+varying mediump vec4 fragRGBA;
+varying mediump vec2 fragST;
+varying mediump float fragTextured;
+
+void main() {
+  mat4 mvp = vertProj * vertView * vertModel;
+  gl_Position = mvp * vec4(vertXYZ, 1.0);
+  
+  fragRGBA = vertRGBA;
+  fragST = vertST;
+  fragTextured = vertFlags.x;
+}
+`;
+    }
+
+    this.vertSrc = vertSrc;
   }
 
   setFragmentSrc(shaderStr) {
-    this.fragSrc = shaderStr;
+    let fragSrc = shaderStr;
+    if (fragSrc == undefined) {
+      fragSrc = `
+precision mediump float;
+
+uniform sampler2D fragBaseTex;
+
+varying mediump vec4 fragRGBA;
+varying mediump vec2 fragST;
+varying mediump float fragTextured;
+
+void main() {
+  vec4 texColour = clamp(texture2D(fragBaseTex, fragST) +
+      (1.0 - fragTextured), 0.0, 1.0);
+  gl_FragColor = texColour * vec4(fragRGBA.x, fragRGBA.y, fragRGBA.z, 1.0);
+  
+  // gl_FragColor = vec4(fragRGBA.x, fragRGBA.y, fragRGBA.z, 1.0);
+}
+`;
+    }
+
+    this.fragSrc = fragSrc;
   }
 
   initCallback() {
@@ -142,12 +203,6 @@ class Shader {
         GLStates.viewMatrix.asArr());
     GL.uniformMatrix4fv(this.modelMatrixLocation, false,
         GLStates.modelMatrix.asArr());
-  }
-
-  init() {
-    if (this.programID == 0) {
-      this.programID = GL.createProgram();
-    }
   }
 };
 
