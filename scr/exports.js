@@ -1,7 +1,11 @@
 export {default as App} from './app.js';
+export {default as Camera2D} from './camera2d.js';
 
 export {default as Error} from './error.js';
 export {default as FrameBuffer} from './framebuffer.js';
+
+export {mouse, key} from './inputenums.js';
+export {default as InputManager} from './inputmanager.js';
 
 export {default as Mat4} from './mat4.js';
 

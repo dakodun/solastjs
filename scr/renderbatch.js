@@ -18,7 +18,12 @@ function renderDataSort(first, second) {
         result = -1;
       }
       else if (first.textureID == second.textureID) {
-        result = 0;
+        if (first.renderMode < second.renderMode) {
+          result = -1;
+        }
+        else if (first.renderMode == second.renderMode) {
+          result = 0;
+        }
       }
     }
   }
@@ -68,6 +73,7 @@ class RenderBatch {
       let currPass = this.renderData[0].pass;
       let currShader = this.renderData[0].shader;
       let currTexID = this.renderData[0].textureID;
+      let currRenderMode = this.renderData[0].renderMode;
       let currCount = 0;
       let currOffset = 0;
 
@@ -80,14 +86,15 @@ class RenderBatch {
 
         // if we need to start a new vbo segment...
         if (r.pass != currPass || r.shader != currShader ||
-            r.textureID != currTexID) {
+            r.textureID != currTexID || r.renderMode != currRenderMode) {
         
           segments.push(new VBOSegment(currPass, currShader, currTexID,
-              currCount, currOffset));
+              currRenderMode, currCount, currOffset));
 
           currPass = r.pass;
           currShader = r.shader;
           currTexID = r.textureID;
+          currRenderMode = r.renderMode;
           currOffset += currCount;
           currCount = 0;
         }
@@ -99,7 +106,7 @@ class RenderBatch {
       }
 
       segments.push(new VBOSegment(currPass, currShader, currTexID,
-          currCount, currOffset));
+          currRenderMode, currCount, currOffset));
 
       let byteSize = 24;
       let buffer = new ArrayBuffer(byteSize * vertices.length);

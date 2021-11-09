@@ -84,7 +84,7 @@ class VBO {
           currTex = s.textureID;
         }
         
-        GL.drawElements(GL.TRIANGLES, s.count,
+        GL.drawElements(s.renderMode, s.count,
             GL.UNSIGNED_SHORT, s.offset * 2);
       }
     }

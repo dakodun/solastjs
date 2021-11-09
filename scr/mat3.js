@@ -46,7 +46,7 @@ class Mat3 {
     this.arr = transMat.arr.slice();
   }
 
-  rotate(angle, axis) {
+  rotate(angle) {
     let rotMat = new Mat3();
     
     let c = Math.cos(angle);

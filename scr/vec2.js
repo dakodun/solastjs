@@ -21,9 +21,29 @@ class Vec2 {
     return copy;
   }
 
+  equals(other) {
+    if (this.x == other.x && this.y == other.y) {
+      return true;
+    }
+
+    return false;
+  }
+
   negate() {
     let negated = new Vec2(-this.x, -this.y);
     return negated;
+  }
+
+  normalise() {
+    let normal = this.getCopy();
+    let len = Math.sqrt((this.x * this.x) + (this.y * this.y));
+
+    if (len != 0) {
+      let invLen = 1 / len;
+      normal.x *= invLen; normal.y *= invLen;
+    }
+
+    return normal;
   }
 
   getArr() {

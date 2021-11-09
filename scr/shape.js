@@ -326,8 +326,16 @@ class Shape extends Renderable(Polygon) {
     let renderMode = this.renderMode;
 
     switch (renderMode) {
-      case GL.TRIANGLES:
-      default:
+      case GL.POINTS :
+        if (this.indices.length == 0) {
+          for (let i = 0; i < this.verts.length; ++i) {
+            this.indices.push(i);
+          }
+        }
+
+        break;
+      case GL.TRIANGLES :
+      default :
         if (this.indices.length == 0) {
           this.triangulate();
         }
@@ -386,8 +394,9 @@ class Shape extends Renderable(Polygon) {
 
     let rbd = new RenderBatchData();
     rbd.vertices = vboVerts;
-    rbd.indices = this.indices;
+    rbd.indices = this.indices.slice();
     rbd.textureID = texID;
+    rbd.renderMode = renderMode;
 
     return [rbd];
   }
@@ -396,6 +405,13 @@ class Shape extends Renderable(Polygon) {
     this.indices.splice(0, this.indices.length);
     
     return super.reverseWinding();
+  }
+
+  setRenderMode(renderMode) {
+    if (renderMode != this.renderMode) {
+      this.indices.splice(0, this.indices.length);
+      this.renderMode = renderMode;
+    }
   }
 };
 

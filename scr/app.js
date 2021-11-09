@@ -2,16 +2,22 @@ import GL, {glSetContext} from './gl.js'
 import GLStates from './glstates.js'
 
 import EngineError from './error.js';
+import InputManager from './inputmanager.js';
 import ResourceManager from './resourcemanager.js';
 import SceneManager from './scenemanager.js';
 import Timer from './timer.js';
+import Vec2 from './vec2.js';
 
 class App {
   constructor() {
     this.canvas = null;
     this.context = null;
 
+    this.canvasPos = new Vec2(0.0, 0.0);
+    this.canvasSize = new Vec2(0.0, 0.0);
+
     this.resourceManager = new ResourceManager();
+    this.inputManager = new InputManager();
     this.sceneManager = new SceneManager();
 
     this.frameTimer = new Timer();
@@ -33,6 +39,8 @@ class App {
     GL.viewport(0, 0, this.canvas.width, this.canvas.height);
     this.createDefaultShader();
 
+    this.inputManager.register(this);
+
     this.frameTimer.reset();
   }
 
@@ -42,19 +50,14 @@ class App {
   }
 
   run() {
-    // ONLY UPDATE WHEN NECESSARY
-    // STORE CURRENT CANVAS AND CHECK IF DIFF
-    // IF SO FIRE EVENT AND UPDATE STORED
-    this.canvas.width = GL.canvas.clientWidth;
-    this.canvas.height = GL.canvas.clientHeight;
-    GL.viewport(0, 0, this.canvas.width, this.canvas.height);
+    this.updateCanvas();
 
     for (let i = 0; i < this.renderPasses; ++i) {
 			this.render(i);
 		}
     
     this.input();
-    // input manager
+    this.inputManager.process();
 
     let frameTime = this.frameTimer.getElapsed() / 1000;
     this.frameTimer.reset();
@@ -121,6 +124,31 @@ class App {
     GLStates.defaultShader.setFragmentSrc();
     GLStates.defaultShader.linkProgram();
     GLStates.defaultShader.initCallback();
+  }
+
+  updateCanvas() {
+    let element = this.canvas;
+    let offset = new Vec2(0.0, 0.0);
+    if (element.offsetParent) {
+      do {
+        offset.x += element.offsetLeft;
+        offset.y += element.offsetTop;
+      } while (element = element.offsetParent);
+      
+      this.canvasPos.x = offset.x; this.canvasPos.y = offset.y;
+    }
+
+    if (this.canvasSize.x != GL.canvas.clientWidth ||
+        this.canvasSize.y != GL.canvas.clientHeight) {
+      
+      this.canvasSize.x = GL.canvas.clientWidth;
+      this.canvasSize.y = GL.canvas.clientHeight;
+
+      this.canvas.width = this.canvasSize.x;
+      this.canvas.height = this.canvasSize.y;
+
+      GL.viewport(0, 0, this.canvas.width, this.canvas.height);
+    }
   }
 };
 
