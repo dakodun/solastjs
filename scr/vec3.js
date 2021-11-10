@@ -27,9 +27,30 @@ class Vec3 {
     return copy;
   }
 
+  equals(other) {
+    if (this.x == other.x && this.y == other.y && this.z == other.z) {
+      return true;
+    }
+
+    return false;
+  }
+
   negate() {
     let negated = new Vec3(-this.x, -this.y, -this.z);
     return negated;
+  }
+
+  normalise() {
+    let normal = this.getCopy();
+    let len = Math.sqrt((this.x * this.x) + (this.y * this.y) +
+        (this.z * this.z));
+
+    if (len != 0) {
+      let invLen = 1 / len;
+      normal.x *= invLen; normal.y *= invLen; normal.z *= invLen;
+    }
+
+    return normal;
   }
 
   getArr() {
