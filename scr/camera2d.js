@@ -56,6 +56,7 @@ class Camera2D {
 
   zoom(zoom) {
     // implement
+    // 
   }
 
   setPosition(position) {
