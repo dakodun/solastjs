@@ -59,7 +59,16 @@ class Camera2D {
   }
 
   setPosition(position) {
-    // implement
+    // set intial position to the origin and unset the rotation
+    // temporarily to allow absolute position to be set via
+    // the translate function
+    this.position = this.origin.getCopy();
+    let tempRotation = this.rotation;
+    this.rotation = 0;
+    
+    this.translate(position);
+    
+    this.rotation = tempRotation;
   }
 
   setRotation(angleRad) {
