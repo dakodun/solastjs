@@ -25,6 +25,10 @@ class Scene {
 		
 	}
 
+  handleEventQueue(e) {
+    
+  }
+
   onEnter(loaded) {
     
   }

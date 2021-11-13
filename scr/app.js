@@ -2,9 +2,12 @@ import GL, {glSetContext} from './gl.js'
 import GLStates from './glstates.js'
 
 import EngineError from './error.js';
+import EventQueue from './eventqueue.js';
+import * as enums from './exportenums.js';
 import InputManager from './inputmanager.js';
 import ResourceManager from './resourcemanager.js';
 import SceneManager from './scenemanager.js';
+import SizeEvent from './events/sizeevent.js';
 import Timer from './timer.js';
 import Vec2 from './vec2.js';
 
@@ -26,6 +29,8 @@ class App {
     this.frameMax = 15;
 
     this.renderPasses = 1;
+
+    this.eventQueue = new EventQueue();
   }
   
   init(canvasID) {
@@ -50,7 +55,15 @@ class App {
   }
 
   run() {
-    this.updateCanvas();
+    if (this.updateCanvas()) {
+      this.eventQueue.push(new SizeEvent());
+    }
+
+    while (!this.eventQueue.empty()) {
+      let e = this.eventQueue.get();
+      this.handleEvent(e);
+      this.eventQueue.pop();
+    }
 
     for (let i = 0; i < this.renderPasses; ++i) {
 			this.render(i);
@@ -148,6 +161,21 @@ class App {
       this.canvas.height = this.canvasSize.y;
 
       GL.viewport(0, 0, this.canvas.width, this.canvas.height);
+
+      return true;
+    }
+
+    return false;
+  }
+
+  handleEvent(e) {
+    switch(e.type) {
+      default :
+        break;
+    }
+
+    if (this.sceneManager.currentExists()) {
+      this.sceneManager.getCurrent().handleEventQueue(e);
     }
   }
 };
