@@ -1,3 +1,4 @@
-![solastjs Logo](./solastjs_logo.svg)
+![SolastJS Logo](./solastjs_logo.svg)
 
-JavaScript Engine
+A JavaScript Game Engine
+[Check out the documentation](https://chikin.net/solastjs/)
