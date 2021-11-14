@@ -20,12 +20,22 @@
 					<div id='body-main'>
 						<h1>An Example Scene</h1>
 
+            <p>
+                Our App requires a Scene to properly function. There is nothing
+              special about this initial Scene but you could use it to load
+              resources and initialise objects for use in later scenes.
+              We'll look at what a Scene is and how to use them in more detail later.
+            </p>
+
             <div class='code'>
 							<div class='codeHeader'>initialscene.js</div>
 							<pre class='codeBody'><code>import APP, {eng, GLStates, GL} from './init.js';
 
+// our scene inherits from the base scene class
 class InitialScene extends eng.Scene {
+  // our constructor takes a name (string)...
 	constructor(name) {
+    // ...and forwards it to the base class constructor
 		super(name);
 	}
 
@@ -34,9 +44,11 @@ class InitialScene extends eng.Scene {
   }
 
   render(pass) {
+    // ensure the viewport matches the canvas size
     GL.viewport(0, 0, APP.canvas.width, APP.canvas.height);
     
-    if (pass == 0) {
+    if (pass == 0) { // for the first pass only...
+      // clear the context to black
       GL.clearColor(0.0, 0.0, 0.0, 1.0);
       GL.clearDepth(1.0);
       GL.enable(GL.DEPTH_TEST);
@@ -46,9 +58,11 @@ class InitialScene extends eng.Scene {
 
       GL.clear(GL.COLOR_BUFFER_BIT | GL.DEPTH_BUFFER_BIT);
 
+      // set the porjection matrix to an orthographic projection
       GLStates.projectionMatrix.ortho(0.0, GL.canvas.clientWidth,
           GL.canvas.clientHeight, 0.0, 0.1, 1000.0);
 
+      // reset the model and view matrix to identity matrices
       GLStates.modelMatrix.identity();
       GLStates.viewMatrix.identity();
     }
@@ -81,6 +95,22 @@ class InitialScene extends eng.Scene {
 
 export default InitialScene;</code></pre>
             </div>
+
+            <p>
+                We import the engine files and our APP instance from our
+              initialisation file, and then create our InitialScene class which
+              inherits from the base Scene class (eng.Scene). This allows our
+              Scene to work with the SceneManager which handles loading, saving
+              and switching of Scenes as well as allowing them to interact with
+              each other.
+            </p>
+
+            <p>
+                Most of the class is empty with two exceptions: our constructor
+              calls the parent class' constructor, passing in the name string.
+              We've also defined a basic render function that merely clears the
+              context every frame and sets it up to be rendered to later.
+            </p>
           </div>
         </div>
       </div>
