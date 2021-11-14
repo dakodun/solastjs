@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+	<head>
+    <title id="title">SolastJS Documentation - Getting Started with SolastJS</title>
+    <link rel="stylesheet" type="text/css" href="../style.css" />
+
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+  </head>
+
+  <body>
+    <div id="site-wrapper">
+			<div id="content">
+        <div id="nav-home"><a href="../../../index.html">Documentation Home</a></div>
+       <div id="nav-left"><a href="002.html">Previous</a></div>
+       <div id="nav-center"><a href="index.html">Index</a></div>
+       <div id="nav-right">Next</div>
+    
+       <div id="content-body">
+					<div id='body-main'>
+						<h1>An Example Scene</h1>
+
+            <div class='code'>
+							<div class='codeHeader'>initialscene.js</div>
+							<pre class='codeBody'><code>import APP, {eng, GLStates, GL} from './init.js';
+
+class InitialScene extends eng.Scene {
+	constructor(name) {
+		super(name);
+	}
+
+  delete() {
+    
+  }
+
+  render(pass) {
+    GL.viewport(0, 0, APP.canvas.width, APP.canvas.height);
+    
+    if (pass == 0) {
+      GL.clearColor(0.0, 0.0, 0.0, 1.0);
+      GL.clearDepth(1.0);
+      GL.enable(GL.DEPTH_TEST);
+      GL.depthFunc(GL.LEQUAL);
+      GL.enable(GL.BLEND);
+      GL.blendFunc(GL.SRC_ALPHA, GL.ONE_MINUS_SRC_ALPHA);
+
+      GL.clear(GL.COLOR_BUFFER_BIT | GL.DEPTH_BUFFER_BIT);
+
+      GLStates.projectionMatrix.ortho(0.0, GL.canvas.clientWidth,
+          GL.canvas.clientHeight, 0.0, 0.1, 1000.0);
+
+      GLStates.modelMatrix.identity();
+      GLStates.viewMatrix.identity();
+    }
+	}
+	
+	input() {
+
+	}
+	
+	process(dt) {
+
+	}
+	
+	postProcess(dt, count) {
+		
+	}
+
+  handleEventQueue(e) {
+    
+  }
+
+  onEnter(loaded) {
+
+  }
+
+  onLeave(saved) {
+
+  }
+};
+
+export default InitialScene;</code></pre>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>

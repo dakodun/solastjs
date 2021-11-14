@@ -1,0 +1,203 @@
+--tGetting Started with SolastJS
+
+--sFile Structure and Index Page
+--bLaying out our project files and creating a functional index.html to --/
+serve up our app.
+
+--pThere's no one correct way to lay out your project files as long as --/
+the 'engine' files maintain their own internal folder structure and --/ 
+you point at the correct location within your own code. The following --/
+structure is only an example of how I would do it for my own projects --/
+and thus these examples.
+
+--cFile Tree
+project
+|-- script
+|   |-- engine
+|       |-- [engine files]
+|-- index.html
+|-- style.css
+---
+
+--pFor our index.html file there are only two things to consider with --/
+respect to SolastJS: first, when loading our script the type is --/
+'module' (we'll look into 'main.js' later). The second consideration --/
+is the canvas element and its id (in this example 'canvas'). This is --/
+how our script will find the canvas on the page (which we'll see later).
+
+--cindex.html
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<link rel="stylesheet" type="text/css" href="style.css">
+<script type="module" src="script/main.js"></script>
+</head>
+
+<body>
+  <div id="container">
+    <canvas id="canvas"></canvas>
+  </div>
+</body>
+</html>
+---
+
+--pHere is the CSS stylesheet to go along with the example; place it --/
+in the 'project' folder alongside the index.html (there is nothing --/
+noteworthy in here).
+
+--cstyle.css
+html, body {
+	margin: 0px;
+	padding: 0px;
+	background-color: rgb(39, 38, 43);
+	height: 100%;
+}
+
+#container {
+	display: flex;
+	flex-flow: column;
+	margin: 0px auto;
+	background-color: rgb(45, 45, 184);
+	height: 100%;
+}
+
+#canvas {
+	width: 100%;
+	height: 100%;
+}
+
+@media only screen and (max-width: 459px) {
+	#container {
+		width: 100%;
+	}
+}
+	
+@media only screen and (min-width: 460px) {
+	#container {
+		width: 460px;
+	}
+}
+--
+
+
+--sInitialisation and Entry Point
+--bInitialising SolastJS and creating an entry point into our app.
+
+--pTo help us out and make things easier to work with we'll create an --/
+initialisation .js file (init.js) which will collect all of the engine --/
+files in one place and wrap them in a namespace (in this case 'eng'). --/
+We also declare and initialise our main App instance ('APP') in this --/
+file and then export everything together.
+
+--cinit.js
+import GL, {glSetContext} from './engine/gl.js'
+import GLStates from './engine/glstates.js'
+import * as eng from './engine/exports.js';
+
+var APP = new eng.App();
+
+export {glSetContext, GL, GLStates, eng, APP as default};
+---
+
+--pBy doing it this way we can import and access our App instance --/
+in any of our project files (also true of the WebGL Context 'GL'). Next --/
+we need to create the entry point for our app which will be run when the --/
+page loads.
+
+--cmain.js
+import APP from './init.js';
+import InitialScene from './initialscene.js';
+
+function main() {
+  try {
+    APP.init("canvas"); // initialise the app instance, passing in the canvas id (from index.html)
+    APP.sceneManager.requestChange(new InitialScene()); // request a change to our initial scene
+    APP.sceneManager.change(); // perform the scene change immediately
+    APP.run(); // enter the main loop of our app
+  } catch (e) {
+    console.error(e.message);
+  }
+}
+
+window.onload = function() {
+  main(); // run our entry function immediately when the page loads
+}
+---
+
+--pWe import our APP instance that we defined during initialisation, as --/
+well as our InitialScene class which we'll look at in detail later. --/
+Next, we declare a function (called 'main()' here, but the name is --/
+irrelevant) and initialise our app. This is where we pass in the id of --/
+our canvas element ('canvas'). Next we request and immediately change --/
+to an instance of our InitialScene (more on Scenes later). Finally, --/
+we enter the main loop of our App which runs until it is terminated --/
+(usually by the page closing).
+
+-pThe entry function can be called whenever and however you like but --/
+in this case we call it as soon as the page loads.
+
+
+--sAn Example Scene
+--bBuilding a basic initial scene for our app.
+
+--cinitialscene.js
+import APP, {eng, GLStates, GL} from './init.js';
+
+class InitialScene extends eng.Scene {
+	constructor(name) {
+		super(name);
+	}
+
+  delete() {
+    
+  }
+
+  render(pass) {
+    GL.viewport(0, 0, APP.canvas.width, APP.canvas.height);
+    
+    if (pass == 0) {
+      GL.clearColor(0.0, 0.0, 0.0, 1.0);
+      GL.clearDepth(1.0);
+      GL.enable(GL.DEPTH_TEST);
+      GL.depthFunc(GL.LEQUAL);
+      GL.enable(GL.BLEND);
+      GL.blendFunc(GL.SRC_ALPHA, GL.ONE_MINUS_SRC_ALPHA);
+
+      GL.clear(GL.COLOR_BUFFER_BIT | GL.DEPTH_BUFFER_BIT);
+
+      GLStates.projectionMatrix.ortho(0.0, GL.canvas.clientWidth,
+          GL.canvas.clientHeight, 0.0, 0.1, 1000.0);
+
+      GLStates.modelMatrix.identity();
+      GLStates.viewMatrix.identity();
+    }
+	}
+	
+	input() {
+
+	}
+	
+	process(dt) {
+
+	}
+	
+	postProcess(dt, count) {
+		
+	}
+
+  handleEventQueue(e) {
+    
+  }
+
+  onEnter(loaded) {
+
+  }
+
+  onLeave(saved) {
+
+  }
+};
+
+export default InitialScene;
+---

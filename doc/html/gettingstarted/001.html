@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+	<head>
+    <title id="title">SolastJS Documentation - Getting Started with SolastJS</title>
+    <link rel="stylesheet" type="text/css" href="../style.css" />
+
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+  </head>
+
+  <body>
+    <div id="site-wrapper">
+			<div id="content">
+        <div id="nav-home"><a href="../../../index.html">Documentation Home</a></div>
+       <div id="nav-left"><a href="index.html">Previous</a></div>
+       <div id="nav-center"><a href="index.html">Index</a></div>
+       <div id="nav-right"><a href="002.html">Next</a></div>
+    
+       <div id="content-body">
+					<div id='body-main'>
+						<h1>File Structure and Index Page</h1>
+            
+            <p>
+                There's no one correct way to lay out your project files as long as
+              the 'engine' files maintain their own internal folder structure and
+              you point at the correct location within your own code. The following
+              structure is only an example of how I would do it for my own projects
+              and thus these examples.
+            </p>
+
+            <div class='code'>
+							<div class='codeHeader'>File Tree</div>
+							<pre class='codeBody'><code>project
+|-- script
+|   |-- engine
+|       |-- [engine files]
+|-- index.html
+|-- style.css</code></pre>
+						</div>
+
+            <p>
+                For our index.html file there are only two things to consider with
+              respect to SolastJS: first, when loading our script the type is
+              'module' (we'll look into 'main.js' later). The second consideration
+              is the canvas element and its id (in this example 'canvas'). This is
+              how our script will find the canvas on the page (which we'll see later).
+            </p>
+
+            <div class='code'>
+							<div class='codeHeader'>index.html</div>
+							<pre class='codeBody'><code>&lt;!DOCTYPE html>
+&lt;html>
+&lt;head>
+&lt;meta charset="utf-8">
+&lt;link rel="stylesheet" type="text/css" href="style.css">
+&lt;script type="module" src="script/main.js">&lt;/script>
+&lt;/head>
+
+&lt;body>
+  &lt;div id="container">
+    &lt;canvas id="canvas"></canvas>
+  &lt;/div>
+&lt;/body>
+&lt;/html></code></pre>
+						</div>
+
+            <p>
+                Here is the CSS stylesheet to go along with the example; place it
+              in the 'project' folder alongside the index.html (there is nothing
+              noteworthy in here).
+            </p>
+
+            <div class='code'>
+							<div class='codeHeader'>style.css</div>
+							<pre class='codeBody'><code>html, body {
+	margin: 0px;
+	padding: 0px;
+	background-color: rgb(39, 38, 43);
+	height: 100%;
+}
+
+#container {
+	display: flex;
+	flex-flow: column;
+	margin: 0px auto;
+	background-color: rgb(45, 45, 184);
+	height: 100%;
+}
+
+#canvas {
+	width: 100%;
+	height: 100%;
+}
+
+@media only screen and (max-width: 459px) {
+	#container {
+		width: 100%;
+	}
+}
+	
+@media only screen and (min-width: 460px) {
+	#container {
+		width: 460px;
+	}
+}</code></pre>
+						</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>

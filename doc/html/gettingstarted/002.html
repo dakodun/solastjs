@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+	<head>
+    <title id="title">SolastJS Documentation - Getting Started with SolastJS</title>
+    <link rel="stylesheet" type="text/css" href="../style.css" />
+
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+  </head>
+
+  <body>
+    <div id="site-wrapper">
+			<div id="content">
+        <div id="nav-home"><a href="../../../index.html">Documentation Home</a></div>
+       <div id="nav-left"><a href="001.html">Previous</a></div>
+       <div id="nav-center"><a href="index.html">Index</a></div>
+       <div id="nav-right"><a href="003.html">Next</a></div>
+    
+       <div id="content-body">
+					<div id='body-main'>
+						<h1>Initialisation and Entry Point</h1>
+
+            <p>
+                To help us out and make things easier to work with we'll create an
+              initialisation .js file (init.js) which will collect all of the engine
+              files in one place and wrap them in a namespace (in this case 'eng').
+              We also declare and initialise our main App instance ('APP') in this
+              file and then export everything together.
+            </p>
+
+            <div class='code'>
+							<div class='codeHeader'>init.js</div>
+							<pre class='codeBody'><code>import GL, {glSetContext} from './engine/gl.js'
+import GLStates from './engine/glstates.js'
+import * as eng from './engine/exports.js';
+
+var APP = new eng.App();
+
+export {glSetContext, GL, GLStates, eng, APP as default};</code></pre>
+						</div>
+            
+            <p>
+                By doing it this way we can import and access our App instance
+              in any of our project files (also true of the WebGL Context 'GL'). Next
+              we need to create the entry point for our app which will be run when the
+              page loads.
+            </p>
+            
+            <div class='code'>
+							<div class='codeHeader'>main.js</div>
+							<pre class='codeBody'><code>import APP from './init.js';
+import InitialScene from './initialscene.js';
+
+function main() {
+  try {
+    APP.init("canvas"); // initialise the app instance, passing in the canvas id (from index.html)
+    APP.sceneManager.requestChange(new InitialScene()); // request a change to our initial scene
+    APP.sceneManager.change(); // perform the scene change immediately
+    APP.run(); // enter the main loop of our app
+  } catch (e) {
+    console.error(e.message);
+  }
+}
+
+window.onload = function() {
+  main(); // run our entry function immediately when the page loads
+}</code></pre>
+            </div>
+
+            <p>
+                We import our APP instance that we defined during initialisation, as
+              well as our InitialScene class which we'll look at in detail later.
+              Next, we declare a function (called 'main()' here, but the name is
+              irrelevant) and initialise our app. This is where we pass in the id of
+              our canvas element ('canvas'). Next we request and immediately change
+              to an instance of our InitialScene (more on Scenes later). Finally,
+              we enter the main loop of our App which runs until it is terminated
+              (usually by the page closing).
+            </p>
+
+            <p>
+                The entry function can be called whenever and however you like but
+              in this case we call it as soon as the page loads.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>
