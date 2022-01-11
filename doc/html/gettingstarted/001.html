@@ -51,14 +51,15 @@
 							<pre class='codeBody'><code>&lt;!DOCTYPE html>
 &lt;html>
 &lt;head>
-&lt;meta charset="utf-8">
-&lt;link rel="stylesheet" type="text/css" href="style.css">
-&lt;script type="module" src="script/main.js">&lt;/script>
+&lt;meta charset="utf-8" />
+&lt;meta name="viewport" content="width=device-width, initial-scale=1" />
+&lt;link rel="stylesheet" type="text/css" href="style.css" />
+&lt;script type="module" src="scr/main.js">&lt;/script>
 &lt;/head>
 
 &lt;body>
   &lt;div id="container">
-    &lt;canvas id="canvas"></canvas>
+    &lt;canvas id="canvas">&lt;/canvas>
   &lt;/div>
 &lt;/body>
 &lt;/html></code></pre>
@@ -72,36 +73,20 @@
 
             <div class='code'>
 							<div class='codeHeader'>style.css</div>
-							<pre class='codeBody'><code>html, body {
+							<pre class='codeBody'><code>body {
 	margin: 0px;
-	padding: 0px;
-	background-color: rgb(39, 38, 43);
-	height: 100%;
-}
-
-#container {
-	display: flex;
-	flex-flow: column;
-	margin: 0px auto;
-	background-color: rgb(45, 45, 184);
-	height: 100%;
 }
 
 #canvas {
+  display: block;
+
 	width: 100%;
 	height: 100%;
 }
 
-@media only screen and (max-width: 459px) {
-	#container {
-		width: 100%;
-	}
-}
-	
-@media only screen and (min-width: 460px) {
-	#container {
-		width: 460px;
-	}
+#container {
+  width: 100vw;
+	height: 100vh;
 }</code></pre>
 						</div>
           </div>

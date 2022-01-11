@@ -29,9 +29,10 @@ how our script will find the canvas on the page (which we'll see later).
 <!DOCTYPE html>
 <html>
 <head>
-<meta charset="utf-8">
-<link rel="stylesheet" type="text/css" href="style.css">
-<script type="module" src="script/main.js"></script>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link rel="stylesheet" type="text/css" href="style.css" />
+<script type="module" src="scr/main.js"></script>
 </head>
 
 <body>
@@ -47,36 +48,20 @@ in the 'project' folder alongside the index.html (there is nothing --/
 noteworthy in here).
 
 --cstyle.css
-html, body {
+body {
 	margin: 0px;
-	padding: 0px;
-	background-color: rgb(39, 38, 43);
-	height: 100%;
-}
-
-#container {
-	display: flex;
-	flex-flow: column;
-	margin: 0px auto;
-	background-color: rgb(45, 45, 184);
-	height: 100%;
 }
 
 #canvas {
+  display: block;
+
 	width: 100%;
 	height: 100%;
 }
 
-@media only screen and (max-width: 459px) {
-	#container {
-		width: 100%;
-	}
-}
-	
-@media only screen and (min-width: 460px) {
-	#container {
-		width: 460px;
-	}
+#container {
+  width: 100vw;
+	height: 100vh;
 }
 --
 
