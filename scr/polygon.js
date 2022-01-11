@@ -236,7 +236,9 @@ class Polygon extends Transformable(Object) {
               }
             }
             else {
-              throw new EngineError("ee: lines are parallel");
+              // we only get here if points are too close so
+              // just return the point
+              return [ptB.getCopy()];
             }
           }
           else {
