@@ -1,15 +1,16 @@
 import GL, {glSetContext} from './gl.js'
 import GLStates from './glstates.js'
-
 import EngineError from './error.js';
 import EventQueue from './eventqueue.js';
 import * as enums from './exportenums.js';
 import InputManager from './inputmanager.js';
 import ResourceManager from './resourcemanager.js';
 import SceneManager from './scenemanager.js';
-import SizeEvent from './events/sizeevent.js';
 import Timer from './timer.js';
 import Vec2 from './vec2.js';
+
+import OrientationEvent from './events/orientationevent.js';
+import SizeEvent from './events/sizeevent.js';
 
 class App {
   constructor() {
@@ -45,6 +46,12 @@ class App {
     this.createDefaultShader();
 
     this.inputManager.register(this);
+
+    if (screen.orientation) {
+      screen.orientation.addEventListener("change",
+          (e) => {this.eventQueue.push(new OrientationEvent());},
+          true);
+    }
 
     this.frameTimer.reset();
   }

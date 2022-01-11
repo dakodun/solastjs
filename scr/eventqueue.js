@@ -19,7 +19,7 @@ class EventQueue {
 
   pop() {
     if (!this.empty()) {
-      this.queue.pop();
+      this.queue.shift();
     }
   }
 
