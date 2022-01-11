@@ -25,15 +25,14 @@ class Shape extends Renderable(Polygon) {
     this.loopCount = 0;
     this.loopMax = 0;
     this.timer = 0;
+
+    this.colors = new Array();
   }
   
   copy(other) {
     super.copy(other);
 
-    this.indices.splice(0, this.indices.length);
-    for (let i of other.indices) {
-      this.indices.push(i);
-    }
+    this.indices = other.indices.slice();
 
     this.frames.splice(0, this.frames.length);
     for (let f of other.frames) {
@@ -42,7 +41,7 @@ class Shape extends Renderable(Polygon) {
         a.push(g);
       }
       
-      this.indices.push(a);
+      this.frames.push(a);
     }
 
     this.currentFrame = other.currentFrame;
@@ -54,6 +53,11 @@ class Shape extends Renderable(Polygon) {
     this.loopCount = other.loopCount;
     this.loopMax = other.loopMax;
     this.timer = other.timer;
+
+    this.colors.splice(0, this.colors.length);
+    for (let c of other.colors) {
+      this.colors.push(c);
+    }
   }
 
   getCopy() {
@@ -364,8 +368,17 @@ class Shape extends Renderable(Polygon) {
     let vboVerts = new Array();
     let invMinMax = new Vec2(1 / (this.localBox[1].x - this.localBox[0].x),
         1 / (this.localBox[1].y - this.localBox[0].y));
+    
+    let colors = this.colors.slice();
+    let diff = this.verts.length - colors.length;
+    for (let i = 0; i < diff; ++i) {
+      colors.push(this.color.getCopy());
+    }
 
-    for (const v of this.verts) {
+    for (let i = 0; i < this.verts.length; ++i) {
+      const v = this.verts[i];
+      const c = colors[i];
+
       let vboVert = new VBOVertex();
 
       vboVert.x = (transMat.arr[0] * v.x) + (transMat.arr[3] * v.y) +
@@ -374,8 +387,8 @@ class Shape extends Renderable(Polygon) {
           (transMat.arr[7] * 1.0);
       vboVert.z = this.depth;
 
-      vboVert.r = this.color.x; vboVert.g = this.color.y;
-      vboVert.b = this.color.z; vboVert.a = this.alpha;
+      vboVert.r = c.x; vboVert.g = c.y;
+      vboVert.b = c.z; vboVert.a = this.alpha;
 
       let ratio = new Vec2((v.x - this.localBox[0].x)  * invMinMax.x,
           (v.y - this.localBox[0].y)  * invMinMax.y);
