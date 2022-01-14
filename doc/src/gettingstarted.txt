@@ -48,20 +48,18 @@ in the 'project' folder alongside the index.html (there is nothing --/
 noteworthy in here).
 
 --cstyle.css
-body {
-	margin: 0px;
+html, body {
+	height: 100%;
+  margin: 0;
 }
 
 #canvas {
   display: block;
-
-	width: 100%;
-	height: 100%;
+  height: 100%;
 }
 
 #container {
-  width: 100vw;
-	height: 100vh;
+  height: 100%;
 }
 --
 
