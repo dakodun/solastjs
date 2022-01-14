@@ -182,20 +182,31 @@ void main() {
   }
 
   vaCallback() {
-      GL.enableVertexAttribArray(this.vertexPosition);
-      GL.enableVertexAttribArray(this.vertexColor);
-      GL.enableVertexAttribArray(this.vertexTexture);
-      GL.enableVertexAttribArray(this.vertexFlags);
-
       let byteSize = 24;
-      GL.vertexAttribPointer(this.vertexPosition, 3, GL.FLOAT,
-          false, byteSize, 0);
-      GL.vertexAttribPointer(this.vertexColor, 4, GL.UNSIGNED_BYTE,
-          true, byteSize, 12);
-      GL.vertexAttribPointer(this.vertexTexture, 2, GL.UNSIGNED_SHORT,
-          true, byteSize, 16);
-      GL.vertexAttribPointer(this.vertexFlags, 4, GL.UNSIGNED_BYTE,
-          true, byteSize, 20);
+
+      if (this.vertexPosition != -1) {
+        GL.enableVertexAttribArray(this.vertexPosition);
+        GL.vertexAttribPointer(this.vertexPosition, 3, GL.FLOAT,
+            false, byteSize, 0);
+      }
+
+      if (this.vertexColor != -1) {
+        GL.enableVertexAttribArray(this.vertexColor);
+        GL.vertexAttribPointer(this.vertexColor, 4, GL.UNSIGNED_BYTE,
+            true, byteSize, 12);
+      }
+
+      if (this.vertexTexture != -1) {
+        GL.enableVertexAttribArray(this.vertexTexture);
+        GL.vertexAttribPointer(this.vertexTexture, 2, GL.UNSIGNED_SHORT,
+            true, byteSize, 16);
+      }
+
+      if (this.vertexFlags != -1) {
+        GL.enableVertexAttribArray(this.vertexFlags);
+        GL.vertexAttribPointer(this.vertexFlags, 4, GL.UNSIGNED_BYTE,
+            true, byteSize, 20);
+      }
   }
 
   renderCallback() {
