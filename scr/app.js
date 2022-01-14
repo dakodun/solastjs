@@ -18,7 +18,6 @@ class App {
     this.context = null;
 
     this.canvasPos = new Vec2(0.0, 0.0);
-    this.canvasSize = new Vec2(0.0, 0.0);
 
     this.resourceManager = new ResourceManager();
     this.inputManager = new InputManager();
@@ -32,6 +31,8 @@ class App {
     this.renderPasses = 1;
 
     this.eventQueue = new EventQueue();
+
+    this.fillParent = true;
   }
   
   init(canvasID) {
@@ -158,18 +159,10 @@ class App {
       this.canvasPos.x = offset.x; this.canvasPos.y = offset.y;
     }
 
-    if (this.canvasSize.x != GL.canvas.clientWidth ||
-        this.canvasSize.y != GL.canvas.clientHeight) {
-      
-      this.canvasSize.x = GL.canvas.clientWidth;
-      this.canvasSize.y = GL.canvas.clientHeight;
-
-      this.canvas.width = this.canvasSize.x;
-      this.canvas.height = this.canvasSize.y;
-
-      GL.viewport(0, 0, this.canvas.width, this.canvas.height);
-
-      return true;
+    if (this.fillParent && this.canvas.parentNode) {
+      let rect = this.canvas.parentNode.getBoundingClientRect();
+      this.canvas.width = rect.width;
+      this.canvas.height = rect.height;
     }
 
     return false;
