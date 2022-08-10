@@ -1,3 +1,4 @@
+import InputTouch from './inputtouch.js';
 import Vec2 from './vec2.js';
 
 class InputManager {
@@ -20,6 +21,9 @@ class InputManager {
     }
 
     this.disableBackspace = true;
+
+    this.touches = new Map();
+    this.touchTolerance = 1.0;
 	}
 
   register(app) {
@@ -38,6 +42,15 @@ class InputManager {
         this.handleKeyDown.bind(this), true);
     document.addEventListener("keyup",
         this.handleKeyUp.bind(this), true);
+    
+    document.addEventListener("touchstart",
+        this.handleTouchStart.bind(this), {capture: true, passive: false});
+    document.addEventListener("touchend",
+        this.handleTouchEnd.bind(this), true);
+    document.addEventListener("touchcancel",
+        this.handleTouchCancel.bind(this), true);
+    document.addEventListener("touchmove",
+        this.handleTouchMove.bind(this), true);
   }
 
   process() {
@@ -58,6 +71,15 @@ class InputManager {
       }
       else if (this.keyStates[i] == 3) { // if released...
         this.keyStates[i] = 0; // now up
+      }
+    }
+
+    for (let t of this.touches.values()) {
+      if (t.state == 2) { // if started...
+        t.state = 1; // now in progress
+      }
+      else if (t.state == 3 || t.state == 4) { // if ended or cancelled...
+        this.touches.delete(t.id);
       }
     }
   }
@@ -134,6 +156,80 @@ class InputManager {
     
     return false;
   }
+
+  getTouches() {
+    return this.touches;
+  }
+
+  getTouchStart(touch) {
+    let it = this.touches.get(touch.id);
+    if (it != undefined && it.state == 2) {
+      return true;
+    }
+
+    return false;
+  }
+
+  getTouchEnd(touch) {
+    let it = this.touches.get(touch.id);
+    if (it != undefined && it.state == 3) {
+      return true;
+    }
+
+    return false;
+  }
+
+  getTouchCancel(touch) {
+    let it = this.touches.get(touch.id);
+    if (it != undefined && it.state == 4) {
+      return true;
+    }
+
+    return false;
+  }
+
+  getLocalTouch(touch) {
+    let it = this.touches.get(touch.id);
+    if (it != undefined) {
+      return it.local;
+    }
+
+    return new Vec2(0.0, 0.0);
+  }
+
+  getGlobalTouch(touch) {
+    let it = this.touches.get(touch.id);
+    if (it != undefined) {
+      return it.global;
+    }
+
+    return new Vec2(0.0, 0.0);
+  }
+
+  getTouchMoved(touch) {
+    let it = this.touches.get(touch.id);
+    if (it != undefined) {
+      return it.moved;
+    }
+
+    return true;
+  }
+
+  cancelTouch(touch) {
+    let it = this.touches.get(touch.id);
+    if (it != undefined) {
+      const t = new Touch({
+          identifier: touch.id,
+          target: document
+      });
+
+      const e = new TouchEvent("touchcancel", {
+          changedTouches: [t]
+      });
+
+      document.dispatchEvent(e);
+    }
+  }
   // ...
 
 
@@ -187,6 +283,69 @@ class InputManager {
   handleKeyUp(e) {
     if (this.keyStates[e.keyCode] == 1) {
       this.keyStates[e.keyCode] = 3;
+    }
+  }
+
+  handleTouchStart(e) {
+    e.preventDefault();
+
+    let touches = e.changedTouches;
+    for (let t of touches) {
+      let it = new InputTouch(); {
+        it.id = t.identifier;
+
+        it.localStart.x = t.clientX - this.app.canvasPos.x;
+        it.localStart.y = window.innerHeight -
+            (t.clientY - this.app.canvasPos.y);
+          
+        it.globalStart.x = t.clientX;
+        it.globalStart.y = window.innerHeight - t.clientY;
+
+        it.local.copy(it.localStart);
+        it.global.copy(it.globalStart);
+
+        it.state = 2; // state is started
+      }
+
+      this.touches.set(it.id, it);
+    }
+  }
+
+  handleTouchEnd(e) {
+    let touches = e.changedTouches;
+    for (let t of touches) {
+      let it = this.touches.get(t.identifier);
+      if (it != undefined) {
+        it.state = 3; // state is ended
+      }
+    }
+  }
+
+  handleTouchCancel(e) {
+    let touches = e.changedTouches;
+    for (let t of touches) {
+      let it = this.touches.get(t.identifier);
+      if (it != undefined) {
+        it.state = 4; // state is ended
+      }
+    }
+  }
+
+  handleTouchMove(e) {
+    let touches = e.changedTouches;
+    for (let t of touches) {
+      let it = this.touches.get(t.identifier);
+
+      if (it != undefined) {
+        it.local.x = t.clientX - this.app.canvasPos.x;
+        it.local.y = window.innerHeight -
+            (t.clientY - this.app.canvasPos.y);
+          
+        it.global.x = t.clientX;
+        it.global.y = window.innerHeight - t.clientY;
+
+        it.moved = true;
+      }
     }
   }
   // ...callback functions end
