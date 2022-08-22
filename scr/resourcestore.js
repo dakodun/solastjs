@@ -53,6 +53,16 @@ class ResourceStore {
     throw new EngineError("ee: resource with name '" + name + 
         "' not found");
   }
+
+  resourceExists(name) {
+    for (let res of this.store) {
+      if (res.name == name) {
+        return true;
+      }
+    }
+
+    return false;
+  }
 };
 
 export default ResourceStore;

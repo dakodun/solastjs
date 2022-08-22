@@ -2,9 +2,9 @@ import GL, {glSetContext} from './gl.js'
 import GLStates from './glstates.js'
 import EngineError from './error.js';
 import EventQueue from './eventqueue.js';
-import * as enums from './exportenums.js';
 import InputManager from './inputmanager.js';
 import ResourceManager from './resourcemanager.js';
+import ResourceLoader from './resourceloader.js';
 import SceneManager from './scenemanager.js';
 import Timer from './timer.js';
 import Vec2 from './vec2.js';
@@ -23,6 +23,8 @@ class App {
     this.inputManager = new InputManager();
     this.sceneManager = new SceneManager();
 
+    this.resourceLoader = new ResourceLoader();
+
     this.frameTimer = new Timer();
     this.frameLimit = 0.02;
     this.frameSkip = true;
@@ -37,7 +39,7 @@ class App {
   
   init(canvasID) {
     this.canvas = document.getElementById(canvasID);
-    this.context = this.canvas.getContext("webgl");
+    this.context = this.canvas.getContext("webgl", {alpha: false});
     if (!this.context) {
       throw new EngineError("ee: unable to create webGL context");
     }
@@ -111,7 +113,7 @@ class App {
       this.frameTimer.reset();
     }
 
-    requestAnimationFrame((timestamp) => {this.run();});
+    requestAnimationFrame(() => {this.run();});
   }
 
   render(pass) {

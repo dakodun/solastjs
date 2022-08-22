@@ -116,8 +116,6 @@ varying mediump vec2 fragST;
 varying mediump float fragTextured;
 
 void main() {
-  gl_PointSize = 2.0;
-
   mat4 mvp = vertProj * vertView * vertModel;
   gl_Position = mvp * vec4(vertXYZ, 1.0);
   
@@ -146,9 +144,8 @@ varying mediump float fragTextured;
 void main() {
   vec4 texColour = clamp(texture2D(fragBaseTex, fragST) +
       (1.0 - fragTextured), 0.0, 1.0);
-  // gl_FragColor = texColour * vec4(fragRGBA.r, fragRGBA.g, fragRGBA.b, 1.0);
-  
-  gl_FragColor = vec4(fragRGBA.r, fragRGBA.g, fragRGBA.b, fragRGBA.a);
+  gl_FragColor = texColour * vec4(fragRGBA.r, fragRGBA.g,
+      fragRGBA.b, fragRGBA.a);
 }
 `;
     }

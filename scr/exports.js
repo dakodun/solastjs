@@ -15,6 +15,7 @@ export {default as RenderBatch} from './renderbatch.js';
 export {default as RenderBatchData} from './renderbatchdata.js';
 export {default as RenderBuffer} from './renderbuffer.js';
 export {default as Resource} from './resource.js';
+export {default as ResourceLoader} from './resourceloader.js';
 export {default as ResourceManager} from './resourcemanager.js';
 export {default as ResourceStore} from './resourcestore.js';
 export {default as Scene} from './scene.js';
