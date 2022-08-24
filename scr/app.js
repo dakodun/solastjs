@@ -56,6 +56,8 @@ class App {
           true);
     }
 
+    this.updateCanvas();
+
     this.frameTimer.reset();
   }
 

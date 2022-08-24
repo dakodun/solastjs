@@ -10,6 +10,9 @@ class RenderBatchData {
     this.textureID = null;
     this.renderMode = GL.TRIANGLES;
     this.tag = "";
+
+    this.depthSort = false;
+    this.depth = 0;
   }
 };
 

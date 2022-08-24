@@ -410,6 +410,7 @@ class Shape extends Renderable(Polygon) {
     rbd.indices = this.indices.slice();
     rbd.textureID = texID;
     rbd.renderMode = renderMode;
+    rbd.depth = this.depth;
 
     return [rbd];
   }

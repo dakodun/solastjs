@@ -6,23 +6,31 @@ import VBOSegment from './vbosegment.js'
 
 function renderDataSort(first, second) {
   let result = 1;
+
 	if (first.pass < second.pass) {
 		result = -1;
 	}
 	else if (first.pass == second.pass) {
-    if (first.shader.programID < second.shader.programID) {
+    if (first.depthSort == true && first.depth < second.depth) {
       result = -1;
     }
-    else if (first.shader.programID == second.shader.programID) {
-      if (first.textureID < second.textureID) {
+    else if (first.depthSort == true && first.depth == second.depth ||
+        first.depthSort != true) {
+
+      if (first.shader.programID < second.shader.programID) {
         result = -1;
       }
-      else if (first.textureID == second.textureID) {
-        if (first.renderMode < second.renderMode) {
+      else if (first.shader.programID == second.shader.programID) {
+        if (first.textureID < second.textureID) {
           result = -1;
         }
-        else if (first.renderMode == second.renderMode) {
-          result = 0;
+        else if (first.textureID == second.textureID) {
+          if (first.renderMode < second.renderMode) {
+            result = -1;
+          }
+          else if (first.renderMode == second.renderMode) {
+            result = 0;
+          }
         }
       }
     }
@@ -35,6 +43,8 @@ class RenderBatch {
 	constructor() {
     this.renderData = new Array();
 		this.vbo = new VBO();
+
+    this.depthSort = new Array();
 	}
 
   delete() {
@@ -48,6 +58,10 @@ class RenderBatch {
     else {
       this.vbo.init();
 
+      if (this.depthSort[pass] == undefined) {
+        this.depthSort[pass] = false;
+      }
+
       let renderableData = renderable.getRenderBatchData();
       for (let r of renderableData) {
         if (r.shader == null) {
@@ -55,6 +69,11 @@ class RenderBatch {
         }
         
         r.pass = pass;
+
+        if (this.depthSort[pass]) {
+          r.depthSort = true;
+        }
+
         this.renderData.push(r);
       }
     }
@@ -139,6 +158,16 @@ class RenderBatch {
 
   draw(pass) {
     this.vbo.draw(pass);
+  }
+
+  setDepthSort(pass, enabled) {
+    if (this.depthSort[pass] != enabled) {
+      for (let r of this.renderData) {
+        r.depthSort = enabled;
+      }
+
+      this.depthSort[pass] = enabled;
+    }
   }
 };
 
