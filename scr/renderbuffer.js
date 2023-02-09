@@ -1,12 +1,12 @@
 import GL from './gl.js'
 
 class RenderBuffer {
-	constructor() {
-		this.renderBufferID = null;
+  constructor() {
+    this.renderBufferID = null;
 
     this.width = 1;
     this.height = 1;
-	}
+  }
 
   init() {
     if (this.renderBufferID == null) {

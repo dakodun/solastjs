@@ -9,8 +9,8 @@ class Shader {
     this.fragSrc = null;
     
     this.projectionMatrixLocation = null;
-		this.viewMatrixLocation = null;
-		this.modelMatrixLocation = null;
+    this.viewMatrixLocation = null;
+    this.modelMatrixLocation = null;
 
     this.textureLocation = null;
 
@@ -159,14 +159,14 @@ void main() {
 
     this.projectionMatrixLocation =
         GL.getUniformLocation(this.programID, "vertProj");
-		this.viewMatrixLocation =
+    this.viewMatrixLocation =
         GL.getUniformLocation(this.programID, "vertView");
-		this.modelMatrixLocation =
+    this.modelMatrixLocation =
         GL.getUniformLocation(this.programID, "vertModel");
 
     this.textureLocation =
         GL.getUniformLocation(this.programID, "fragBaseTex");
-	  GL.uniform1i(this.textureLocation, 0);
+    GL.uniform1i(this.textureLocation, 0);
     
     this.vertexPosition =
         GL.getAttribLocation(this.programID, "vertXYZ");

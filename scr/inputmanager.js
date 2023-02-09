@@ -2,10 +2,10 @@ import InputTouch from './inputtouch.js';
 import Vec2 from './vec2.js';
 
 class InputManager {
-	constructor() {
+  constructor() {
     this.app = null;
 
-		this.mouseStates = new Array();
+    this.mouseStates = new Array();
     for (let i = 0; i < 3; ++i) {
       this.mouseStates[i] = 0;
     }
@@ -24,7 +24,7 @@ class InputManager {
 
     this.touches = new Map();
     this.touchTolerance = 1.0;
-	}
+  }
 
   register(app) {
     this.app = app;
@@ -261,11 +261,11 @@ class InputManager {
 
   handleMouseMove(e) {
     this.localMouse.x = e.clientX - this.app.canvasPos.x;
-	  this.localMouse.y = window.innerHeight -
+    this.localMouse.y = window.innerHeight -
         (e.clientY - this.app.canvasPos.y);
 
     this.globalMouse.x = e.clientX;
-	  this.globalMouse.y = window.innerHeight - e.clientY;
+    this.globalMouse.y = window.innerHeight - e.clientY;
   }
 
   handleKeyDown(e) {

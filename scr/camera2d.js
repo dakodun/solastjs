@@ -4,7 +4,7 @@ import Vec2 from './vec2.js';
 import Vec3 from './vec3.js';
 
 class Camera2D {
-	constructor() {
+  constructor() {
     this.view = new Mat4();
     this.update = false;
 
@@ -12,9 +12,9 @@ class Camera2D {
     this.origin = new Vec2(0.0, 0.0);
     this.rotation = 0.0;
     this.zoom = 1.0;
-	}
+  }
 
-	copy(other) {
+  copy(other) {
     this.view = other.view.getCopy();
     this.update = other.update;
 
@@ -33,17 +33,17 @@ class Camera2D {
     // create an identity matrix and place at current position
     let mat = new Mat3();
     mat.arr = [     1.0,             0.0, 0.0,
-		                0.0,             1.0, 0.0,
-		    this.position.x, this.position.y, 1.0
+                    0.0,             1.0, 0.0,
+        this.position.x, this.position.y, 1.0
     ];
 
     // calculate position offset accounting for
     // rotation but not scale
-	  mat.rotate(this.rotation);
-	  let offset = mat.multVec3(
+    mat.rotate(this.rotation);
+    let offset = mat.multVec3(
         new Vec3(-translation.x, -translation.y, 1.0)
     );
-	  this.position.x += offset.x; this.position.y += offset.y;
+    this.position.x += offset.x; this.position.y += offset.y;
 
     this.update = true;
   }

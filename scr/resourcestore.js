@@ -1,7 +1,7 @@
 class ResourceStore {
-	constructor() {
-		this.store = new Map();
-	}
+  constructor() {
+    this.store = new Map();
+  }
 
   addResource(name, resource) {
     this.store.set(name, resource);

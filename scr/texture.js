@@ -1,12 +1,12 @@
 import GL from './gl.js'
 
 class Texture {
-	constructor() {
-		this.textureID = null;
+  constructor() {
+    this.textureID = null;
 
     this.width = 1;
     this.height = 1;
-	}
+  }
 
   init() {
     if (this.textureID == null) {

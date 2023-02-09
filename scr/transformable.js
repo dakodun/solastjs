@@ -6,34 +6,34 @@ const Transformable = (Transformable) => class extends Transformable {
     super();
 
     this.position = new Vec2(0.0, 0.0);
-		this.origin = new Vec2(0.0, 0.0);
-		
-		this.transMat = new Mat3();
-		this.scale = new Vec2(1.0, 1.0);
-		this.rotation = 0;
-		
-		this.localBox = new Array(
+    this.origin = new Vec2(0.0, 0.0);
+    
+    this.transMat = new Mat3();
+    this.scale = new Vec2(1.0, 1.0);
+    this.rotation = 0;
+    
+    this.localBox = new Array(
         new Vec2(Number.POSITIVE_INFINITY, Number.POSITIVE_INFINITY),
         new Vec2(Number.NEGATIVE_INFINITY, Number.NEGATIVE_INFINITY)
     );
 
-		this.globalBox = new Array(
+    this.globalBox = new Array(
         new Vec2(Number.POSITIVE_INFINITY, Number.POSITIVE_INFINITY),
         new Vec2(Number.NEGATIVE_INFINITY, Number.NEGATIVE_INFINITY)
     );
-		
-	  this.localMask = new Array();
-		this.globalMask = new Array();
+    
+    this.localMask = new Array();
+    this.globalMask = new Array();
   }
 
   copy(other) {
     this.position = other.position.getCopy();
-		this.origin = other.origin.getCopy();
-		
-		this.transMat = other.transMat.getCopy();
-		this.scale = other.scale.getCopy();
-		this.rotation = other.rotation;
-		
+    this.origin = other.origin.getCopy();
+    
+    this.transMat = other.transMat.getCopy();
+    this.scale = other.scale.getCopy();
+    this.rotation = other.rotation;
+    
     this.localBox.splice(0, this.localBox.length);
     for (let i of other.localBox) {
       this.localBox.push(i);
@@ -71,41 +71,41 @@ const Transformable = (Transformable) => class extends Transformable {
     this.position.copy(position);
 
     this.updateGlobalBox();
-	  this.updateGlobalMask();
+    this.updateGlobalMask();
   }
 
   setOrigin(origin) {
     this.origin.copy(origin);
 
     this.updateGlobalBox();
-	  this.updateGlobalMask();
+    this.updateGlobalMask();
   }
 
   setTransMat(transMat) {
     this.transMat.copy(transMat);
 
     this.updateGlobalBox();
-	  this.updateGlobalMask();
+    this.updateGlobalMask();
   }
 
   setScale(scale) {
     this.scale.copy(scale);
 
     this.updateGlobalBox();
-	  this.updateGlobalMask();
+    this.updateGlobalMask();
   }
 
   setRotation(rotation) {
     this.rotation = rotation;
 
     this.updateGlobalBox();
-	  this.updateGlobalMask();
+    this.updateGlobalMask();
   }
 
   setLocalMask(mask) {
     if (newMask == undefined) {
       this.createLocalMask();
-	    this.updateGlobalMask();
+      this.updateGlobalMask();
     }
     else {
       this.localMask.splice(0, this.localMask.length);

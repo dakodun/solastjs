@@ -1,8 +1,8 @@
 class Timer {
-	constructor() {
-		this.startTime = 0;
-  	this.reset();
-	}
+  constructor() {
+    this.startTime = 0;
+    this.reset();
+  }
 
   copy(other) {
     this.startTime = other.startTime;

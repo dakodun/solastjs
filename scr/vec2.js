@@ -1,5 +1,5 @@
 class Vec2 {
-	constructor(x, y) {
+  constructor(x, y) {
     this.x = 0.0;
     if (x != undefined) {
       this.x = x;
@@ -9,11 +9,11 @@ class Vec2 {
     if (y != undefined) {
       this.y = y;
     }
-	}
+  }
 
-	copy(other) {
+  copy(other) {
     this.x = other.x;
-		this.y = other.y;
+    this.y = other.y;
   }
 
   getCopy() {

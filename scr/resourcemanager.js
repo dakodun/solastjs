@@ -1,13 +1,13 @@
 import ResourceStore from './resourcestore.js';
 
 class ResourceManager {
-	constructor() {
+  constructor() {
     this.stores = new Map();
 
     this.addStore("image");
     this.addStore("texture");
     this.addStore("soundBuffer");
-	}
+  }
 
   addStore(name) {
     let s = this.stores.set(name, new ResourceStore());

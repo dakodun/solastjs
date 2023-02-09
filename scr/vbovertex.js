@@ -1,5 +1,5 @@
 class VBOVertex {
-	constructor() {
+  constructor() {
     this.x = 0.0;
     this.y = 0.0;
     this.z = 0.0;
@@ -16,9 +16,9 @@ class VBOVertex {
     this.flag2 = 0;
     this.flag3 = 0;
     this.flag4 = 0;
-	}
+  }
 
-	copy(other) {
+  copy(other) {
     this.x = other.x;
     this.y = other.y;
     this.z = other.z;

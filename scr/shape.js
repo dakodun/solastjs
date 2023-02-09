@@ -10,7 +10,7 @@ import Vec3 from './vec3.js';
 import VBOVertex from './vbovertex.js';
 
 class Shape extends Renderable(Polygon) {
-	constructor() {
+  constructor() {
     super();
 
     this.indices = new Array();
@@ -141,7 +141,7 @@ class Shape extends Renderable(Polygon) {
 
       let min = new Vec2((s * increment.x) + (s * spacing.x),
           ((t + 1) * increment.y) + (t * spacing.y));
-			let max = new Vec2(((s + 1) * increment.x) + (s * spacing.x),
+      let max = new Vec2(((s + 1) * increment.x) + (s * spacing.x),
           (t * increment.y) + (t * spacing.y));
 
       let coords = [min, max];

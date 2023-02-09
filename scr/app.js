@@ -87,8 +87,8 @@ class App {
     }
 
     for (let i = 0; i < this.renderPasses; ++i) {
-			this.render(i);
-		}
+      this.render(i);
+    }
     
     this.input();
     this.inputManager.process();
