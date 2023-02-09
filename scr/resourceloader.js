@@ -1,12 +1,18 @@
+import SoundBuffer from './soundbuffer.js';
+
 class ResourceLoader {
 	constructor() {
 		this.status = 0;
+
+    this.ac = new OfflineAudioContext(1, 8000, 8000);
 	}
 
   loadImage(src, width, height) {
     let img = new Image();
-    img.src = src;
 
+    ++this.status;
+    img.src = src;
+    
     if (width != undefined) {
       img.width = width;
     }
@@ -15,15 +21,28 @@ class ResourceLoader {
       img.height = height;
     }
 
-    ++this.status;
-    img.addEventListener("load",
-        (e) => {--this.status;}, true);
-    img.addEventListener("abort",
-        (e) => {--this.status;}, true);
-    img.addEventListener("error",
-        (e) => {--this.status;}, true);
+    img.decode().then(() => {
+      --this.status;
+    })
 
     return img;
+  }
+
+  loadSoundBuffer(src) {
+    let soundBuffer = new SoundBuffer();
+
+    ++this.status;
+    fetch(src).then((response) => {
+      return response.arrayBuffer();
+    }).then((arrBuffer) => {
+      this.ac.decodeAudioData(arrBuffer, (buffer) => {
+        soundBuffer.buffer = buffer;
+      }).then(() => {
+        --this.status;
+      })
+    });
+
+    return soundBuffer;
   }
 
   isWorking() {

@@ -1,3 +1,4 @@
+import AC, {acSetContext} from './ac.js'
 import GL, {glSetContext} from './gl.js'
 import GLStates from './glstates.js'
 import EngineError from './error.js';
@@ -58,7 +59,15 @@ class App {
 
     this.updateCanvas();
 
+    glSetContext(this.context);
+
     this.frameTimer.reset();
+  }
+
+  // needs to be called separately from other init upon a user input
+  initAudio() {
+    this.audioContext = new AudioContext();
+    acSetContext(this.audioContext);
   }
 
   delete() {

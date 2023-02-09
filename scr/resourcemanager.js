@@ -6,15 +6,18 @@ class ResourceManager {
 
     this.addStore("image");
     this.addStore("texture");
+    this.addStore("soundBuffer");
 	}
 
   addStore(name) {
     let s = this.stores.set(name, new ResourceStore());
-    return this.getStore(name);
+    return s;
   }
 
   removeStore(name) {
-    if (name != "image" && name != "texture") {
+    if (name != "image" && name != "texture" &&
+        name != "soundBuffer") {
+      
       return this.stores.delete(name);
     }
     else {
@@ -32,6 +35,10 @@ class ResourceManager {
 
   getTextureStore() {
     return this.stores.get("texture");
+  }
+
+  getSoundBufferStore() {
+    return this.stores.get("soundBuffer");
   }
 };
 
