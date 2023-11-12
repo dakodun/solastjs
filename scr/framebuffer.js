@@ -1,9 +1,9 @@
 import GL from './gl.js'
 
 class FrameBuffer {
-  constructor() {
-    this.frameBufferID = null;
-  }
+	constructor() {
+		this.frameBufferID = null;
+	}
 
   init() {
     if (this.frameBufferID == null) {

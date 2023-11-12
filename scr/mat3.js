@@ -2,12 +2,12 @@ import EngineError from './error.js';
 import Vec3 from './vec3.js';
 
 class Mat3 {
-  constructor() {
+	constructor() {
     this.arr = new Array();
     this.identity();
-  }
+	}
 
-  copy(other) {
+	copy(other) {
     this.arr = other.arr.slice();
   }
 
@@ -27,7 +27,7 @@ class Mat3 {
     let result = new Mat3();
 
     for (var x = 0; x < 3; ++x) {
-      for (var y = 0; y < 3; ++y) {
+		  for (var y = 0; y < 3; ++y) {
         // dot product of row (x * 3) vs column (y)
         result.arr[(x * 3) + y] = (this.arr[(x * 3)] * other.arr[y]) +
           (this.arr[(x * 3) + 1] * other.arr[y + 3]) +
@@ -110,7 +110,7 @@ class Mat3 {
     let result = new Mat3();
 
     for (var x = 0; x < 3; ++x) {
-      for (var y = 0; y < 3; ++y) {
+		  for (var y = 0; y < 3; ++y) {
         // dot product of row (x * 3) vs column (y)
         result.arr[(x * 3) + y] = (this.arr[(x * 3)] * other.arr[y]) +
           (this.arr[(x * 3) + 1] * other.arr[y + 3]) +

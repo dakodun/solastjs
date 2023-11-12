@@ -6,6 +6,12 @@ class SizeEvent extends Event {
     super();
 
     this.type = enums.event.size;
+    
+    this.width = 0;
+    this.height = 0;
+
+    this.oldWidth = 0;
+    this.oldHeight = 0;
   }
 
   copy(other) {

@@ -1,7 +1,7 @@
 class Sound {
-  constructor() {
+	constructor() {
     this.sndBuffer = null;
-  }
+	}
 
   play() {
     let snd = AC.createBufferSource();

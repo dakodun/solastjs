@@ -1,11 +1,11 @@
 import SoundBuffer from './soundbuffer.js';
 
 class ResourceLoader {
-  constructor() {
-    this.status = 0;
+	constructor() {
+		this.status = 0;
 
     this.ac = new OfflineAudioContext(1, 8000, 8000);
-  }
+	}
 
   loadImage(src, width, height) {
     let img = new Image();

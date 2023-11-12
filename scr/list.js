@@ -1,17 +1,17 @@
 class ListNode {
-  constructor(data) {
+	constructor(data) {
     this.prev = null;
-    this.next = null;
+		this.next = null;
 
     this.data = data;
-  }
+	}
 };
 
 class List {
-  constructor() {
-    this.front = null;
+	constructor() {
+		this.front = null;
     this.last = null;
-  }
+	}
 
   // add a node containing 'data' to the end of the list
   push(data) {

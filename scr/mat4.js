@@ -1,12 +1,12 @@
 import EngineError from './error.js';
 
 class Mat4 {
-  constructor() {
+	constructor() {
     this.arr = new Array();
     this.identity();
-  }
+	}
 
-  copy(other) {
+	copy(other) {
     this.arr = other.arr.slice();
   }
 
@@ -59,7 +59,7 @@ class Mat4 {
     let result = new Mat4();
 
     for (var x = 0; x < 4; ++x) {
-      for (var y = 0; y < 4; ++y) {
+		  for (var y = 0; y < 4; ++y) {
         // dot product of row (x * 4) vs column (y)
         result.arr[(x * 4) + y] = (this.arr[(x * 4)] * other.arr[y]) +
           (this.arr[(x * 4) + 1] * other.arr[y + 4]) +

@@ -1,7 +1,7 @@
 import Vec2 from './vec2.js';
 
 class InputTouch {
-  constructor() {
+	constructor() {
     this.id = -1;
 
     this.state = 0;
@@ -13,7 +13,7 @@ class InputTouch {
     this.global = new Vec2(0.0, 0.0);
 
     this.moved = false;
-  }
+	}
 };
 
 export default InputTouch;

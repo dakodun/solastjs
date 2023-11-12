@@ -3,12 +3,12 @@ import GL from './gl.js'
 import VBOSegment from './vbosegment.js'
 
 class VBO {
-  constructor() {
+	constructor() {
     this.vertBufferID = null;
     this.indexBufferID = null;
 
     this.segments = new Map();
-  }
+	}
 
   init() {
     if (this.vertBufferID == null) {

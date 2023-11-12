@@ -10,7 +10,7 @@ import Vec3 from './vec3.js';
 import VBOVertex from './vbovertex.js';
 
 class Shape extends Renderable(Polygon) {
-  constructor() {
+	constructor() {
     super();
 
     this.indices = new Array();
@@ -141,7 +141,7 @@ class Shape extends Renderable(Polygon) {
 
       let min = new Vec2((s * increment.x) + (s * spacing.x),
           ((t + 1) * increment.y) + (t * spacing.y));
-      let max = new Vec2(((s + 1) * increment.x) + (s * spacing.x),
+			let max = new Vec2(((s + 1) * increment.x) + (s * spacing.x),
           (t * increment.y) + (t * spacing.y));
 
       let coords = [min, max];
@@ -334,6 +334,30 @@ class Shape extends Renderable(Polygon) {
         if (this.indices.length == 0) {
           for (let i = 0; i < this.verts.length; ++i) {
             this.indices.push(i);
+          }
+        }
+
+        break;
+      case GL.LINES :
+        if (this.indices.length == 0 && this.verts.length > 1) {
+          for (let i = 0; i < this.verts.length; ++i) {
+            this.indices.push(i);
+          }
+        }
+
+        break;
+      case GL.LINE_LOOP :
+        renderMode = GL.LINES; // manually loop lines
+
+        if (this.indices.length == 0 && this.verts.length > 1) {
+          for (let i = 0; i < this.verts.length; ++i) {
+            this.indices.push(i);
+            if (i + 1 < this.verts.length) {
+              this.indices.push(i + 1);
+            }
+            else {
+              this.indices.push(0);
+            }
           }
         }
 

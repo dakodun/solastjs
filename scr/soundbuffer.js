@@ -1,7 +1,7 @@
 class SoundBuffer {
-  constructor() {
+	constructor() {
     this.buffer = null;
-  }
+	}
 };
 
 export default SoundBuffer;

@@ -40,7 +40,7 @@ class App {
   
   init(canvasID) {
     this.canvas = document.getElementById(canvasID);
-    this.context = this.canvas.getContext("webgl", {alpha: false});
+    this.context = this.canvas.getContext("webgl2", {alpha: false});
     if (!this.context) {
       throw new EngineError("ee: unable to create webGL context");
     }
@@ -76,8 +76,18 @@ class App {
   }
 
   run() {
-    if (this.updateCanvas()) {
-      this.eventQueue.push(new SizeEvent());
+    let updateCanvas = this.updateCanvas();
+    if (updateCanvas[0]) {
+      let sizeEvent = new SizeEvent();
+      sizeEvent.width = updateCanvas[1];
+      sizeEvent.height = updateCanvas[2];
+      sizeEvent.oldWidth = this.canvas.width;
+      sizeEvent.oldHeight = this.canvas.height;
+
+      this.canvas.width = updateCanvas[1];
+      this.canvas.height = updateCanvas[2];
+
+      this.eventQueue.push(sizeEvent);
     }
 
     while (!this.eventQueue.empty()) {
@@ -87,8 +97,8 @@ class App {
     }
 
     for (let i = 0; i < this.renderPasses; ++i) {
-      this.render(i);
-    }
+			this.render(i);
+		}
     
     this.input();
     this.inputManager.process();
@@ -174,11 +184,15 @@ class App {
 
     if (this.fillParent && this.canvas.parentNode) {
       let rect = this.canvas.parentNode.getBoundingClientRect();
-      this.canvas.width = rect.width;
-      this.canvas.height = rect.height;
+      let width = Math.trunc(rect.width);
+      let height = Math.trunc(rect.height);
+
+      if (width != this.canvas.width || height != this.canvas.height) {
+        return [true, width, height];
+      }
     }
 
-    return false;
+    return [false];
   }
 
   handleEvent(e) {

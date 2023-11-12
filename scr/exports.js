@@ -9,6 +9,9 @@ export {default as FrameBuffer} from './framebuffer.js';
 
 export {default as InputManager} from './inputmanager.js';
 
+export {default as LayoutContainer} from './layoutcontainer.js';
+export {default as LayoutDivision} from './layoutdivision.js';
+export {default as LayoutElement} from './layoutelement.js';
 export {default as List} from './list.js';
 
 export {default as Mat4} from './mat4.js';

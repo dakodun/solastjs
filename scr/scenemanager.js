@@ -1,12 +1,12 @@
 import Scene from './scene.js'
 
 class SceneManager {
-  constructor() {
-    this.store = new Array();
-    
-    this.current = null;
-    this.next = null;
-  }
+	constructor() {
+		this.store = new Array();
+		
+		this.current = null;
+		this.next = null;
+	}
 
   delete() {
     if (this.current) {
@@ -18,14 +18,14 @@ class SceneManager {
     }
     
     for (let s of this.store) {
-      s.delete();
-    }
+			s.delete();
+		}
   }
   
   // queue up a scene change to a scene of type 'scene'
   //   optionally indicate the current scene should be stored on change
   //   optionally supply the name of a previously stored scene
-  requestChange(scene, save, name) {
+	requestChange(scene, save, name) {
     let newScene = scene;
 
     if (name != undefined) {
@@ -44,11 +44,11 @@ class SceneManager {
     if (this.current && save != undefined) {
       this.current.saved = save;
     }
-  }
+	}
   
   // perform a previously queued scene change
-  change() {
-    if (this.next) {
+	change() {
+		if (this.next) {
       if (this.current) {
         this.current.onLeave(this.current.saved);
 
@@ -71,26 +71,26 @@ class SceneManager {
       }
 
       return true;
-    }
+		}
 
     return false;
-  }
-  
-  currentExists() {
-    return (this.current != null);
+	}
+	
+	currentExists() {
+		return (this.current != null);
   }
   
   getCurrent() {
-    return this.current;
-  }
-  
-  nextExists() {
-    return (this.next != null);
-  }
-  
-  getNext() {
-    return this.next;
-  }
+		return this.current;
+	}
+	
+	nextExists() {
+		return (this.next != null);
+	}
+	
+	getNext() {
+		return this.next;
+	}
 };
 
 export default SceneManager;

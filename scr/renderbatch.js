@@ -7,10 +7,10 @@ import VBOSegment from './vbosegment.js'
 function renderDataSort(first, second) {
   let result = 1;
 
-  if (first.pass < second.pass) {
-    result = -1;
-  }
-  else if (first.pass == second.pass) {
+	if (first.pass < second.pass) {
+		result = -1;
+	}
+	else if (first.pass == second.pass) {
     if (first.depthSort == true && first.depth < second.depth) {
       result = -1;
     }
@@ -40,18 +40,18 @@ function renderDataSort(first, second) {
 };
 
 class RenderBatch {
-  constructor() {
+	constructor() {
     this.renderData = new Array();
-    this.vbo = new VBO();
+		this.vbo = new VBO();
 
     this.depthSort = new Array();
-  }
+	}
 
   delete() {
     this.vbo.delete();
   }
-  
-  add(renderable, pass) {
+	
+	add(renderable, pass) {
     if (pass == undefined) {
       this.add(renderable, 0);
     }

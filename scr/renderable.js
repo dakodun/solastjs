@@ -17,7 +17,7 @@ const Renderable = (Renderable) => class extends Renderable {
  copy(other) {
     super.copy(other);
     this.color = other.color.getCopy();
-    this.alpha = other.alpha;
+		this.alpha = other.alpha;
     this.depth = other.depth;
 
     this.renderMode = other.renderMode;

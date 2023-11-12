@@ -1,11 +1,12 @@
 import InputTouch from './inputtouch.js';
 import Vec2 from './vec2.js';
+import * as enums from './inputenums.js';
 
 class InputManager {
-  constructor() {
+	constructor() {
     this.app = null;
 
-    this.mouseStates = new Array();
+		this.mouseStates = new Array();
     for (let i = 0; i < 3; ++i) {
       this.mouseStates[i] = 0;
     }
@@ -15,16 +16,16 @@ class InputManager {
     this.wheelDelta = 0
     this.disableMouseWheel = false;
 
-    this.keyStates = new Array();
-    for (let i = 0; i < 255; ++i) {
-      this.keyStates[i] = 0;
+    this.keyStates = new Map();
+    for (const [key, value] of Object.entries(enums.key)) {
+      this.keyStates.set(value, 0);
     }
 
     this.disableBackspace = true;
 
     this.touches = new Map();
     this.touchTolerance = 1.0;
-  }
+	}
 
   register(app) {
     this.app = app;
@@ -65,12 +66,12 @@ class InputManager {
 
     this.wheelDelta = 0;
 
-    for (let i = 0; i < 255; ++i) {
-      if (this.keyStates[i] == 2) { // if pressed...
-        this.keyStates[i] = 1; // now down
+    for (const [key, value] of this.keyStates) {
+      if (value == 2) { // if pressed...
+        this.keyStates.set(key, 1); // now down
       }
-      else if (this.keyStates[i] == 3) { // if released...
-        this.keyStates[i] = 0; // now up
+      else if (value == 3) { // if released...
+        this.keyStates.set(key, 0); // now up
       }
     }
 
@@ -128,8 +129,10 @@ class InputManager {
   }
 
   getKeyDown(key) {
-    if (key >= 0 && key <= 255) {
-      if (this.keyStates[key] == 1 || this.keyStates[key] == 2) {
+    if (this.keyStates.has(key)) {
+      if (this.keyStates.get(key) == 1 ||
+          this.keyStates.get(key) == 2) {
+        
         return true;
       }
     }
@@ -138,8 +141,8 @@ class InputManager {
   }
 
   getKeyPressed(key) {
-    if (key >= 0 && key <= 255) {
-      if (this.keyStates[key] == 2) {
+    if (this.keyStates.has(key)) {
+      if (this.keyStates.get(key) == 2) {
         return true;
       }
     }
@@ -148,8 +151,8 @@ class InputManager {
   }
 
   getKeyReleased(key) {
-    if (key >= 0 && key <= 255) {
-      if (this.keyStates[key] == 3) {
+    if (this.keyStates.has(key)) {
+      if (this.keyStates.get(key) == 3) {
         return true;
       }
     }
@@ -261,19 +264,19 @@ class InputManager {
 
   handleMouseMove(e) {
     this.localMouse.x = e.clientX - this.app.canvasPos.x;
-    this.localMouse.y = window.innerHeight -
+	  this.localMouse.y = window.innerHeight -
         (e.clientY - this.app.canvasPos.y);
 
     this.globalMouse.x = e.clientX;
-    this.globalMouse.y = window.innerHeight - e.clientY;
+	  this.globalMouse.y = window.innerHeight - e.clientY;
   }
 
   handleKeyDown(e) {
-    if (this.keyStates[e.keyCode] == 0) {
-      this.keyStates[e.keyCode] = 2;
+    if (this.keyStates.get(e.code) == 0) {
+      this.keyStates.set(e.code, 2);
     }
-    
-    if (e.keyCode == 8) {
+
+    if (e.code == "Backspace") {
       if (this.disableBackspace == true) {
         e.preventDefault();
       }
@@ -281,8 +284,8 @@ class InputManager {
   }
 
   handleKeyUp(e) {
-    if (this.keyStates[e.keyCode] == 1) {
-      this.keyStates[e.keyCode] = 3;
+    if (this.keyStates.get(e.code) == 1) {
+      this.keyStates.set(e.code, 3);
     }
   }
 

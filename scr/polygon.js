@@ -137,7 +137,7 @@ class Polygon extends Transformable(Object) {
         new Vec2(Number.NEGATIVE_INFINITY, Number.NEGATIVE_INFINITY)
     );
 
-    this.globalBox = new Array(
+		this.globalBox = new Array(
         new Vec2(Number.POSITIVE_INFINITY, Number.POSITIVE_INFINITY),
         new Vec2(Number.NEGATIVE_INFINITY, Number.NEGATIVE_INFINITY)
     );
@@ -154,11 +154,11 @@ class Polygon extends Transformable(Object) {
     let iter = 0;
     let inc = 360 / res;
     while (iter < 360) {
-      let angle = iter * pi180;
-      this.pushVert(new Vec2(Math.cos(angle) * diameter,
+			let angle = iter * pi180;
+			this.pushVert(new Vec2(Math.cos(angle) * diameter,
           Math.sin(angle) * diameter));
       iter += inc;
-    }
+		}
   }
 
   makePolyLine(verts, halfWidth) {
@@ -170,7 +170,7 @@ class Polygon extends Transformable(Object) {
         new Vec2(Number.NEGATIVE_INFINITY, Number.NEGATIVE_INFINITY)
     );
 
-    this.globalBox = new Array(
+		this.globalBox = new Array(
         new Vec2(Number.POSITIVE_INFINITY, Number.POSITIVE_INFINITY),
         new Vec2(Number.NEGATIVE_INFINITY, Number.NEGATIVE_INFINITY)
     );

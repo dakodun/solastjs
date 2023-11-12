@@ -1,5 +1,5 @@
 class Vec3 {
-  constructor(x, y, z) {
+	constructor(x, y, z) {
     this.x = 0.0;
     if (x != undefined) {
       this.x = x;
@@ -14,11 +14,11 @@ class Vec3 {
     if (z != undefined) {
       this.z = z;
     }
-  }
+	}
 
-  copy(other) {
+	copy(other) {
     this.x = other.x;
-    this.y = other.y;
+		this.y = other.y;
     this.z = other.z;
   }
 
