@@ -7,20 +7,12 @@
 # to the alpine container with vscode via the dev containers extension
 # and then open folder /workspace/solastjs
 
-echo "creating empty pod (sol-pod)..."
 podman pod create --name sol-pod --volume ../:/workspace/solastjs --publish 8080:80
-echo "...done"
 
-echo "creating and attaching alpine container (sol-alpine)..."
 podman pull docker.io/alpine:latest
 podman build --file alpine.containerfile --tag localhost/sol-alpine-img .
 podman run -dt --pod sol-pod --name sol-alpine localhost/sol-alpine-img
-echo "...done"
 
-echo "creating and attaching nginx container (sol-nginx)..."
 podman pull docker.io/nginx:latest
 podman build --file nginx.containerfile --tag localhost/sol-nginx-img .
 podman run -dt --pod sol-pod --name sol-nginx localhost/sol-nginx-img
-echo "...done"
-
-echo "finished"
