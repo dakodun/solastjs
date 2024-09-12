@@ -5,7 +5,6 @@ class GLStates_ {
 	constructor() {
     this.projectionMatrix = new Mat4();
 		this.viewMatrix = new Mat4();
-		this.modelMatrix = new Mat4();
 
     this.defaultShader = new Shader();
 	}

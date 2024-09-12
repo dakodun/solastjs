@@ -1,7 +1,7 @@
 import Mat3 from './mat3.js';
 import Vec2 from './vec2.js';
 
-const Transformable = (Transformable) => class extends Transformable {
+const Transformable2D = (Transformable2D) => class extends Transformable2D {
   constructor() {
     super();
 
@@ -118,4 +118,4 @@ const Transformable = (Transformable) => class extends Transformable {
   }
 };
 
-export default Transformable;
+export default Transformable2D;

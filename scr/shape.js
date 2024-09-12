@@ -387,16 +387,19 @@ class Shape extends Renderable(Polygon) {
     transMat.translate(this.origin);
     transMat.rotate(this.rotation);
     transMat.scale(this.scale);
-    transMat.translate(this.origin.negate());
+    transMat.translate(this.origin.getNegated());
 
     let vboVerts = new Array();
     let invMinMax = new Vec2(1 / (this.localBox[1].x - this.localBox[0].x),
         1 / (this.localBox[1].y - this.localBox[0].y));
     
+    // pad the color array to match the number of vertices
+    let diff = this.verts.length - this.colors.length;
     let colors = this.colors.slice();
-    let diff = this.verts.length - colors.length;
-    for (let i = 0; i < diff; ++i) {
-      colors.push(this.color.getCopy());
+    if (diff > 0) {
+      colors = colors.concat(
+        new Array(diff).fill(this.color.getCopy())
+      );
     }
 
     for (let i = 0; i < this.verts.length; ++i) {
@@ -406,10 +409,23 @@ class Shape extends Renderable(Polygon) {
       let vboVert = new VBOVertex();
 
       vboVert.x = (transMat.arr[0] * v.x) + (transMat.arr[3] * v.y) +
-          (transMat.arr[6] * 1.0);
+          transMat.arr[6];
       vboVert.y = (transMat.arr[1] * v.x) + (transMat.arr[4] * v.y) +
-          (transMat.arr[7] * 1.0);
+          transMat.arr[7];
       vboVert.z = this.depth;
+
+      // es 1.0
+      let normVec = transMat.getMultVec(new Vec4(0.0, 0.0, 1.0, 0.0));
+      normVec.normalize();
+      vboVert.nx = normVec.x;
+      vboVert.ny = normVec.y;
+      vboVert.nz = normVec.z;
+
+      // es 3.0
+      /* vboVert.normal = vboVert.normal | (0 << 30); // padding
+      vboVert.normal = vboVert.normal | (511 << 20); // z
+      vboVert.normal = vboVert.normal | (0 << 10); // y
+      vboVert.normal = vboVert.normal | (0 << 0); // x */
 
       vboVert.r = c.x; vboVert.g = c.y;
       vboVert.b = c.z; vboVert.a = this.alpha;
@@ -417,6 +433,7 @@ class Shape extends Renderable(Polygon) {
       let ratio = new Vec2((v.x - this.localBox[0].x)  * invMinMax.x,
           (v.y - this.localBox[0].y)  * invMinMax.y);
 
+      // pack floating point values into unsigned short
       vboVert.s = (((1 - ratio.x) * texRect[0].x) +
           (ratio.x * texRect[1].x)) * 65535;
       vboVert.t = (((1 - ratio.y) * texRect[0].y) +

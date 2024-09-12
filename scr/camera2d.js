@@ -96,7 +96,7 @@ class Camera2D {
       transMat.translate(offset);
       transMat.rotate(this.rotation);
       transMat.scale(new Vec2(this.zoom, this.zoom));
-      transMat.translate(offset.negate());
+      transMat.translate(offset.getNegated());
       
       this.view.arr[ 0] = transMat.arr[0];
       this.view.arr[ 1] = transMat.arr[1];

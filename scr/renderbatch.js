@@ -3,6 +3,7 @@ import GLStates from './glstates.js'
 import RenderBatchData from './renderbatchdata.js'
 import VBO from './vbo.js'
 import VBOSegment from './vbosegment.js'
+import VBOVertex from './vbovertex.js'
 
 function renderDataSort(first, second) {
   let result = 1;
@@ -127,28 +128,13 @@ class RenderBatch {
       segments.push(new VBOSegment(currPass, currShader, currTexID,
           currRenderMode, currCount, currOffset));
 
-      let byteSize = 24;
+      let v = new VBOVertex();
+      let byteSize = v.byteSize;
       let buffer = new ArrayBuffer(byteSize * vertices.length);
       let dv = new DataView(buffer);
       for (let i = 0; i < vertices.length; ++i) {
-        let v = vertices[i];
-
-        dv.setFloat32(byteSize * i, v.x, true);
-        dv.setFloat32((byteSize * i) + 4, v.y, true);
-        dv.setFloat32((byteSize * i) + 8, v.z, true);
-
-        dv.setUint8((byteSize * i) + 12, v.r);
-        dv.setUint8((byteSize * i) + 13, v.g);
-        dv.setUint8((byteSize * i) + 14, v.b);
-        dv.setUint8((byteSize * i) + 15, v.a);
-
-        dv.setUint16((byteSize * i) + 16, v.s, true);
-        dv.setUint16((byteSize * i) + 18, v.t, true);
-
-        dv.setUint8((byteSize * i) + 20, v.textureFlag);
-        dv.setUint8((byteSize * i) + 21, v.flag2);
-        dv.setUint8((byteSize * i) + 22, v.flag3);
-        dv.setUint8((byteSize * i) + 23, v.flag4);
+        const v = vertices[i];
+        v.toBuffer(dv, i);
       }
 
       this.vbo.addData(buffer, indices, segments);

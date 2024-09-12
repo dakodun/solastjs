@@ -1,7 +1,7 @@
-import Transformable from './transformable.js';
+import Transformable2D from './transformable2d.js';
 import Vec2 from './vec2.js';
 
-class Polygon extends Transformable(Object) {
+class Polygon extends Transformable2D(Object) {
   constructor() {
     super();
 
@@ -76,7 +76,7 @@ class Polygon extends Transformable(Object) {
       transMat.translate(this.origin);
       transMat.rotate(this.rotation);
       transMat.scale(this.scale);
-      transMat.translate(this.origin.negate());
+      transMat.translate(this.origin.getNegated());
 
       for (const v of this.verts) {
         let vert = new Vec2();
@@ -107,7 +107,7 @@ class Polygon extends Transformable(Object) {
       transMat.translate(this.origin);
       transMat.rotate(this.rotation);
       transMat.scale(this.scale);
-      transMat.translate(this.origin.negate());
+      transMat.translate(this.origin.getNegated());
       
       for (const v of this.verts) {
         let vert = new Vec2();
@@ -187,8 +187,7 @@ class Polygon extends Transformable(Object) {
         let vAB = new Vec2(verts[i + 1].x - verts[i].x,
             verts[i + 1].y - verts[i].y);
         
-        let vRot = new Vec2(-vAB.y, vAB.x);
-        let vNorm = vRot.normalise();
+        let vNorm = (new Vec2(-vAB.y, vAB.x)).getNormalized();
         let vOffset = new Vec2(vNorm.x * halfWidth,
             vNorm.y * halfWidth);
         

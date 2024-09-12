@@ -1,6 +1,8 @@
 import GL from './gl.js'
 import GLStates from './glstates.js'
 
+import VBOVertex from './vbovertex.js'
+
 class Shader {
   constructor() {
     this.programID = null;
@@ -10,14 +12,19 @@ class Shader {
     
     this.projectionMatrixLocation = null;
 		this.viewMatrixLocation = null;
-		this.modelMatrixLocation = null;
 
     this.textureLocation = null;
 
-    this.vertexPosition = null;
-    this.vertexColor = null;
-    this.vertexTexture = null;
-    this.vertexFlags = null;
+    this.vertexPosition = null; // (3 4-byte)
+    this.vertexColor = null; // (4 1-byte)
+    this.vertexTexture = null; // (2 2-byte)
+    this.vertexFlags = null; // (4 1-byte)
+    
+    // es 1.0
+    this.vertexNormal = null; // (3 4-byte)
+
+    // es 3.0
+    // this.vertexNormal = null; // (1 4-byte)
   }
 
   init() {
@@ -102,7 +109,6 @@ class Shader {
     let vertSrc = shaderStr;
     if (vertSrc == undefined) {
       vertSrc = `
-uniform mat4 vertModel;
 uniform mat4 vertView;
 uniform mat4 vertProj;
 
@@ -111,17 +117,31 @@ attribute vec4 vertRGBA;
 attribute vec2 vertST;
 attribute vec4 vertFlags;
 
+// es 1.0
+attribute vec3 vertNormal;
+
+// es 3.0
+// attribute vec4 vertNormal;
+
 varying mediump vec4 fragRGBA;
 varying mediump vec2 fragST;
+
 varying mediump float fragTextured;
+varying mediump float fragLighting;
+
+varying mediump vec3 fragNormal;
 
 void main() {
-  mat4 mvp = vertProj * vertView * vertModel;
-  gl_Position = mvp * vec4(vertXYZ, 1.0);
+  mat4 vp = vertProj * vertView;
+  gl_Position = vp * vec4(vertXYZ, 1.0);
   
   fragRGBA = vertRGBA;
   fragST = vertST;
+
   fragTextured = vertFlags.x;
+  fragLighting = vertFlags.y;
+
+  fragNormal = vertNormal;
 }
 `;
     }
@@ -139,13 +159,21 @@ uniform sampler2D fragBaseTex;
 
 varying mediump vec4 fragRGBA;
 varying mediump vec2 fragST;
+
 varying mediump float fragTextured;
+varying mediump float fragLighting;
+
+varying mediump vec3 fragNormal;
 
 void main() {
-  vec4 texColour = clamp(texture2D(fragBaseTex, fragST) +
+  vec4 texColor = clamp(texture2D(fragBaseTex, fragST) +
       (1.0 - fragTextured), 0.0, 1.0);
-  gl_FragColor = texColour * vec4(fragRGBA.r, fragRGBA.g,
+  gl_FragColor = texColor * vec4(fragRGBA.r, fragRGBA.g,
       fragRGBA.b, fragRGBA.a);
+
+  float light = max(1.0 - fragLighting,
+      dot(fragNormal, vec3(0.0, 0.0, 1.0)));
+  gl_FragColor.rgb *= max(0.1, light);
 }
 `;
     }
@@ -161,8 +189,6 @@ void main() {
         GL.getUniformLocation(this.programID, "vertProj");
 		this.viewMatrixLocation =
         GL.getUniformLocation(this.programID, "vertView");
-		this.modelMatrixLocation =
-        GL.getUniformLocation(this.programID, "vertModel");
 
     this.textureLocation =
         GL.getUniformLocation(this.programID, "fragBaseTex");
@@ -176,43 +202,59 @@ void main() {
         GL.getAttribLocation(this.programID, "vertST");
     this.vertexFlags =
         GL.getAttribLocation(this.programID, "vertFlags");
+    this.vertexNormal =
+        GL.getAttribLocation(this.programID, "vertNormal");
   }
 
   vaCallback() {
-      let byteSize = 24;
+      let v = new VBOVertex();
+      let byteSize = v.byteSize;
+      let offset = 0;
 
       if (this.vertexPosition != -1) {
         GL.enableVertexAttribArray(this.vertexPosition);
         GL.vertexAttribPointer(this.vertexPosition, 3, GL.FLOAT,
-            false, byteSize, 0);
-      }
+            false, byteSize, offset);
+      } offset += 12;
 
       if (this.vertexColor != -1) {
         GL.enableVertexAttribArray(this.vertexColor);
         GL.vertexAttribPointer(this.vertexColor, 4, GL.UNSIGNED_BYTE,
-            true, byteSize, 12);
-      }
+            true, byteSize, offset);
+      } offset += 4;
 
       if (this.vertexTexture != -1) {
         GL.enableVertexAttribArray(this.vertexTexture);
         GL.vertexAttribPointer(this.vertexTexture, 2, GL.UNSIGNED_SHORT,
-            true, byteSize, 16);
-      }
+            true, byteSize, offset);
+      } offset += 4;
 
       if (this.vertexFlags != -1) {
         GL.enableVertexAttribArray(this.vertexFlags);
         GL.vertexAttribPointer(this.vertexFlags, 4, GL.UNSIGNED_BYTE,
-            true, byteSize, 20);
-      }
+            true, byteSize, offset);
+      } offset += 4;
+
+      // es 1.0
+      if (this.vertexNormal != -1) {
+        GL.enableVertexAttribArray(this.vertexNormal);
+        GL.vertexAttribPointer(this.vertexNormal, 3, GL.FLOAT,
+            true, byteSize, offset);
+      } offset += 12;
+      
+      // es 3.0
+      /* if (this.vertexNormal != -1) {
+        GL.enableVertexAttribArray(this.vertexNormal);
+        GL.vertexAttribPointer(this.vertexNormal, 4, GL.INT_2_10_10_10_REV,
+            true, byteSize, offset);
+      } offset += 4; */
   }
 
   renderCallback() {
     GL.uniformMatrix4fv(this.projectionMatrixLocation, false,
-        GLStates.projectionMatrix.asArr());
+        Float32Array.from(GLStates.projectionMatrix.arr));
     GL.uniformMatrix4fv(this.viewMatrixLocation, false,
-        GLStates.viewMatrix.asArr());
-    GL.uniformMatrix4fv(this.modelMatrixLocation, false,
-        GLStates.modelMatrix.asArr());
+        Float32Array.from(GLStates.viewMatrix.arr));
   }
 };
 
