@@ -37,44 +37,68 @@ class Vec3 {
 
   negate() {
     let negated = new Vec3(-this.x, -this.y, -this.z);
+    this.copy(negated);
+  }
+
+  getNegated() {
+    let negated = this.getCopy();
+    negated.negate();
+
     return negated;
   }
 
-  normalise() {
-    let normal = this.getCopy();
+  normalize() {
+    let normalized = this.getCopy();
     let len = Math.sqrt((this.x * this.x) + (this.y * this.y) +
         (this.z * this.z));
 
     if (len != 0) {
       let invLen = 1 / len;
-      normal.x *= invLen; normal.y *= invLen; normal.z *= invLen;
+      normalized.x *= invLen; normalized.y *= invLen;
+      normalized.z *= invLen;
     }
 
-    return normal;
+    this.copy(normalized);
   }
 
-  getArr() {
+  getNormalized() {
+    let normalized = this.getCopy();
+    normalized.normalize();
+
+    return normalized;
+  }
+
+  getDot(other) {
+    let result = ((this.x * other.x) + (this.y * other.y) +
+        (this.z * other.z));
+
+    return result;
+  }
+
+  getCross(other) {
+    let result = new Vec3(
+      ((this.y * other.z) - (this.z * other.y)),
+      ((this.z * other.x) - (this.x * other.z)),
+      ((this.x * other.y) - (this.y * other.x))
+    );
+
+    return result;
+  }
+
+  asArray() {
     return [this.x, this.y, this.z];
   }
 
-  setArr(arr) {
-    let padValue = 0.0;
-
-    if (arr.length != 0) {
-      padValue = arr[arr.length - 1];
-    }
-    
-    if (arr.length < 3) {
-      let len = arr.length;
-      arr.length = 3;
-      for (let i = len; i < arr.length; ++i) {
-        arr[i] = padValue;
-      }
+  fromArray(arr) {
+    let diff = this.asArray().length - arr.length;
+    let padded = arr.slice();
+    if (diff > 0) {
+      padded = padded.concat(new Array(diff).fill(0));
     }
 
-    this.x = arr[0];
-    this.y = arr[1];
-    this.z = arr[2];
+    this.x = padded[0];
+    this.y = padded[1];
+    this.z = padded[2];
   }
 };
 

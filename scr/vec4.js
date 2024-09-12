@@ -1,5 +1,5 @@
-class Vec2 {
-	constructor(x, y) {
+class Vec4 {
+	constructor(x, y, z, w) {
     this.x = 0.0;
     if (x != undefined) {
       this.x = x;
@@ -9,20 +9,34 @@ class Vec2 {
     if (y != undefined) {
       this.y = y;
     }
+
+    this.z = this.y;
+    if (z != undefined) {
+      this.z = z;
+    }
+
+    this.w = this.z;
+    if (w != undefined) {
+      this.w = w;
+    }
 	}
 
 	copy(other) {
     this.x = other.x;
 		this.y = other.y;
+    this.z = other.z;
+    this.w = other.w;
   }
 
   getCopy() {
-    let copy = new Vec2(); copy.copy(this);
+    let copy = new Vec4(); copy.copy(this);
     return copy;
   }
 
   equals(other) {
-    if (this.x == other.x && this.y == other.y) {
+    if (this.x == other.x && this.y == other.y && this.z == other.z
+        && this.w == other.w) {
+      
       return true;
     }
 
@@ -30,7 +44,7 @@ class Vec2 {
   }
 
   negate() {
-    let negated = new Vec2(-this.x, -this.y);
+    let negated = new Vec4(-this.x, -this.y, -this.z, -this.w);
     this.copy(negated);
   }
 
@@ -43,11 +57,13 @@ class Vec2 {
 
   normalize() {
     let normalized = this.getCopy();
-    let len = Math.sqrt((this.x * this.x) + (this.y * this.y));
+    let len = Math.sqrt((this.x * this.x) + (this.y * this.y) +
+        (this.z * this.z) + (this.w * this.w));
 
     if (len != 0) {
       let invLen = 1 / len;
       normalized.x *= invLen; normalized.y *= invLen;
+      normalized.z *= invLen; normalized.w *= invLen;
     }
 
     this.copy(normalized);
@@ -61,13 +77,14 @@ class Vec2 {
   }
 
   getDot(other) {
-    let result = ((this.x * other.x) + (this.y * other.y));
+    let result = ((this.x * other.x) + (this.y * other.y) +
+        (this.z * other.z) + (this.w * other.w));
 
     return result;
   }
 
   asArray() {
-    return [this.x, this.y];
+    return [this.x, this.y, this.z, this.w];
   }
 
   fromArray(arr) {
@@ -79,7 +96,9 @@ class Vec2 {
 
     this.x = padded[0];
     this.y = padded[1];
+    this.z = padded[2];
+    this.w = padded[3];
   }
 };
 
-export default Vec2;
+export default Vec4;
