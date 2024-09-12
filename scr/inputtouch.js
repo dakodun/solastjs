@@ -6,13 +6,11 @@ class InputTouch {
 
     this.state = 0;
 
-    this.localStart = new Vec2(0.0, 0.0);
-    this.globalStart = new Vec2(0.0, 0.0);
-
     this.local = new Vec2(0.0, 0.0);
     this.global = new Vec2(0.0, 0.0);
 
-    this.moved = false;
+    this.localPrev = null;
+    this.globalPrev = null;
 	}
 };
 

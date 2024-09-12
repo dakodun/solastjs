@@ -15,6 +15,8 @@ class InputManager {
     this.globalMouse = new Vec2(0.0, 0.0);
     this.wheelDelta = 0
     this.disableMouseWheel = false;
+    this.localMousePrev = null;
+    this.globalMousePrev = null;
 
     this.keyStates = new Map();
     for (const [key, value] of Object.entries(enums.key)) {
@@ -24,7 +26,7 @@ class InputManager {
     this.disableBackspace = true;
 
     this.touches = new Map();
-    this.touchTolerance = 1.0;
+    this.newTouches = new Array();
 	}
 
   register(app) {
@@ -66,6 +68,14 @@ class InputManager {
 
     this.wheelDelta = 0;
 
+    // if mouse has moved since last frame reset it
+    if (this.localMousePrev != null && 
+        !this.localMouse.equals(this.localMousePrev)) {
+
+      this.localMousePrev = this.localMouse.getCopy();
+      this.globalMousePrev = this.globalMouse.getCopy();
+    }
+
     for (const [key, value] of this.keyStates) {
       if (value == 2) { // if pressed...
         this.keyStates.set(key, 1); // now down
@@ -75,7 +85,14 @@ class InputManager {
       }
     }
 
+    this.newTouches.splice(0, this.newTouches.length);
     for (let t of this.touches.values()) {
+      // if touch has moved since last frame reset it
+      if (!t.local.equals(t.localPrev)) {
+        t.localPrev = t.local.getCopy();
+        t.globalPrev = t.global.getCopy();
+      }
+      
       if (t.state == 2) { // if started...
         t.state = 1; // now in progress
       }
@@ -120,13 +137,46 @@ class InputManager {
     return this.localMouse;
   }
 
+  getLocalMouseChange() {
+    let result = new Vec2();
+    
+    if (this.localMousePrev != null) { 
+      result.x = this.localMouse.x - this.localMousePrev.x;
+      result.y = this.localMouse.y - this.localMousePrev.y;
+    }
+
+    return result;
+  }
+
   getGlobalMouse() {
     return this.globalMouse;
+  }
+
+  getGlobalMouseChange() {
+    let result = new Vec2();
+
+    if (this.globalMousePrev != null) { 
+      result.x = this.globalMouse.x - this.globalMousePrev.x;
+      result.y = this.globalMouse.y - this.globalMousePrev.y;
+    }
+
+    return result;
+  }
+
+  getMouseMoved() {
+    if (this.localMousePrev != null && 
+        !this.localMouse.equals(this.localMousePrev)) {
+
+      return true;
+    }
+
+    return false;
   }
 
   getMouseWheel() {
     return this.wheelDelta;
   }
+  
 
   getKeyDown(key) {
     if (this.keyStates.has(key)) {
@@ -160,77 +210,126 @@ class InputManager {
     return false;
   }
 
+
   getTouches() {
     return this.touches;
   }
 
-  getTouchStart(touch) {
-    let it = this.touches.get(touch.id);
-    if (it != undefined && it.state == 2) {
-      return true;
+  getNewTouches() {
+    return this.newTouches;
+  }
+
+  getTouchEnd(touchID) {
+    if (touchID != undefined && touchID != null) {
+      let it = this.touches.get(touchID);
+
+      if (it != undefined && it.state == 3) {
+        return true;
+      }
     }
 
     return false;
   }
 
-  getTouchEnd(touch) {
-    let it = this.touches.get(touch.id);
-    if (it != undefined && it.state == 3) {
-      return true;
+  getTouchCancel(touchID) {
+    if (touchID != undefined && touchID != null) {
+      let it = this.touches.get(touchID);
+
+      if (it != undefined && it.state == 4) {
+        return true;
+      }
     }
 
     return false;
   }
 
-  getTouchCancel(touch) {
-    let it = this.touches.get(touch.id);
-    if (it != undefined && it.state == 4) {
-      return true;
-    }
+  getLocalTouch(touchID) {
+    if (touchID != undefined && touchID != null) {
+      let it = this.touches.get(touchID);
 
-    return false;
-  }
-
-  getLocalTouch(touch) {
-    let it = this.touches.get(touch.id);
-    if (it != undefined) {
-      return it.local;
+      if (it != undefined) {
+        return it.local;
+      }
     }
 
     return new Vec2(0.0, 0.0);
   }
 
-  getGlobalTouch(touch) {
-    let it = this.touches.get(touch.id);
-    if (it != undefined) {
-      return it.global;
+  getLocalTouchChange(touchID) {
+    let result = new Vec2();
+
+    if (touchID != undefined && touchID != null) {
+      let it = this.touches.get(touchID);
+
+      if (it != undefined) {
+        if (it.localPrev != null) { 
+          result.x = it.local.x - it.localPrev.x;
+          result.y = it.local.y - it.localPrev.y;
+        }
+      }
+    }
+
+    return result;
+  }
+
+  getGlobalTouch(touchID) {
+    if (touchID != undefined && touchID != null) {
+      let it = this.touches.get(touchID);
+
+      if (it != undefined) {
+        return it.global;
+      }
     }
 
     return new Vec2(0.0, 0.0);
   }
 
-  getTouchMoved(touch) {
-    let it = this.touches.get(touch.id);
-    if (it != undefined) {
-      return it.moved;
+  getGlobalTouchChange(touchID) {
+    let result = new Vec2();
+
+    if (touchID != undefined && touchID != null) {
+      let it = this.touches.get(touchID);
+
+      if (it != undefined) {
+        if (it.globalPrev != null) { 
+          result.x = it.global.x - it.globalPrev.x;
+          result.y = it.global.y - it.globalPrev.y;
+        }
+      }
     }
 
-    return true;
+    return result;
   }
 
-  cancelTouch(touch) {
-    let it = this.touches.get(touch.id);
-    if (it != undefined) {
-      const t = new Touch({
-          identifier: touch.id,
-          target: document
-      });
+  getTouchMoved(touchID) {
+    if (touchID != undefined && touchID != null) {
+      let it = this.touches.get(touchID);
 
-      const e = new TouchEvent("touchcancel", {
-          changedTouches: [t]
-      });
+      if (it != undefined) {
+        if (!it.local.equals(it.localPrev)) {
+          return true;
+        }
+      }
+    }
 
-      document.dispatchEvent(e);
+    return false;
+  }
+
+  cancelTouch(touchID) {
+    if (touchID != undefined && touchID != null) {
+      let it = this.touches.get(touchID);
+      if (it != undefined) {
+        const t = new Touch({
+            identifier: touchID,
+            target: document
+        });
+
+        const e = new TouchEvent("touchcancel", {
+            changedTouches: [t]
+        });
+
+        document.dispatchEvent(e);
+      }
     }
   }
   // ...
@@ -263,10 +362,12 @@ class InputManager {
   }
 
   handleMouseMove(e) {
+    this.localMousePrev = this.localMouse.getCopy();
     this.localMouse.x = e.clientX - this.app.canvasPos.x;
 	  this.localMouse.y = window.innerHeight -
         (e.clientY - this.app.canvasPos.y);
 
+    this.globalMousePrev = this.globalMouse.getCopy();
     this.globalMouse.x = e.clientX;
 	  this.globalMouse.y = window.innerHeight - e.clientY;
   }
@@ -297,20 +398,21 @@ class InputManager {
       let it = new InputTouch(); {
         it.id = t.identifier;
 
-        it.localStart.x = t.clientX - this.app.canvasPos.x;
-        it.localStart.y = window.innerHeight -
+        it.local.x = t.clientX - this.app.canvasPos.x;
+        it.local.y = window.innerHeight -
             (t.clientY - this.app.canvasPos.y);
           
-        it.globalStart.x = t.clientX;
-        it.globalStart.y = window.innerHeight - t.clientY;
+        it.global.x = t.clientX;
+        it.global.y = window.innerHeight - t.clientY;
 
-        it.local.copy(it.localStart);
-        it.global.copy(it.globalStart);
+        it.localPrev = it.local.getCopy();
+        it.globalPrev = it.global.getCopy();
 
         it.state = 2; // state is started
       }
 
       this.touches.set(it.id, it);
+      this.newTouches.push(it.id);
     }
   }
 
@@ -340,14 +442,14 @@ class InputManager {
       let it = this.touches.get(t.identifier);
 
       if (it != undefined) {
+        it.localPrev = it.local.getCopy();
         it.local.x = t.clientX - this.app.canvasPos.x;
         it.local.y = window.innerHeight -
             (t.clientY - this.app.canvasPos.y);
-          
+        
+        it.globalPrev = it.global.getCopy();
         it.global.x = t.clientX;
         it.global.y = window.innerHeight - t.clientY;
-
-        it.moved = true;
       }
     }
   }
