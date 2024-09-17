@@ -8,6 +8,8 @@ RUN printf "%s\n" \
   '{' \
   '  "scripts": {' \
   '    "test": "vitest --run",' \
+  '    "watch": "vitest",' \
+  '    "verbose": "vitest --run --reporter=verbose",' \
   '    "coverage": "vitest --run --coverage"' \
   '  }' \
   '}' \
