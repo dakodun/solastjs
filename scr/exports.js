@@ -38,3 +38,4 @@ export {default as VBOVertex} from './vbovertex.js';
 export {default as Vec2} from './vec2.js';
 export {default as Vec3} from './vec3.js';
 export {default as Vec4} from './vec4.js';
+export {default as VertexBatch} from './vertexbatch.js';
