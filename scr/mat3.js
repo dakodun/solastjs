@@ -1,13 +1,25 @@
-import EngineError from './error.js';
+import Vec2 from './vec2.js';
 import Vec3 from './vec3.js';
 
 class Mat3 {
 	constructor() {
+    /*
+    .-COL-MAJOR-.
+    | 0   3   6 |
+    | 1   4   7 |
+    | 2   5   8 |
+    '-----------'
+    */
+    
     this.arr = new Array();
     this.identity();
 	}
 
 	copy(other) {
+    if (!(other instanceof Mat3)) {
+      throw new TypeError("copy(other): other should be a Mat3");
+    }
+
     this.arr = other.arr.slice();
   }
 
@@ -18,107 +30,155 @@ class Mat3 {
 
   identity() {
     this.arr.splice(0, this.arr.length);
-    this.arr = [1, 0, 0,
-                0, 1, 0,
-                0, 0, 1];
+    this.arr = [1, 0, 0, 0, 1, 0, 0, 0, 1];
+  }
+
+  transpose() {
+    let copy = this.getCopy();
+
+    for (var x = 0; x < 3; ++x) {
+		  for (var y = 0; y < 3; ++y) {
+        this.arr[(x * 3) + y] = copy.arr[(y * 3) + x];
+      }
+    }
+  }
+
+  getTranspose() {
+    let transposed = this.getCopy();
+    transposed.transpose();
+
+    return transposed;
   }
 
   multMat3(other) {
+    if (!(other instanceof Mat3)) {
+      throw new TypeError("multMat3(other): other should be a Mat3");
+    }
+
     let result = new Mat3();
 
+    // post multiplication - this row * other column
     for (var x = 0; x < 3; ++x) {
 		  for (var y = 0; y < 3; ++y) {
-        // dot product of row (x * 3) vs column (y)
-        result.arr[(x * 3) + y] = (this.arr[(x * 3)] * other.arr[y]) +
-          (this.arr[(x * 3) + 1] * other.arr[y + 3]) +
-          (this.arr[(x * 3) + 2] * other.arr[y + 6]);
-      }
-    }
-    
-    return result;
-  }
-
-  multVec3(other) {
-    let result = new Vec3();
-    let arr = new Array();
-
-    for (var x = 0; x < 3; ++x) {
-        arr[x] = (this.arr[(x * 3)] * other.x) +
-          (this.arr[(x * 3) + 1] * other.y) +
-          (this.arr[(x * 3) + 2] * other.z);
-    }
-    
-    result.setArr(arr);
-    return result;
-  }
-
-  translate(transVec) {
-    let transMat = new Mat3();
-    transMat.arr[6] = transVec.x;
-    transMat.arr[7] = transVec.y;
-
-    transMat.mult(this);
-    this.arr = transMat.arr.slice();
-  }
-
-  rotate(angle) {
-    let rotMat = new Mat3();
-    
-    let c = Math.cos(angle);
-    let s = Math.sin(angle);
-    
-    rotMat.arr[0] = c;
-    rotMat.arr[1] = -s;
-
-    rotMat.arr[3] = s;
-    rotMat.arr[4] = c;
-
-    rotMat.mult(this);
-    this.arr = rotMat.arr.slice();
-  }
-
-  scale(scale) {
-    let scaleMat = new Mat3();
-    scaleMat.arr[0] = scale.x;
-    scaleMat.arr[4] = scale.y;
-
-    scaleMat.mult(this);
-    this.arr = scaleMat.arr.slice();
-  }
-
-  asArr() {
-    return Float32Array.from(this.arr);
-  }
-
-  asString() {
-    let matStr = "";
-    for (let i = 0, j = 0; i < this.arr.length; ++i, ++j) {
-      matStr += this.arr[i];
-      matStr += "  ";
-
-      if (j == 2) {
-        matStr += "\n";
-        j = -1;
-      }
-    }
-
-    return matStr;
-  }
-
-  // deprecated
-  mult(other) {
-    let result = new Mat3();
-
-    for (var x = 0; x < 3; ++x) {
-		  for (var y = 0; y < 3; ++y) {
-        // dot product of row (x * 3) vs column (y)
-        result.arr[(x * 3) + y] = (this.arr[(x * 3)] * other.arr[y]) +
-          (this.arr[(x * 3) + 1] * other.arr[y + 3]) +
-          (this.arr[(x * 3) + 2] * other.arr[y + 6]);
+        result.arr[(x * 3) + y] =
+          (this.arr[y    ] * other.arr[(x * 3)    ]) +
+          (this.arr[y + 3] * other.arr[(x * 3) + 1]) +
+          (this.arr[y + 6] * other.arr[(x * 3) + 2]);
       }
     }
     
     this.arr = result.arr;
+  }
+
+  getMultVec3(multVec) {
+    /*
+    .--MATRIX---.   .-V-.
+    | 0   3   6 |   | 0 |
+    | 1   4   7 | . | 1 |
+    | 2   5   8 |   | 2 |
+    '-----------'   '---'
+    */
+    
+    if (!(multVec instanceof Vec3)) {
+      throw new TypeError("getMultVec3(multVec): multVec should be a Vec3");
+    }
+    
+    let arrIn = multVec.asArray();
+    let arrOut = new Array();
+
+    for (var i = 0; i < 3; ++i) {
+      arrOut[i] =
+        (this.arr[i    ] * arrIn[0]) +
+        (this.arr[i + 3] * arrIn[1]) +
+        (this.arr[i + 6] * arrIn[2]);
+    }
+    
+    let result = new Vec3();
+    result.fromArray(arrOut);
+    return result;
+  }
+
+  translate(transVec) {
+    /*
+    .TRANSLATE-.
+    | 1   0  tx|
+    | 0   1  ty|
+    | 0   0   1|
+    '----------'
+    */
+    
+    if (!(transVec instanceof Vec2)) {
+      throw new TypeError("translate(transVec): transVec should be a Vec2");
+    }
+    
+    let transMat = new Mat3();
+    transMat.arr[6] = transVec.x;
+    transMat.arr[7] = transVec.y;
+
+    this.multMat3(transMat);
+  }
+
+  rotate(angle) {
+    /*
+    .--ROLL-----------.
+    | cosZ -sinZ     0|
+    | sinZ  cosZ     0|
+    |    0     0     1|
+    '-----------------'
+    */
+    
+    if (typeof angle != 'number') {
+      throw new TypeError("rotate(angle): angle should be a Number");
+    }
+
+    let cZ = Math.cos(angle);
+    let sZ = Math.sin(angle);
+
+    let rotZ = new Mat3();
+    rotZ.arr[0] =  cZ
+    rotZ.arr[1] =  sZ;
+    rotZ.arr[3] = -sZ;
+    rotZ.arr[4] =  cZ;
+
+    this.multMat3(rotZ);
+  }
+
+  scale(scaleVec) {
+    /*
+    .--SCALE----.
+    | sx   0   0|
+    |  0  sy   0|
+    |  0   0   1|
+    '-----------'
+    */
+    
+    if (!(scaleVec instanceof Vec2)) {
+      throw new TypeError("scale(scaleVec): scaleVec should be a Vec2");
+    }
+
+    let scaleMat = new Mat3();
+
+    scaleMat.arr[0] = scaleVec.x;
+    scaleMat.arr[4] = scaleVec.y;
+
+    this.multMat3(scaleMat);
+  }
+
+  asString() {
+    let matStr = "";
+
+    for (var x = 0; x < 3; ++x) {
+		  for (var y = 0; y < 3; ++y) {
+        matStr += this.arr[(y * 3) + x];
+        matStr += "  ";
+
+        if (y == 2) {
+          matStr += "\n";
+        }
+      }
+    }
+
+    return matStr;
   }
 };
 
