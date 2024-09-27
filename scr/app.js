@@ -42,7 +42,7 @@ class App {
     this.canvas = document.getElementById(canvasID);
     this.context = this.canvas.getContext("webgl2", {alpha: false});
     if (!this.context) {
-      throw new EngineError("ee: unable to create webGL context");
+      throw new EngineError("unable to create webGL context");
     }
 
     glSetContext(this.context);
@@ -58,9 +58,6 @@ class App {
     }
 
     this.updateCanvas();
-
-    glSetContext(this.context);
-
     this.frameTimer.reset();
   }
 
