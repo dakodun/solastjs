@@ -9,22 +9,97 @@ class Shader {
 
     this.vertSrc = null;
     this.fragSrc = null;
-    
-    this.projectionMatrixLocation = null;
-		this.viewMatrixLocation = null;
 
-    this.textureLocation = null;
+    this.initCallback = () => {
+      this.init();
+      this.useProgram();
 
-    this.vertexPosition = null; // (3 4-byte)
-    this.vertexColor = null; // (4 1-byte)
-    this.vertexTexture = null; // (2 2-byte)
-    this.vertexFlags = null; // (4 1-byte)
-    
-    // es 1.0
-    this.vertexNormal = null; // (3 4-byte)
+      this.uniformLocations.projectionMatrix=
+          GL.getUniformLocation(this.programID, "vertProj");
+      this.uniformLocations.viewMatrix =
+          GL.getUniformLocation(this.programID, "vertView");
 
-    // es 3.0
-    // this.vertexNormal = null; // (1 4-byte)
+      this.uniformLocations.texture =
+          GL.getUniformLocation(this.programID, "fragBaseTex");
+      GL.uniform1i(this.textureLocation, 0);
+      
+      this.attributeLocations.vertexPosition =
+          GL.getAttribLocation(this.programID, "vertXYZ");
+      this.attributeLocations.vertexColor =
+          GL.getAttribLocation(this.programID, "vertRGBA");
+      this.attributeLocations.vertexTexture =
+          GL.getAttribLocation(this.programID, "vertST");
+      this.attributeLocations.vertexFlags =
+          GL.getAttribLocation(this.programID, "vertFlags");
+      this.attributeLocations.vertexNormal =
+          GL.getAttribLocation(this.programID, "vertNormal");
+    }
+
+    this.vaCallback = () => {
+      let v = new VBOVertex();
+      let byteSize = v.byteSize;
+      let offset = 0;
+
+      if (this.attributeLocations.vertexPosition != -1) {
+        GL.enableVertexAttribArray(this.attributeLocations.vertexPosition);
+        GL.vertexAttribPointer(this.attributeLocations.vertexPosition,
+            3, GL.FLOAT, false, byteSize, offset);
+      } offset += 12;
+
+      if (this.attributeLocations.vertexColor != -1) {
+        GL.enableVertexAttribArray(this.attributeLocations.vertexColor);
+        GL.vertexAttribPointer(this.attributeLocations.vertexColor,
+            4, GL.UNSIGNED_BYTE, true, byteSize, offset);
+      } offset += 4;
+
+      if (this.attributeLocations.vertexTexture != -1) {
+        GL.enableVertexAttribArray(this.attributeLocations.vertexTexture);
+        GL.vertexAttribPointer(this.attributeLocations.vertexTexture,
+            2, GL.UNSIGNED_SHORT, true, byteSize, offset);
+      } offset += 4;
+
+      if (this.attributeLocations.vertexFlags != -1) {
+        GL.enableVertexAttribArray(this.attributeLocations.vertexFlags);
+        GL.vertexAttribPointer(this.attributeLocations.vertexFlags,
+            4, GL.UNSIGNED_BYTE, true, byteSize, offset);
+      } offset += 4;
+
+      // es 1.0
+      if (this.attributeLocations.vertexNormal != -1) {
+        GL.enableVertexAttribArray(this.attributeLocations.vertexNormal);
+        GL.vertexAttribPointer(this.attributeLocations.vertexNormal,
+            3, GL.FLOAT, true, byteSize, offset);
+      } offset += 12;
+      
+      // es 3.0
+      /* if (this.vertexNormal != -1) {
+        GL.enableVertexAttribArray(this.attributeLocations.vertexNormal);
+        GL.vertexAttribPointer(this.attributeLocations.vertexNormal,
+            4, GL.INT_2_10_10_10_REV, true, byteSize, offset);
+      } offset += 4; */
+    }
+
+    this.renderCallback = () => {
+      GL.uniformMatrix4fv(this.uniformLocations.projectionMatrix, false,
+          Float32Array.from(GLStates.projectionMatrix.arr));
+      GL.uniformMatrix4fv(this.uniformLocations.viewMatrix, false,
+          Float32Array.from(GLStates.viewMatrix.arr));
+    }
+
+    this.uniformLocations = {
+      projectionMatrix: null,
+      viewMatrix: null,
+      texture: null
+    };
+
+    this.attributeLocations = {
+      vertexPosition: null, // (3 4-byte)
+      vertexColor: null, // (4 1-byte)
+      vertexTexture: null, // (2 2-byte)
+      vertexFlags: null, // (4 1-byte)
+      vertexNormal: null // (3 4-byte) es 1.0
+      // vertexNormal = null // (1 4-byte) es 3.0
+    };
   }
 
   init() {
@@ -179,82 +254,6 @@ void main() {
     }
 
     this.fragSrc = fragSrc;
-  }
-
-  initCallback() {
-    this.init();
-    this.useProgram();
-
-    this.projectionMatrixLocation =
-        GL.getUniformLocation(this.programID, "vertProj");
-		this.viewMatrixLocation =
-        GL.getUniformLocation(this.programID, "vertView");
-
-    this.textureLocation =
-        GL.getUniformLocation(this.programID, "fragBaseTex");
-	  GL.uniform1i(this.textureLocation, 0);
-    
-    this.vertexPosition =
-        GL.getAttribLocation(this.programID, "vertXYZ");
-    this.vertexColor =
-        GL.getAttribLocation(this.programID, "vertRGBA");
-    this.vertexTexture =
-        GL.getAttribLocation(this.programID, "vertST");
-    this.vertexFlags =
-        GL.getAttribLocation(this.programID, "vertFlags");
-    this.vertexNormal =
-        GL.getAttribLocation(this.programID, "vertNormal");
-  }
-
-  vaCallback() {
-      let v = new VBOVertex();
-      let byteSize = v.byteSize;
-      let offset = 0;
-
-      if (this.vertexPosition != -1) {
-        GL.enableVertexAttribArray(this.vertexPosition);
-        GL.vertexAttribPointer(this.vertexPosition, 3, GL.FLOAT,
-            false, byteSize, offset);
-      } offset += 12;
-
-      if (this.vertexColor != -1) {
-        GL.enableVertexAttribArray(this.vertexColor);
-        GL.vertexAttribPointer(this.vertexColor, 4, GL.UNSIGNED_BYTE,
-            true, byteSize, offset);
-      } offset += 4;
-
-      if (this.vertexTexture != -1) {
-        GL.enableVertexAttribArray(this.vertexTexture);
-        GL.vertexAttribPointer(this.vertexTexture, 2, GL.UNSIGNED_SHORT,
-            true, byteSize, offset);
-      } offset += 4;
-
-      if (this.vertexFlags != -1) {
-        GL.enableVertexAttribArray(this.vertexFlags);
-        GL.vertexAttribPointer(this.vertexFlags, 4, GL.UNSIGNED_BYTE,
-            true, byteSize, offset);
-      } offset += 4;
-
-      // es 1.0
-      if (this.vertexNormal != -1) {
-        GL.enableVertexAttribArray(this.vertexNormal);
-        GL.vertexAttribPointer(this.vertexNormal, 3, GL.FLOAT,
-            true, byteSize, offset);
-      } offset += 12;
-      
-      // es 3.0
-      /* if (this.vertexNormal != -1) {
-        GL.enableVertexAttribArray(this.vertexNormal);
-        GL.vertexAttribPointer(this.vertexNormal, 4, GL.INT_2_10_10_10_REV,
-            true, byteSize, offset);
-      } offset += 4; */
-  }
-
-  renderCallback() {
-    GL.uniformMatrix4fv(this.projectionMatrixLocation, false,
-        Float32Array.from(GLStates.projectionMatrix.arr));
-    GL.uniformMatrix4fv(this.viewMatrixLocation, false,
-        Float32Array.from(GLStates.viewMatrix.arr));
   }
 };
 

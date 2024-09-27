@@ -3,7 +3,6 @@ import GLStates from './glstates.js'
 import RenderBatchData from './renderbatchdata.js'
 import VBO from './vbo.js'
 import VBOSegment from './vbosegment.js'
-import VBOVertex from './vbovertex.js'
 
 function renderDataSort(first, second) {
   let result = 1;
@@ -128,8 +127,13 @@ class RenderBatch {
       segments.push(new VBOSegment(currPass, currShader, currTexID,
           currRenderMode, currCount, currOffset));
 
-      let v = new VBOVertex();
-      let byteSize = v.byteSize;
+      // get the size of the vertex object from the first one
+      // in the array
+      let byteSize = 0;
+      if (vertices.length > 0) {
+        byteSize = vertices[0].byteSize;
+      }
+
       let buffer = new ArrayBuffer(byteSize * vertices.length);
       let dv = new DataView(buffer);
       for (let i = 0; i < vertices.length; ++i) {
@@ -143,7 +147,12 @@ class RenderBatch {
   }
 
   draw(pass) {
-    this.vbo.draw(pass);
+    if (pass == undefined) {
+      this.draw(0);
+    }
+    else {
+      this.vbo.draw(pass);
+    }
   }
 
   setDepthSort(pass, enabled) {
