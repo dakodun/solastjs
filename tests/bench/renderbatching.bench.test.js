@@ -8,20 +8,23 @@ import Shape from '../../scr/shape.js';
 import Vec2 from '../../scr/vec2.js';
 
 describe("render batching", () => {
-  /* ,..................................................................,
-     | test the following effects on render speed:                      |
-     |   dynamic vs static: a dynamic render batch must be re-created   |
-     |     multiple times (in this case every frame) - a static render  |
-     |     batch is only created once                                   |
-     |                                                                  |
-     |   depth sorting vs no depth sorting: depth sorting requires      |
-     |     renderable objects to be rendered in the correct depth order |
-     |     which will disable the ability to batch them according to    |
-     |     other attributes                                             |
-     |                                                                  |
-     |   100 vs 1000: more renderables means more data to sort, pass to |
-     |     vbo and render to webgl context                              |
-     '..................................................................' */
+  /*
+  .------------------------------------------------------------------.
+  | test the following effects on render speed:                      |
+  |                                                                  |
+  |   dynamic vs static: a dynamic render batch must be re-created   |
+  |     multiple times (in this case every frame) - a static render  |
+  |     batch is only created once                                   |
+  |                                                                  |
+  |   depth sorting vs no depth sorting: depth sorting requires      |
+  |     renderable objects to be rendered in the correct depth order |
+  |     which will disable the ability to batch them according to    |
+  |     other attributes                                             |
+  |                                                                  |
+  |   100 vs 1000: more renderables means more data to sort, pass to |
+  |     vbo and render to webgl context                              |
+  '------------------------------------------------------------------'
+  */
 
   // create a canvas and get a webgl2 context from it
   let canvas = document.createElement('canvas');
