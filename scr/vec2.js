@@ -66,6 +66,12 @@ class Vec2 {
     return result;
   }
 
+  getDeterminant(other) {
+    let result = (this.x * other.y) - (other.x * this.y);
+
+    return result;
+  }
+
   asArray() {
     return [this.x, this.y];
   }
