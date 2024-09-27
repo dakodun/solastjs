@@ -2,64 +2,16 @@ import Transformable2D from './transformable2d.js';
 import Vec2 from './vec2.js';
 
 class Polygon extends Transformable2D(Object) {
-  constructor() {
+  constructor(verts) {
     super();
 
     this.verts = new Array();
-  }
-
-  copy(other) {
-    super.copy(other);
-
-    this.verts.splice(0, this.verts.length);
-    for (let v of other.verts) {
-      this.verts.push(v.getCopy());
+    if (verts != undefined) {
+      pushVerts(verts);
     }
   }
 
-  getCopy() {
-    let copy = new Polygon(); copy.copy(this);
-    return copy;
-  }
-
-  pushVert(vert) {
-    this.verts.push(vert.getCopy());
-    
-    this.localBox[0].x = Math.min(vert.x, this.localBox[0].x);
-    this.localBox[0].y = Math.min(vert.y, this.localBox[0].y);
-
-    this.localBox[1].x = Math.max(vert.x, this.localBox[1].x);
-    this.localBox[1].y = Math.max(vert.y, this.localBox[1].y);
-  }
-
-  getWinding() {
-    let area = 0.0;
-    for (let i = 0; i < this.verts.length; ++i) {
-      let ii = (i + 1) % this.verts.length;
-      area += (this.verts[ii].x - this.verts[i].x) *
-          (this.verts[ii].y + this.verts[i].y);
-    }
-    
-    if (area >= 0.0) {
-      return -1;
-    }
-    
-    return 1;
-  }
-
-  reverseWinding() {
-    let result = 1;
-    if (this.getWinding() == result) {
-      result = -1;
-    }
-    
-    if (this.verts.length != 0) {
-      this.verts.reverse();
-    }
-    
-    return result;
-  }
-
+  // from Transformable2D parent class
   updateGlobalBox() {
     if (this.verts.length > 0) {
       this.globalBox = new Array(
@@ -127,6 +79,74 @@ class Polygon extends Transformable2D(Object) {
     for (const v of this.verts) {
       this.localMask.push(v.getCopy());
     }
+  }
+  // ...
+
+  copy(other) {
+    super.copy(other);
+
+    this.verts.splice(0, this.verts.length);
+    for (let v of other.verts) {
+      this.verts.push(v.getCopy());
+    }
+  }
+
+  getCopy() {
+    let copy = new Polygon(); copy.copy(this);
+    return copy;
+  }
+
+  pushVert(vert) {
+    if (!(vert instanceof Vec2)) {
+      throw new TypeError("pushVert(vert): vert should be a Vec2");
+    }
+    
+    this.verts.push(vert.getCopy());
+    
+    this.localBox[0].x = Math.min(vert.x, this.localBox[0].x);
+    this.localBox[0].y = Math.min(vert.y, this.localBox[0].y);
+
+    this.localBox[1].x = Math.max(vert.x, this.localBox[1].x);
+    this.localBox[1].y = Math.max(vert.y, this.localBox[1].y);
+  }
+
+  pushVerts(verts) {
+    if (!Array.isArray(verts)) {
+      throw new TypeError("pushVerts(verts): verts should be an " +
+      "array of Vec2");
+    }
+    
+    for (const vert of verts) {
+      this.pushVert(vert);
+    }
+  }
+
+  getWinding() {
+    let area = 0.0;
+    for (let i = 0; i < this.verts.length; ++i) {
+      let ii = (i + 1) % this.verts.length;
+      area += (this.verts[ii].x - this.verts[i].x) *
+          (this.verts[ii].y + this.verts[i].y);
+    }
+    
+    if (area >= 0.0) {
+      return -1;
+    }
+    
+    return 1;
+  }
+
+  reverseWinding() {
+    let result = 1;
+    if (this.getWinding() == result) {
+      result = -1;
+    }
+    
+    if (this.verts.length != 0) {
+      this.verts.reverse();
+    }
+    
+    return result;
   }
 
   makeCircle(diameter, resolution) {
@@ -281,6 +301,41 @@ class Polygon extends Transformable2D(Object) {
         }
       }
     }
+  }
+
+  // checks if the point is inside this polygon
+  isPointInside(point) {
+    let windingNum = 0;
+    
+    for (let i = 0; i < this.verts.length; ++i) {
+      let ii = 0;
+      if (i + 1 < this.verts.length) {
+        ii = i + 1;
+      }
+      
+      const vertCurr = this.verts[i];
+      const vertNext = this.verts[(i + 1) % this.verts.length];
+
+      const vertCurrNext = new Vec2(vertNext.x - vertCurr.x,
+        vertNext.y - vertCurr.y);
+      const vertCurrPoint = new Vec2(point.x - vertCurr.x,
+        point.y - vertCurr.y);
+
+      const det = vertCurrNext.getDeterminant(vertCurrPoint);
+      
+      if (vertCurr.y <= point.y) {
+        if (vertNext.y > point.y && det > 0) {
+          ++windingNum;
+        }
+      }
+      else {
+        if (vertNext.y <= point.y && det < 0) {
+          --windingNum;
+        }
+      }
+    }
+    
+    return windingNum;
   }
 };
 

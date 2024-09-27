@@ -4,16 +4,19 @@ import Mat3 from './mat3.js';
 import Polygon from './polygon.js';
 import Renderable from './renderable.js';
 import RenderBatchData from './renderbatchdata.js'
-import * as util from './utility.js';
 import Vec2 from './vec2.js';
 import Vec3 from './vec3.js';
 import VBOVertex from './vbovertex.js';
 
 class Shape extends Renderable(Polygon) {
-	constructor() {
+	constructor(verts) {
     super();
 
     this.indices = new Array();
+
+    if (verts != undefined) {
+      this.pushVerts(verts);
+    }
 
     this.frames = new Array();
     this.currentFrame = 0;
@@ -108,6 +111,11 @@ class Shape extends Renderable(Polygon) {
 
   pushVert(vert) {
     super.pushVert(vert);
+    this.indices.splice(0, this.indices.length);
+  }
+
+  pushVerts(verts) {
+    super.pushVerts(verts);
     this.indices.splice(0, this.indices.length);
   }
 
@@ -269,28 +277,42 @@ class Shape extends Renderable(Polygon) {
 
     {
       let indexCount = this.verts.length;
+      let loopCount = 0;
       let curr = 0;
       
-      while (indexCount > 3) {
-        const i = indexArray[curr][0];
-        const i2 = indexArray[indexArray[i][2]][0];
+      while (indexCount > 3 && loopCount < indexCount) {
+        const i  = indexArray[curr             ][0];
+        const i2 = indexArray[indexArray[i ][2]][0];
         const i3 = indexArray[indexArray[i2][2]][0];
 
-        const v = this.verts[i];
+        const v  = this.verts[i ];
         const v2 = this.verts[i2];
         const v3 = this.verts[i3];
 
-        let l = new Vec2(v.x - v2.x, v.y - v2.y);
-        let l2 = new Vec2(v3.x - v2.x, v3.y - v2.y);
-
-        if (util.isConvex(v, v2, v3) > 0) { // is middle vertex convex?
+        /*
+        .-------------------------------------------------------------.
+        | we don't need the exact angle; a negative determinant       |
+        | indicates a convex angle (a determinant of 0 means vertices |
+        | are in parallel i.e., in a line so we treat them as convex  |
+        | for the purposes of rendering                               |
+        '-------------------------------------------------------------'
+        */
+        
+        const v2v  = new Vec2( v.x - v2.x,  v.y - v2.y);
+        const v2v3 = new Vec2(v3.x - v2.x, v3.y - v2.y);
+        const det = v2v.getDeterminant(v2v3);
+        
+        if (det <= 0) {
           let success = true;
           let c = indexArray[indexArray[i3][2]][0];
 
-          do { // for all other remaining points
-            let p = this.verts[c];
+          do { // check all other vertices in the polygon to ensure none
+            // are inside the 'ear' we are clipping
 
-            if (!util.pointInPolygon([v, v2, v3], p)) {
+            let poly = new Polygon; poly.pushVerts([v, v2, v3]);
+            let pt = this.verts[c];
+
+            if (!poly.isPointInside(pt)) {
               c = indexArray[indexArray[c][2]][0];
             }
             else {
@@ -299,24 +321,34 @@ class Shape extends Renderable(Polygon) {
             }
           } while (c != i);
 
-          if (success) {
+          if (success) {  // if the current triangle is a valid 'ear'...
             indices.push(i, i2, i3);
             indexArray[curr][2] = i3;
-            indexArray[i3][1] = curr;
+            indexArray[i3  ][1] = curr;
             --indexCount;
+            loopCount = 0;
           }
           else {
             curr = i2;
+            ++loopCount;
           }
         }
-        else {
+        else { // current 'ear' is not valid (concave)
           curr = i2;
+          ++loopCount;
         }
       }
 
+      if (loopCount == indexCount) { // if we broke out of loop due to
+        // not finding a valid 'ear' after looping all vertices
+        
+        throw new RangeError("triangulate(): failed to triangulate " +
+        "polygon (no valid ears)");
+      }
+
       if (indexCount == 3) { // handle the last triangle
-        const i = indexArray[curr][0];
-        const i2 = indexArray[indexArray[i][2]][0];
+        const i  = indexArray[curr             ][0];
+        const i2 = indexArray[indexArray[i ][2]][0];
         const i3 = indexArray[indexArray[i2][2]][0];
 
         indices.push(i, i2, i3);
@@ -415,7 +447,7 @@ class Shape extends Renderable(Polygon) {
       vboVert.z = this.depth;
 
       // es 1.0
-      let normVec = transMat.getMultVec(new Vec4(0.0, 0.0, 1.0, 0.0));
+      let normVec = transMat.getMultVec3(new Vec3(0.0, 0.0, 1.0));
       normVec.normalize();
       vboVert.nx = normVec.x;
       vboVert.ny = normVec.y;
