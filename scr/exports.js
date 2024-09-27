@@ -32,7 +32,6 @@ export {default as SoundBuffer} from './soundbuffer.js';
 
 export {default as Texture} from './texture.js';
 export {default as Timer} from './timer.js';
-import * as util from './utility.js'; export {util};
 
 export {default as VBO} from './vbo.js';
 export {default as VBOVertex} from './vbovertex.js';
