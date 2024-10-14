@@ -8,29 +8,23 @@ class ResourceLoader {
 	}
 
   loadImage(src, width, height) {
-    let img = new Image();
+    let img = new Image(); ++this.status;
 
-    ++this.status;
     img.src = src;
-    
-    if (width != undefined) {
-      img.width = width;
-    }
-
-    if (height != undefined) {
-      img.height = height;
-    }
+    if ( width !== undefined) {  img.width =  width; }
+    if (height !== undefined) { img.height = height; }
 
     img.decode() // returns a promise
-      .then(() => { --this.status; });
+      .then(() => { --this.status; })
+      .catch((error) => {
+        console.log(error); --this.status;
+      });
 
     return img;
   }
 
   loadSoundBuffer(src) {
-    let soundBuffer = new SoundBuffer();
-
-    ++this.status;
+    let soundBuffer = new SoundBuffer(); ++this.status;
 
    fetch(src) // returns a promise
       .then((response) => { return response.arrayBuffer(); })
@@ -39,13 +33,16 @@ class ResourceLoader {
           arrBuffer, (buffer) => { soundBuffer.buffer = buffer; }
         );
       })
-      .then(() => { --this.status; });
+      .then(() => { --this.status; })
+      .catch((error) => {
+        console.log(error); --this.status;
+      });
 
     return soundBuffer;
   }
 
   isWorking() {
-    if (this.status == 0) {
+    if (this.status === 0) {
       return false;
     }
 
