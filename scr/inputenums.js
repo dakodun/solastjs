@@ -7,6 +7,17 @@ const mouse = {
 Object.freeze(mouse);
 
 const key = {
+  Num1 : "Digit1",
+  Num2 : "Digit2",
+  Num3 : "Digit3",
+  Num4 : "Digit4",
+  Num5 : "Digit5",
+  Num6 : "Digit6",
+  Num7 : "Digit7",
+  Num8 : "Digit8",
+  Num9 : "Digit9",
+  Num0 : "Digit0",
+  
   Minus : "Minus",
   Equal : "Equal",
   
@@ -45,16 +56,16 @@ const key = {
   Space :     "Space",
   Shift : "ShiftLeft",
 
-  Num1 : "Numpad1",
-  Num2 : "Numpad2",
-  Num3 : "Numpad3",
-  Num4 : "Numpad4",
-  Num5 : "Numpad5",
-  Num6 : "Numpad6",
-  Num7 : "Numpad7",
-  Num8 : "Numpad8",
-  Num9 : "Numpad9",
-  Num0 : "Numpad0"
+  Numpad1 : "Numpad1",
+  Numpad2 : "Numpad2",
+  Numpad3 : "Numpad3",
+  Numpad4 : "Numpad4",
+  Numpad5 : "Numpad5",
+  Numpad6 : "Numpad6",
+  Numpad7 : "Numpad7",
+  Numpad8 : "Numpad8",
+  Numpad9 : "Numpad9",
+  Numpad0 : "Numpad0"
 };
 
 Object.freeze(key);
