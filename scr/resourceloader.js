@@ -21,9 +21,8 @@ class ResourceLoader {
       img.height = height;
     }
 
-    img.decode().then(() => {
-      --this.status;
-    })
+    img.decode() // returns a promise
+      .then(() => { --this.status; });
 
     return img;
   }
@@ -32,15 +31,15 @@ class ResourceLoader {
     let soundBuffer = new SoundBuffer();
 
     ++this.status;
-    fetch(src).then((response) => {
-      return response.arrayBuffer();
-    }).then((arrBuffer) => {
-      this.ac.decodeAudioData(arrBuffer, (buffer) => {
-        soundBuffer.buffer = buffer;
-      }).then(() => {
-        --this.status;
+
+   fetch(src) // returns a promise
+      .then((response) => { return response.arrayBuffer(); })
+      .then((arrBuffer) => {
+        return this.ac.decodeAudioData(
+          arrBuffer, (buffer) => { soundBuffer.buffer = buffer; }
+        );
       })
-    });
+      .then(() => { --this.status; });
 
     return soundBuffer;
   }
