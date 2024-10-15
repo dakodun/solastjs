@@ -1,5 +1,6 @@
 export {default as App} from './app.js';
 export {default as Camera2D} from './camera2d.js';
+export {default as Camera3D} from './camera3d.js';
 
 export {default as DefaultEvent} from './events/defaultevent.js';
 export {default as Error} from './error.js';

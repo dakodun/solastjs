@@ -236,14 +236,14 @@ class Mat4 {
   rotateEuler(angles) {
     /*
     .--ROLL-----------. .--PITCH----------. .--YAW------------.
-    | cosZ -sinZ     0| | cosY     0 -sinY| |    1     0     0|
-    | sinZ  cosZ     0|.|    0     1     0|.|    0  cosX  sinX|
-    |    0     0     1| | sinY     0  cosY| |    0 -sinX  cosX|
+    | cosZ  sinZ     0| | cosY     0 -sinY| |    1     0     0|
+    |-sinZ  cosZ     0|.|    0     1     0|.|    0  cosX -sinX|
+    |    0     0     1| | sinY     0  cosY| |    0  sinX  cosX|
     '-----------------' '-----------------' '-----------------'
     .--ROTATION-----------------------------------------------.
-    |              cosZcosY               -sinZcosY      -sinY|
-    | sinZcosX+cosZsinYsinX   cosZcosX-sinZsinYsinX   cosYsinX|
-    |-sinZsinX+cosZsinYcosX  -cosZsinX-sinZsinYcosX   cosYcosX|
+    |              cosZcosY                sinZcosY      -sinY|
+    |-sinZcosX-cosZsinYsinX   cosZcosX-sinZsinYsinX  -cosYsinX|
+    |-sinZsinX+cosZsinYcosX   cosZsinX+sinZsinYcosX   cosYcosX|
     '---------------------------------------------------------'
     */
     
@@ -262,15 +262,15 @@ class Mat4 {
     let sZ = Math.sin(angles.z);
 
     rotZYX.arr[ 0] =                     cZ * cY;
-    rotZYX.arr[ 1] =  (sZ * cX) + (cZ * sY * sX);
+    rotZYX.arr[ 1] = (-sZ * cX) - (cZ * sY * sX);
     rotZYX.arr[ 2] = (-sZ * sX) + (cZ * sY * cX);
 
-    rotZYX.arr[ 4] =                    -sZ * cY;
+    rotZYX.arr[ 4] =                     sZ * cY;
     rotZYX.arr[ 5] =  (cZ * cX) - (sZ * sY * sX);
-    rotZYX.arr[ 6] = (-cZ * sX) - (sZ * sY * cX);
+    rotZYX.arr[ 6] =  (cZ * sX) + (sZ * sY * cX);
 
     rotZYX.arr[ 8] =                         -sY;
-    rotZYX.arr[ 9] =                     cY * sX;
+    rotZYX.arr[ 9] =                    -cY * sX;
     rotZYX.arr[10] =                     cY * cX;
 
     this.multMat4(rotZYX);
@@ -332,7 +332,7 @@ class Mat4 {
     // ...
 
 
-    // rotation
+    // rotation...
       // create a rotation matrix from our matrix
         let rotMat = this.getCopy();
 
