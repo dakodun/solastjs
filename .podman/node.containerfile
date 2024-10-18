@@ -27,8 +27,7 @@ RUN printf "%s\n" \
   "" \
   "export default defineConfig({" \
   "  test: {" \
-  "    include: ['solastjs/tests/**']," \
-  "    exclude: ['solastjs/tests/bench/**']," \
+  "    include: ['solastjs/tests/unit/**']," \
   "    coverage: {" \
   "      provider: 'istanbul'," \
   "      reporter: ['text']," \
