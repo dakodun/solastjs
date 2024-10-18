@@ -1,43 +1,75 @@
 class Vec3 {
 	constructor(x, y, z) {
-    this.x = 0.0;
-    if (x != undefined) {
+    this.x = 0;
+    if (x !== undefined) {
+      if (typeof x !== 'number') {
+        throw new TypeError("Vec3 (constructor): x should be a Number");
+      }
+
       this.x = x;
     }
 
     this.y = this.x;
-    if (y != undefined) {
+    if (y !== undefined) {
+      if (typeof y !== 'number') {
+        throw new TypeError("Vec3 (constructor): y should be a Number");
+      }
+
       this.y = y;
     }
 
     this.z = this.y;
-    if (z != undefined) {
+    if (z !== undefined) {
+      if (typeof z !== 'number') {
+        throw new TypeError("Vec3 (constructor): z should be a Number");
+      }
+
       this.z = z;
     }
 	}
 
 	copy(other) {
+    if (!(other instanceof Vec3)) {
+      throw new TypeError("Vec3 (copy): other should be a Vec3");
+    }
+
     this.x = other.x;
 		this.y = other.y;
     this.z = other.z;
   }
 
   getCopy() {
-    let copy = new Vec3(); copy.copy(this);
+    let copy = new Vec3();
+    copy.copy(this);
+
     return copy;
   }
 
-  equals(other) {
-    if (this.x == other.x && this.y == other.y && this.z == other.z) {
-      return true;
+  equals(other, tolerance) {
+    if (!(other instanceof Vec3)) {
+      throw new TypeError("Vec3 (equals): other should be a Vec3");
     }
 
-    return false;
+    let tol = 0;
+
+    if (tolerance !== undefined) {
+      if (typeof tolerance !== 'number') {
+        throw new TypeError("Vec3 (equals): tolerance should " +
+          "be a Number");
+      }
+
+      tol = tolerance;
+    }
+
+    return (Math.abs(this.x - other.x) <= tol &&
+            Math.abs(this.y - other.y) <= tol &&
+            Math.abs(this.z - other.z) <= tol) ? true : false;
   }
 
   negate() {
-    let negated = new Vec3(-this.x, -this.y, -this.z);
-    this.copy(negated);
+    this.x = -this.x;
+    this.y = -this.y;
+    this.z = -this.z;
   }
 
   getNegated() {
@@ -48,17 +80,16 @@ class Vec3 {
   }
 
   normalize() {
-    let normalized = this.getCopy();
     let len = Math.sqrt((this.x * this.x) + (this.y * this.y) +
         (this.z * this.z));
 
-    if (len != 0) {
+    if (len !== 0) {
       let invLen = 1 / len;
-      normalized.x *= invLen; normalized.y *= invLen;
-      normalized.z *= invLen;
-    }
 
-    this.copy(normalized);
+      this.x *= invLen;
+      this.y *= invLen;
+      this.z *= invLen;
+    }
   }
 
   getNormalized() {
@@ -69,6 +100,10 @@ class Vec3 {
   }
 
   getDot(other) {
+    if (!(other instanceof Vec3)) {
+      throw new TypeError("Vec3 (getDot): other should be a Vec3");
+    }
+
     let result = ((this.x * other.x) + (this.y * other.y) +
         (this.z * other.z));
 
@@ -76,6 +111,10 @@ class Vec3 {
   }
 
   getCross(other) {
+     if (!(other instanceof Vec3)) {
+      throw new TypeError("Vec3 (getCross): other should be a Vec3");
+    }
+
     let result = new Vec3(
       ((this.y * other.z) - (this.z * other.y)),
       ((this.z * other.x) - (this.x * other.z)),
@@ -90,15 +129,33 @@ class Vec3 {
   }
 
   fromArray(arr) {
-    let diff = this.asArray().length - arr.length;
-    let padded = arr.slice();
-    if (diff > 0) {
-      padded = padded.concat(new Array(diff).fill(0));
+    if (!Array.isArray(arr)) {
+      throw new TypeError("Vec3 (fromArray): arr should be an Array");
     }
 
-    this.x = padded[0];
-    this.y = padded[1];
-    this.z = padded[2];
+    // pad the input if necessary, using default value of 0
+    // or the last value supplied
+    let result = new Array(3);
+    let padValue = 0;
+
+    for (let i = 0; i < result.length; ++i) {
+      result[i] = padValue;
+
+      if (arr[i] !== undefined) {
+        if (typeof arr[i] !== 'number') {
+          throw new TypeError(`Vec3 (fromArray): arr[${i}] should `
+          + "be a Number");
+        }
+
+        result[i] = arr[i];
+        padValue = arr[i];
+      }
+    }
+    // ...
+
+    this.x = result[0];
+    this.y = result[1];
+    this.z = result[2];
   }
 };
 
