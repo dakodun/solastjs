@@ -6,7 +6,7 @@ import Vec2 from '../../scr/vec2.js';
 import Vec3 from '../../scr/vec3.js';
 
 describe("construction", () => {
-  test("default constructor should populate 'arr' field with " +
+  test("new Mat3() should populate 'arr' field with " +
   "identity matrix", () => {
     let matrix = new Mat3();
     let expected = [1, 0, 0, 0, 1, 0, 0, 0, 1];
@@ -16,16 +16,17 @@ describe("construction", () => {
 });
 
 describe("copying", () => {
-  test("this.copy(other) should make a deep copy of 'other.arr'", () => {
+  test("this.copy(other) should make a deep copy of 'other'", () => {
     let matrix = new Mat3();
     let matrixOther = new Mat3();
-      matrixOther.arr[2] = 2; matrixOther.arr[4] = 2;
+      matrixOther.arr[2] = 2;
+      matrixOther.arr[4] = 2;
       matrixOther.arr[6] = 2;
 
     matrix.copy(matrixOther);
     
-    expect(matrix.arr).toEqual(matrixOther.arr);
-    expect(matrix.arr).not.toBe(matrixOther.arr);
+    expect(matrix).toEqual(matrixOther);
+    expect(matrix).not.toBe(matrixOther);
   });
 
   test("this.copy(other) should throw an error if 'other' is not " +
@@ -39,7 +40,8 @@ describe("copying", () => {
   test("this.copy(other) should not modify 'other'", () => {
     let matrix = new Mat3();
     let matrixOther = new Mat3();
-      matrixOther.arr[2] = 2; matrixOther.arr[4] = 2;
+      matrixOther.arr[2] = 2;
+      matrixOther.arr[4] = 2;
       matrixOther.arr[6] = 2;
     let expected = [1, 0, 2, 0, 2, 0, 2, 0, 1];
 
@@ -53,19 +55,20 @@ describe("copying", () => {
     let matrixOther = new Mat3();
     let matrix = matrixOther.getCopy();
 
-    expect(matrix).instanceOf(Mat3);
+    expect(matrix).toBeInstanceOf(Mat3);
   });
 
   test("this.getCopy() should return a 'Mat3' which is a deep copy " +
   "of 'this'", () => {
     let matrixOther = new Mat3();
-      matrixOther.arr[2] = 2; matrixOther.arr[4] = 2;
+      matrixOther.arr[2] = 2;
+      matrixOther.arr[4] = 2;
       matrixOther.arr[6] = 2;
 
     let matrix = matrixOther.getCopy();
 
-    expect(matrixOther.arr).toEqual(matrix.arr);
-    expect(matrixOther.arr).not.toBe(matrix.arr);
+    expect(matrixOther).toEqual(matrix);
+    expect(matrixOther).not.toBe(matrix);
   });
 });
 
@@ -74,7 +77,8 @@ describe("modification", () => {
   test("this.identity() should set 'this.arr' to the 3-dimensional " +
   "identity matrix", () => {
     let matrix = new Mat3();
-      matrix.arr[0] = 2; matrix.arr[4] = 2;
+      matrix.arr[0] = 2;
+      matrix.arr[4] = 2;
       matrix.arr[8] = 2;
     let expected = [1, 0, 0, 0, 1, 0, 0, 0, 1];
 
@@ -84,8 +88,8 @@ describe("modification", () => {
   });
 
 
-  test('this.transpose() should switch between column and row major ' +
-  'order', () => {
+  test("this.transpose() should switch between column and row major " +
+  "order", () => {
     let matrix = new Mat3();
       matrix.arr = [0, 1, 2, 3, 4, 5, 6, 7, 8];
     let expected = [0, 3, 6, 1, 4, 7, 2, 5, 8];
@@ -100,7 +104,7 @@ describe("modification", () => {
     let matrixOther = new Mat3();
     let matrix = matrixOther.getTranspose();
 
-    expect(matrix).instanceOf(Mat3);
+    expect(matrix).toBeInstanceOf(Mat3);
   });
 
   test("this.getTranspose() should return a 'Mat3' which is the " +
@@ -119,7 +123,7 @@ describe("modification", () => {
       matrixOther.arr = [0, 1, 2, 3, 4, 5, 6, 7, 8];
     let expected = [0, 1, 2, 3, 4, 5, 6, 7, 8];
     
-    let matrix = matrixOther.getTranspose();
+    matrixOther.getTranspose();
 
     expect(matrixOther.arr).toEqual(expected);
   });
@@ -129,10 +133,12 @@ describe("multiplication", () => {
   test("this.multMat3(other) should modify 'this.arr' with the result " +
   "of (this) row * (other) column", () => {
     let matrix = new Mat3();
-      matrix.arr[2] = 2; matrix.arr[4] = 2;
+      matrix.arr[2] = 2;
+      matrix.arr[4] = 2;
       matrix.arr[6] = 2;
     let matrixOther = new Mat3();
-      matrixOther.arr[0] = 2; matrixOther.arr[4] = 3;
+      matrixOther.arr[0] = 2;
+      matrixOther.arr[4] = 3;
       matrixOther.arr[7] = 2;
     let expected = [2, 0, 4, 0, 6, 0, 2, 4, 1];
     
@@ -152,7 +158,8 @@ describe("multiplication", () => {
   test("this.multMat3(other) should not modify 'other'", () => {
     let matrix = new Mat3();
     let matrixOther = new Mat3();
-      matrixOther.arr[2] = 2; matrixOther.arr[4] = 2;
+      matrixOther.arr[2] = 2;
+      matrixOther.arr[4] = 2;
       matrixOther.arr[6] = 2;
     let expected = [1, 0, 2, 0, 2, 0, 2, 0, 1];
 
@@ -168,16 +175,18 @@ describe("multiplication", () => {
 
     let vectorOut = matrix.getMultVec3(vectorIn);
 
-    expect(vectorOut).instanceOf(Vec3);
+    expect(vectorOut).toBeInstanceOf(Vec3);
   });
 
   test("this.getMultVec3(multVec) should return a 'Vec3' with the result " +
   "of (this) row * (multVec) column", () => {
     let matrix = new Mat3();
-      matrix.arr[2] = 2; matrix.arr[4] = 2;
+      matrix.arr[2] = 2;
+      matrix.arr[4] = 2;
       matrix.arr[6] = 2;
     let vectorIn = new Vec3();
-      vectorIn.x = 1; vectorIn.y = 2;
+      vectorIn.x = 1;
+      vectorIn.y = 2;
       vectorIn.z = 3;
     let expected = [7, 4, 5];
 
@@ -197,10 +206,12 @@ describe("multiplication", () => {
   
   test("this.getMultVec3(multVec) should not modify 'this'", () => {
     let matrix = new Mat3();
-      matrix.arr[2] = 2; matrix.arr[4] = 2;
+      matrix.arr[2] = 2;
+      matrix.arr[4] = 2;
       matrix.arr[6] = 2;
     let vector = new Vec3();
-      vector.x = 1; vector.y = 2;
+      vector.x = 1;
+      vector.y = 2;
       vector.z = 3;
     let expected = [1, 0, 2, 0, 2, 0, 2, 0, 1];
 
@@ -211,10 +222,12 @@ describe("multiplication", () => {
 
   test("this.getMultVec3(multVec) should not modify 'multVec'", () => {
     let matrix = new Mat3();
-      matrix.arr[2] = 2; matrix.arr[4] = 2;
+      matrix.arr[2] = 2;
+      matrix.arr[4] = 2;
       matrix.arr[6] = 2;
     let vector = new Vec3();
-      vector.x = 1; vector.y = 2;
+      vector.x = 1;
+      vector.y = 2;
       vector.z = 3;
     let expected = [1, 2, 3];
 
@@ -225,14 +238,15 @@ describe("multiplication", () => {
   });
 });
 
-describe('transforms', () => {
+describe("transforms", () => {
   test("this.translate(transVec) should modify 'this.arr' with " +
   "the result of (this) row * (translation matrix - constructed " +
   "from 'transVec') column", () => {
     let matrix = new Mat3();
       matrix.arr = [1, 2, 0, 2, 1, 0, 30, 10, 1];
     let vector = new Vec2();
-      vector.x = 10; vector.y = -20;
+      vector.x = 10;
+      vector.y = -20;
     let expected = [1, 2, 0, 2, 1, 0, 0, 10, 1];
     
     matrix.translate(vector);
@@ -252,7 +266,8 @@ describe('transforms', () => {
     let matrix = new Mat3();
       matrix.arr = [1, 2, 0, 2, 1, 0, 30, 10, 1];
     let vector = new Vec2();
-      vector.x = 10; vector.y = -20;
+      vector.x = 10;
+      vector.y = -20;
     let expected = [10, -20];
 
     matrix.translate(vector);
@@ -301,7 +316,8 @@ describe('transforms', () => {
     let matrix = new Mat3();
       matrix.arr = [1, 2, 0, 2, 1, 0, 30, 10, 1];
     let vector = new Vec2();
-      vector.x = 10; vector.y = -20;
+      vector.x = 10;
+      vector.y = -20;
     let expected = 
       [10, 20, 0, -40, -20, 0, 30, 10, 1];
     
@@ -322,7 +338,8 @@ describe('transforms', () => {
     let matrix = new Mat3();
       matrix.arr = [1, 1, 2, 0, 1, 1, 1, 0, 2, 1, 1, 0, 30, 10, -20, 1];
     let vector = new Vec2();
-      vector.x = 10; vector.y = -20;
+      vector.x = 10;
+      vector.y = -20;
     let expected = [10, -20];
 
     matrix.scale(vector);
@@ -332,8 +349,8 @@ describe('transforms', () => {
   });
 });
 
-describe('conversion', () => {
-  test('this.asString() should return string object', () => {
+describe("conversion", () => {
+  test("this.asString() should return string object", () => {
     let matrix = new Mat3();
     let matrixStr = matrix.asString();
 

@@ -17,7 +17,7 @@ class Mat3 {
 
 	copy(other) {
     if (!(other instanceof Mat3)) {
-      throw new TypeError("copy(other): other should be a Mat3");
+      throw new TypeError("Mat3 (copy): other should be a Mat3");
     }
 
     this.arr = other.arr.slice();
@@ -52,7 +52,7 @@ class Mat3 {
 
   multMat3(other) {
     if (!(other instanceof Mat3)) {
-      throw new TypeError("multMat3(other): other should be a Mat3");
+      throw new TypeError("Mat3 (multMat3): other should be a Mat3");
     }
 
     let result = new Mat3();
@@ -80,7 +80,7 @@ class Mat3 {
     */
     
     if (!(multVec instanceof Vec3)) {
-      throw new TypeError("getMultVec3(multVec): multVec should be a Vec3");
+      throw new TypeError("Mat3 (getMultVec3): multVec should be a Vec3");
     }
     
     let arrIn = multVec.asArray();
@@ -108,7 +108,7 @@ class Mat3 {
     */
     
     if (!(transVec instanceof Vec2)) {
-      throw new TypeError("translate(transVec): transVec should be a Vec2");
+      throw new TypeError("Mat3 (translate): transVec should be a Vec2");
     }
     
     let transMat = new Mat3();
@@ -128,7 +128,7 @@ class Mat3 {
     */
     
     if (typeof angle != 'number') {
-      throw new TypeError("rotate(angle): angle should be a Number");
+      throw new TypeError("Mat3 (rotate): angle should be a Number");
     }
 
     let cZ = Math.cos(angle);
@@ -153,7 +153,7 @@ class Mat3 {
     */
     
     if (!(scaleVec instanceof Vec2)) {
-      throw new TypeError("scale(scaleVec): scaleVec should be a Vec2");
+      throw new TypeError("Mat3 (scale): scaleVec should be a Vec2");
     }
 
     let scaleMat = new Mat3();

@@ -18,7 +18,7 @@ class Mat4 {
 
 	copy(other) {
     if (!(other instanceof Mat4)) {
-      throw new TypeError("copy(other): other should be a Mat4");
+      throw new TypeError("Mat4 (copy): other should be a Mat4");
     }
     
     this.arr = other.arr.slice();
@@ -117,7 +117,7 @@ class Mat4 {
 
   multMat4(other) {
     if (!(other instanceof Mat4)) {
-      throw new TypeError("multMat4(other): other should be a Mat4");
+      throw new TypeError("Mat4 (multMat4): other should be a Mat4");
     }
 
     let result = new Mat4();
@@ -147,7 +147,7 @@ class Mat4 {
     */
     
     if (!(multVec instanceof Vec4)) {
-      throw new TypeError("getMultVec4(multVec): multVec should be a Vec4");
+      throw new TypeError("Mat4 (getMultVec4): multVec should be a Vec4");
     }
 
     let arrIn = multVec.asArray();
@@ -177,7 +177,7 @@ class Mat4 {
     */
     
     if (!(transVec instanceof Vec3)) {
-      throw new TypeError("translate(transVec): transVec should be a Vec3");
+      throw new TypeError("Mat4 (translate): transVec should be a Vec3");
     }
 
     let transMat = new Mat4();
@@ -198,12 +198,10 @@ class Mat4 {
     */
 
     if (typeof angle != 'number') {
-      throw new TypeError("rotateAxis(angle, axis): angle " +
-      "should be a Number");
+      throw new TypeError("Mat4 (rotateAxis): angle should be a Number");
     }
     else if (!(axis instanceof Vec3)) {
-      throw new TypeError("rotateAxis(angle, axis): axis should " +
-      "be a Vec3");
+      throw new TypeError("Mat4 (rotateAxis): axis should be a Vec3");
     }
 
     let rotAA = new Mat4();
@@ -248,7 +246,7 @@ class Mat4 {
     */
     
     if (!(angles instanceof Vec3)) {
-      throw new TypeError("rotateEuler(angles): angles should be a Vec3");
+      throw new TypeError("Mat4 (rotateEuler): angles should be a Vec3");
     }
 
     let rotZYX = new Mat4();
@@ -287,7 +285,7 @@ class Mat4 {
     */
     
     if (!(scaleVec instanceof Vec3)) {
-      throw new TypeError("scale(scaleVec): scaleVec should be a Vec3");
+      throw new TypeError("Mat4 (scale): scaleVec should be a Vec3");
     }
     
     let scaleMat = new Mat4();
