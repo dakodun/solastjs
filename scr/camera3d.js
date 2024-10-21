@@ -5,7 +5,7 @@ class Camera3D {
   static Plane = {
     YZ : 1,
     XZ : 2,
-    XY : 4
+    XY : 4,
   };
 
 	constructor() {

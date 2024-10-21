@@ -1,7 +1,7 @@
 const Mouse = {
   LEFT   : 0,
   MIDDLE : 1,
-  RIGHT  : 2 
+  RIGHT  : 2,
 };
 
 Object.freeze(Mouse);
@@ -65,7 +65,7 @@ const Key = {
   NUMPAD7 : "Numpad7",
   NUMPAD8 : "Numpad8",
   NUMPAD9 : "Numpad9",
-  NUMPAD0 : "Numpad0"
+  NUMPAD0 : "Numpad0",
 };
 
 Object.freeze(Key);
