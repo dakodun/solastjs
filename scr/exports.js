@@ -5,7 +5,7 @@ export {default as Camera3D} from './camera3d.js';
 export {default as DefaultEvent} from './events/defaultevent.js';
 export {default as Error} from './error.js';
 export {default as EventQueue} from './eventqueue.js';
-import * as enums from './exportenums.js'; export {enums};
+import * as enums from './exportenums.js'; export { enums };
 export {default as FrameBuffer} from './framebuffer.js';
 
 export {default as InputManager} from './inputmanager.js';

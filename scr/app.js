@@ -75,13 +75,12 @@ class App {
   run() {
     let updateCanvas = this.updateCanvas();
     if (updateCanvas[0]) {
-      let sizeEvent = new SizeEvent();
-      sizeEvent.width = updateCanvas[1];
-      sizeEvent.height = updateCanvas[2];
-      sizeEvent.oldWidth = this.canvas.width;
-      sizeEvent.oldHeight = this.canvas.height;
+      let sizeEvent = new SizeEvent(
+        new Vec2(this.canvas.width, this.canvas.height),
+        new Vec2(  updateCanvas[1],    updateCanvas[2])
+      );
 
-      this.canvas.width = updateCanvas[1];
+      this.canvas.width  = updateCanvas[1];
       this.canvas.height = updateCanvas[2];
 
       this.eventQueue.push(sizeEvent);
@@ -106,23 +105,19 @@ class App {
     if (frameTime > this.frameLimit) {
       let framesProcessed = 0;
       let frameAccum = frameTime;
+
       while (frameAccum >= this.frameLimit) {
         this.process(this.frameLimit);
         ++framesProcessed;
         frameAccum -= this.frameLimit;
 
-        if (this.frameSkip || framesProcessed >= this.frameMax) {
-          break;
-        }
-
-        if (this.sceneManager.nextExists()) {
-          break;
-        }
+        if (this.frameSkip || framesProcessed >= this.frameMax) { break; }
+        
+        if (this.sceneManager.nextExists()) { break; }
       }
 
       this.postProcess(frameTime, framesProcessed);
-    }
-    else {
+    } else {
       this.process(frameTime);
       this.postProcess(frameTime, 1);
     }

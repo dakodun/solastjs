@@ -19,7 +19,7 @@ class InputManager {
     this.globalMousePrev = null;
 
     this.keyStates = new Map();
-    for (const [key, value] of Object.entries(enums.key)) {
+    for (const [key, value] of Object.entries(enums.Key)) {
       this.keyStates.set(value, 0);
     }
 

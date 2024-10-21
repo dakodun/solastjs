@@ -2,7 +2,7 @@ import Mat4 from './mat4.js';
 import Vec3 from './vec3.js';
 
 class Camera3D {
-  static plane = {
+  static Plane = {
     YZ : 1,
     XZ : 2,
     XY : 4
@@ -51,9 +51,9 @@ class Camera3D {
       if (Math.abs(dist[i]) > 1e-15) {
         // get the transformed axis to move along
         axis[i] = new Vec3(
-          ((plane & Camera3D.plane.YZ) === 0) ? this.view.arr[0 + i] : 0,
-          ((plane & Camera3D.plane.XZ) === 0) ? this.view.arr[4 + i] : 0,
-          ((plane & Camera3D.plane.XY) === 0) ? this.view.arr[8 + i] : 0
+          ((plane & Camera3D.Plane.YZ) === 0) ? this.view.arr[0 + i] : 0,
+          ((plane & Camera3D.Plane.XZ) === 0) ? this.view.arr[4 + i] : 0,
+          ((plane & Camera3D.Plane.XY) === 0) ? this.view.arr[8 + i] : 0
         ); axis[i].normalize();
 
         this.position.x += axis[i].x * dist[i];

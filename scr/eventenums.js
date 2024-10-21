@@ -1,9 +1,9 @@
-const event = {
-  default     : 0,
-  size        : 1,
-  orientation : 2
+const Event = {
+  DEFAULT     : 0,
+  SIZE        : 1,
+  ORIENTATION : 2
 };
 
-Object.freeze(event);
+Object.freeze(Event);
 
-export {event};
+export { Event };
