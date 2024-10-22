@@ -1,22 +1,13 @@
 class Vec2 {
-	constructor(x, y) {
-    this.x = 0;
-    if (x !== undefined) {
-      if (typeof x !== 'number') {
-        throw new TypeError("Vec2 (constructor): x should be a Number");
-      }
-
-      this.x = x;
+	constructor(x = 0, y = x) {
+    if (typeof x !== 'number') {
+      throw new TypeError("Vec2 (constructor): x should be a Number");
+    } else if (typeof y !== 'number') {
+      throw new TypeError("Vec2 (constructor): y should be a Number");
     }
 
-    this.y = this.x;
-    if (y !== undefined) {
-      if (typeof y !== 'number') {
-        throw new TypeError("Vec2 (constructor): y should be a Number");
-      }
-
-      this.y = y;
-    }
+    this.x = x;
+    this.y = y;
 	}
 
 	copy(other) {
@@ -35,24 +26,16 @@ class Vec2 {
     return copy;
   }
 
-  equals(other, tolerance) {
+  equals(other, tolerance = 0) {
     if (!(other instanceof Vec2)) {
       throw new TypeError("Vec2 (equals): other should be a Vec2");
+    } else if (typeof tolerance !== 'number') {
+      throw new TypeError("Vec2 (equals): tolerance should " +
+        "be a Number");
     }
 
-    let tol = 0;
-
-    if (tolerance !== undefined) {
-      if (typeof tolerance !== 'number') {
-        throw new TypeError("Vec2 (equals): tolerance should " +
-          "be a Number");
-      }
-
-      tol = tolerance;
-    }
-
-    return (Math.abs(this.x - other.x) <= tol &&
-            Math.abs(this.y - other.y) <= tol) ? true : false;
+    return (Math.abs(this.x - other.x) <= tolerance &&
+            Math.abs(this.y - other.y) <= tolerance) ? true : false;
   }
 
   negate() {

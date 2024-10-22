@@ -1,31 +1,16 @@
 class Vec3 {
-	constructor(x, y, z) {
-    this.x = 0;
-    if (x !== undefined) {
-      if (typeof x !== 'number') {
-        throw new TypeError("Vec3 (constructor): x should be a Number");
-      }
-
-      this.x = x;
+	constructor(x = 0, y = x, z = y) {
+    if (typeof x !== 'number') {
+      throw new TypeError("Vec2 (constructor): x should be a Number");
+    } else if (typeof y !== 'number') {
+      throw new TypeError("Vec2 (constructor): y should be a Number");
+    } else if (typeof z !== 'number') {
+      throw new TypeError("Vec2 (constructor): z should be a Number");
     }
 
-    this.y = this.x;
-    if (y !== undefined) {
-      if (typeof y !== 'number') {
-        throw new TypeError("Vec3 (constructor): y should be a Number");
-      }
-
-      this.y = y;
-    }
-
-    this.z = this.y;
-    if (z !== undefined) {
-      if (typeof z !== 'number') {
-        throw new TypeError("Vec3 (constructor): z should be a Number");
-      }
-
-      this.z = z;
-    }
+    this.x = x;
+    this.y = y;
+    this.z = z;
 	}
 
 	copy(other) {
@@ -45,25 +30,17 @@ class Vec3 {
     return copy;
   }
 
-  equals(other, tolerance) {
+  equals(other, tolerance = 0) {
     if (!(other instanceof Vec3)) {
       throw new TypeError("Vec3 (equals): other should be a Vec3");
+    } else if (typeof tolerance !== 'number') {
+      throw new TypeError("Vec3 (equals): tolerance should " +
+        "be a Number");
     }
 
-    let tol = 0;
-
-    if (tolerance !== undefined) {
-      if (typeof tolerance !== 'number') {
-        throw new TypeError("Vec3 (equals): tolerance should " +
-          "be a Number");
-      }
-
-      tol = tolerance;
-    }
-
-    return (Math.abs(this.x - other.x) <= tol &&
-            Math.abs(this.y - other.y) <= tol &&
-            Math.abs(this.z - other.z) <= tol) ? true : false;
+    return (Math.abs(this.x - other.x) <= tolerance &&
+            Math.abs(this.y - other.y) <= tolerance &&
+            Math.abs(this.z - other.z) <= tolerance) ? true : false;
   }
 
   negate() {

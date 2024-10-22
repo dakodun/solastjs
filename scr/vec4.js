@@ -1,40 +1,19 @@
 class Vec4 {
-	constructor(x, y, z, w) {
-    this.x = 0;
-    if (x !== undefined) {
-      if (typeof x !== 'number') {
-        throw new TypeError("Vec4 (constructor): x should be a Number");
-      }
-
-      this.x = x;
+	constructor(x = 0, y = x, z = y, w = z) {
+    if (typeof x !== 'number') {
+      throw new TypeError("Vec2 (constructor): x should be a Number");
+    } else if (typeof y !== 'number') {
+      throw new TypeError("Vec2 (constructor): y should be a Number");
+    } else if (typeof z !== 'number') {
+      throw new TypeError("Vec2 (constructor): z should be a Number");
+    } else if (typeof w !== 'number') {
+      throw new TypeError("Vec2 (constructor): w should be a Number");
     }
 
-    this.y = this.x;
-    if (y !== undefined) {
-      if (typeof y !== 'number') {
-        throw new TypeError("Vec4 (constructor): y should be a Number");
-      }
-
-      this.y = y;
-    }
-
-    this.z = this.y;
-    if (z !== undefined) {
-      if (typeof z !== 'number') {
-        throw new TypeError("Vec4 (constructor): z should be a Number");
-      }
-
-      this.z = z;
-    }
-
-    this.w = this.z;
-    if (w !== undefined) {
-      if (typeof w !== 'number') {
-        throw new TypeError("Vec4 (constructor): w should be a Number");
-      }
-
-      this.w = w;
-    }
+    this.x = x;
+    this.y = y;
+    this.z = z;
+    this.w = w;
 	}
 
 	copy(other) {
@@ -55,26 +34,18 @@ class Vec4 {
     return copy;
   }
 
-  equals(other, tolerance) {
+  equals(other, tolerance = 0) {
     if (!(other instanceof Vec4)) {
       throw new TypeError("Vec4 (equals): other should be a Vec4");
+    } else if (typeof tolerance !== 'number') {
+      throw new TypeError("Vec4 (equals): tolerance should " +
+        "be a Number");
     }
-
-    let tol = 0;
-
-    if (tolerance !== undefined) {
-      if (typeof tolerance !== 'number') {
-        throw new TypeError("Vec4 (equals): tolerance should " +
-          "be a Number");
-      }
-
-      tol = tolerance;
-    }
-
-    return (Math.abs(this.x - other.x) <= tol &&
-            Math.abs(this.y - other.y) <= tol &&
-            Math.abs(this.z - other.z) <= tol &&
-            Math.abs(this.w - other.w) <= tol) ? true : false;
+    
+    return (Math.abs(this.x - other.x) <= tolerance &&
+            Math.abs(this.y - other.y) <= tolerance &&
+            Math.abs(this.z - other.z) <= tolerance &&
+            Math.abs(this.w - other.w) <= tolerance) ? true : false;
   }
 
   negate() {
