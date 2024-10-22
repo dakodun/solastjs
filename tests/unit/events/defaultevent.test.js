@@ -2,6 +2,8 @@ import { describe, test, expect } from 'vitest';
 
 import DefaultEvent from '../../../scr/events/defaultevent.js';
 
+import * as enums from '../../../scr/exportenums.js';
+
 describe("copying", () => {
   test("this.copy(other) should make a deep copy of 'other'", () => {
     let event = new DefaultEvent();
@@ -36,5 +38,25 @@ describe("copying", () => {
 
     expect(eventOther).toEqual(event);
     expect(eventOther).not.toBe(event);
+  });
+});
+
+describe("typing", () => {
+  test("this.getType() should return a 'Number'", () => {
+    let event = new DefaultEvent();
+
+    let type = event.getType();
+
+    expect(type).toBeTypeOf('number');
+  });
+
+  test("this.getType() should return a 'Number' which matches " +
+  "the enum associated with this type", () => {
+    let event = new DefaultEvent();
+    let expected = enums.Event.DEFAULT;
+
+    let type = event.getType();
+
+    expect(type).toEqual(expected);
   });
 });

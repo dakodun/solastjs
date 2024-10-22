@@ -3,6 +3,7 @@ import { describe, test, expect } from 'vitest';
 import SizeEvent from '../../../scr/events/sizeevent.js';
 
 import Vec2 from '../../../scr/vec2.js';
+import * as enums from '../../../scr/exportenums.js';
 
 describe("construction", () => {
   test("new SizeEvent(prev, new, ...) should assign the first " +
@@ -93,5 +94,25 @@ describe("copying", () => {
 
     expect(eventOther).toEqual(event);
     expect(eventOther).not.toBe(event);
+  });
+});
+
+describe("typing", () => {
+  test("this.getType() should return a 'Number'", () => {
+    let event = new SizeEvent();
+
+    let type = event.getType();
+
+    expect(type).toBeTypeOf('number');
+  });
+
+  test("this.getType() should return a 'Number' which matches " +
+  "the enum associated with this type", () => {
+    let event = new SizeEvent();
+    let expected = enums.Event.SIZE;
+
+    let type = event.getType();
+
+    expect(type).toEqual(expected);
   });
 });

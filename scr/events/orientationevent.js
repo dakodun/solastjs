@@ -21,6 +21,10 @@ class OrientationEvent extends SolEvent {
     
     return copy;
   }
+
+  getType() {
+    return OrientationEvent.type;
+  }
 }
 
 export default OrientationEvent;

@@ -188,7 +188,7 @@ class App {
   }
 
   handleEvent(e) {
-    switch(e.type) {
+    switch(e.getType()) {
       default :
         break;
     }

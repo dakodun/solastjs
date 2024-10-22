@@ -45,6 +45,10 @@ class SizeEvent extends SolEvent {
     
     return copy;
   }
+
+  getType() {
+    return SizeEvent.type;
+  }
 }
 
 export default SizeEvent;

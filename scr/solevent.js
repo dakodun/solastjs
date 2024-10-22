@@ -1,8 +1,10 @@
 import * as enums from './exportenums.js';
 
 class SolEvent {
+  static type = enums.Event.DEFAULT;
+
   constructor() {
-    this.type = enums.Event.DEFAULT;
+    
   }
 
   copy(other) {
@@ -16,6 +18,10 @@ class SolEvent {
     copy.copy(this);
     
     return copy;
+  }
+
+  getType() {
+    return SolEvent.type;
   }
 }
 

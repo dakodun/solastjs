@@ -21,6 +21,10 @@ class DefaultEvent extends SolEvent {
 
     return copy;
   }
+
+  getType() {
+    return DefaultEvent.type;
+  }
 }
 
 export default DefaultEvent;
