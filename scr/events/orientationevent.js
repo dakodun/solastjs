@@ -1,7 +1,7 @@
 import * as enums from '../exportenums.js';
-import Event from '../event.js';
+import SolEvent from '../solevent.js';
 
-class OrientationEvent extends Event {
+class OrientationEvent extends SolEvent {
   static type = enums.Event.ORIENTATION;
 
   constructor() {

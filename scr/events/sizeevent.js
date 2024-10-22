@@ -1,8 +1,8 @@
 import * as enums from '../exportenums.js';
-import Event from '../event.js';
+import SolEvent from '../solevent.js';
 import Vec2 from '../vec2.js';
 
-class SizeEvent extends Event {
+class SizeEvent extends SolEvent {
   static type = enums.Event.SIZE;
 
   constructor(prevDimensions, newDimensions) {

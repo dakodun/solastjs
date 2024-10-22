@@ -1,7 +1,7 @@
 import AC, {acSetContext} from './ac.js'
 import GL, {glSetContext} from './gl.js'
 import GLStates from './glstates.js'
-import EngineError from './error.js';
+import SolError from './solerror.js';
 import EventQueue from './eventqueue.js';
 import InputManager from './inputmanager.js';
 import ResourceManager from './resourcemanager.js';
@@ -42,7 +42,7 @@ class App {
     this.canvas = document.getElementById(canvasID);
     this.context = this.canvas.getContext("webgl2", {alpha: false});
     if (!this.context) {
-      throw new EngineError("unable to create webGL context");
+      throw new SolError("unable to create webGL context");
     }
 
     glSetContext(this.context);

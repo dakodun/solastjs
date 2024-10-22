@@ -1,7 +1,7 @@
 import * as enums from "../exportenums.js";
-import Event from "../event.js";
+import SolEvent from "../solevent.js";
 
-class DefaultEvent extends Event {
+class DefaultEvent extends SolEvent {
   static type = enums.Event.DEFAULT;
   
   constructor() {
