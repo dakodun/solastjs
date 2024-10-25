@@ -30,12 +30,57 @@ describe("construction", () => {
     expect(vector.y).toEqual(expected);
   });
 
-  test("new Vec2(...) should throw an error if a parameter " + 
-  "supplied is not a 'Number'", () => {
-    let str = "str";
+  
+});
 
-    expect(() => new Vec2(str, 1)).toThrowError(/Number/);
-    expect(() => new Vec2(0, str)).toThrowError(/Number/);
+describe("getters/setters", () => {
+  test("this.x should throw an error when assigned a value that " +
+  "is not a 'Number'", () => {
+    let str = "str";
+    let vector = new Vec2();
+
+    expect(() => vector.x = str).toThrowError(/Number/);
+  });
+
+  test("this.x should assign a deep copy of the value", () => {
+    let num = 1;
+    let vector = new Vec2();
+
+    vector.x = num;
+
+    expect(vector.x).toEqual(num);
+  });
+
+  test("this.x should return a deep copy of 'this.x'", () => {
+    let vector = new Vec2(1, 2);
+    let expected = vector.x;
+
+    expect(expected).toEqual(vector.x);
+  });
+
+
+  test("this.y should throw an error when assigned a value that " +
+  "is not a 'Number'", () => {
+    let str = "str";
+    let vector = new Vec2();
+
+    expect(() => vector.y = str).toThrowError(/Number/);
+  });
+
+  test("this.y should assign a deep copy of the value", () => {
+    let num = 2;
+    let vector = new Vec2();
+
+    vector.y = num;
+
+    expect(vector.y).toEqual(num);
+  });
+
+  test("this.y should return a deep copy of 'this.y'", () => {
+    let vector = new Vec2(1, 2);
+    let expected = vector.y;
+
+    expect(expected).toEqual(vector.y);
   });
 });
 

@@ -6,12 +6,58 @@ import Vec2 from '../../scr/vec2.js';
 import Vec3 from '../../scr/vec3.js';
 
 describe("construction", () => {
+  test("new Mat3(arr, ...) should populate 'arr' field with " +
+  "shallow copy of first supplied parameter", () => {
+    let arr = [1, 0, 0, 0, 2, 0, 0, 0, 3];
+    let matrix = new Mat3(arr, [2]);
+    let expected = [1, 0, 0, 0, 2, 0, 0, 0, 3];
+
+    expect(matrix.arr).toBe(arr);
+    expect(matrix.arr).toEqual(expected);
+  });
+
   test("new Mat3() should populate 'arr' field with " +
   "identity matrix", () => {
     let matrix = new Mat3();
     let expected = [1, 0, 0, 0, 1, 0, 0, 0, 1];
 
     expect(matrix.arr).toEqual(expected);
+  });
+});
+
+describe("getters/setters", () => {
+  test("this.arr should throw an error when assigned a value that " +
+  "is not an 'Array'", () => {
+    let arrStr = "arrStr";
+    let matrix = new Mat3();
+
+    expect(() => matrix.arr = arrStr).toThrowError(/Array/);
+  });
+
+  test("this.arr should throw an error when assigned an 'Array' that " +
+  "does not have exactly 9 elements", () => {
+    let matrix = new Mat3();
+
+    expect(() => matrix.arr = [0, 1, 2, 3, 4, 5, 6, 7]).
+      toThrowError(/9 elements/);
+    expect(() => matrix.arr = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]).
+      toThrowError(/9 elements/);
+  });
+
+  test("this.arr should assign a shallow copy of the value", () => {
+    let arr = [1, 0, 0, 0, 2, 0, 0, 0, 3];
+    let matrix = new Mat3();
+
+    matrix.arr = arr;
+
+    expect(matrix.arr).toBe(arr);
+  });
+
+  test("this.arr should return a shallow copy of 'this.arr'", () => {
+    let matrix = new Mat3([1, 0, 0, 0, 2, 0, 0, 0, 3]);
+    let expected = matrix.arr;
+
+    expect(expected).toBe(matrix.arr);
   });
 });
 
@@ -336,7 +382,7 @@ describe("transforms", () => {
 
   test("this.scale(scaleVec) should not modify 'scaleVec'", () => {
     let matrix = new Mat3();
-      matrix.arr = [1, 1, 2, 0, 1, 1, 1, 0, 2, 1, 1, 0, 30, 10, -20, 1];
+      matrix.arr = [1, 2, 0, 2, 1, 0, 30, 10, 1];
     let vector = new Vec2();
       vector.x = 10;
       vector.y = -20;

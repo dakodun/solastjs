@@ -1,20 +1,56 @@
 class Vec4 {
-	constructor(x = 0, y = x, z = y, w = z) {
-    if (typeof x !== 'number') {
-      throw new TypeError("Vec2 (constructor): x should be a Number");
-    } else if (typeof y !== 'number') {
-      throw new TypeError("Vec2 (constructor): y should be a Number");
-    } else if (typeof z !== 'number') {
-      throw new TypeError("Vec2 (constructor): z should be a Number");
-    } else if (typeof w !== 'number') {
-      throw new TypeError("Vec2 (constructor): w should be a Number");
-    }
+  // private fields
+  #x = 0;
+  #y = 0;
+  #z = 0;
+  #w = 0;
+  // ...
 
+	constructor(x = 0, y = x, z = y, w = z) {
     this.x = x;
     this.y = y;
     this.z = z;
     this.w = w;
 	}
+
+  // getters/setters
+  get x() { return this.#x; }
+  get y() { return this.#y; }
+  get z() { return this.#z; }
+  get w() { return this.#w; }
+  
+  set x(x) {
+    if (typeof x !== 'number') {
+      throw new TypeError("Vec2 (x): should be a Number");
+    }
+
+    this.#x = x;
+  }
+
+  set y(y) {
+    if (typeof y !== 'number') {
+      throw new TypeError("Vec2 (y): should be a Number");
+    }
+
+    this.#y = y;
+  }
+
+  set z(z) {
+    if (typeof z !== 'number') {
+      throw new TypeError("Vec2 (z): should be a Number");
+    }
+
+    this.#z = z;
+  }
+
+  set w(w) {
+    if (typeof w !== 'number') {
+      throw new TypeError("Vec2 (w): should be a Number");
+    }
+
+    this.#w = w;
+  }
+  // ...
 
 	copy(other) {
     if (!(other instanceof Vec4)) {
@@ -113,8 +149,8 @@ class Vec4 {
 
       if (arr[i] !== undefined) {
         if (typeof arr[i] !== 'number') {
-          throw new TypeError(`Vec4 (fromArray): arr[${i}] should `
-          + "be a Number");
+          throw new TypeError(`Vec4 (fromArray): arr[${i}] should ` +
+            `be a Number`);
         }
 
         result[i] = arr[i];

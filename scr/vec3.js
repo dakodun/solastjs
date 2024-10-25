@@ -1,17 +1,45 @@
 class Vec3 {
-	constructor(x = 0, y = x, z = y) {
-    if (typeof x !== 'number') {
-      throw new TypeError("Vec2 (constructor): x should be a Number");
-    } else if (typeof y !== 'number') {
-      throw new TypeError("Vec2 (constructor): y should be a Number");
-    } else if (typeof z !== 'number') {
-      throw new TypeError("Vec2 (constructor): z should be a Number");
-    }
+  // private fields
+  #x = 0;
+  #y = 0;
+  #z = 0;
+  // ...
 
+	constructor(x = 0, y = x, z = y) {
     this.x = x;
     this.y = y;
     this.z = z;
 	}
+
+  // getters/setters
+  get x() { return this.#x; }
+  get y() { return this.#y; }
+  get z() { return this.#z; }
+  
+  set x(x) {
+    if (typeof x !== 'number') {
+      throw new TypeError("Vec2 (x): should be a Number");
+    }
+
+    this.#x = x;
+  }
+
+  set y(y) {
+    if (typeof y !== 'number') {
+      throw new TypeError("Vec2 (y): should be a Number");
+    }
+
+    this.#y = y;
+  }
+
+  set z(z) {
+    if (typeof z !== 'number') {
+      throw new TypeError("Vec2 (z): should be a Number");
+    }
+
+    this.#z = z;
+  }
+  // ...
 
 	copy(other) {
     if (!(other instanceof Vec3)) {
@@ -120,8 +148,8 @@ class Vec3 {
 
       if (arr[i] !== undefined) {
         if (typeof arr[i] !== 'number') {
-          throw new TypeError(`Vec3 (fromArray): arr[${i}] should `
-          + "be a Number");
+          throw new TypeError(`Vec3 (fromArray): arr[${i}] should ` +
+            `be a Number`);
         }
 
         result[i] = arr[i];

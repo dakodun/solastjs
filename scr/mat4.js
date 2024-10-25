@@ -2,7 +2,11 @@ import Vec3 from './vec3.js';
 import Vec4 from './vec4.js';
 
 class Mat4 {
-	constructor() {
+  // private fields
+  #arr = [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1];
+  // ...
+
+	constructor(arr = [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1]) {
     /*
     .--COL-MAJOR---.
     | 0   4   8  12|
@@ -12,9 +16,23 @@ class Mat4 {
     '--------------'
     */
 
-    this.arr = new Array();
-    this.identity();
+    this.arr = arr;
 	}
+
+  // getters/setters
+  get arr() { return this.#arr; }
+  
+  set arr(arr) {
+    if (!(arr instanceof Array)) {
+      throw new TypeError("Mat4 (arr): should be an Array");
+    } else if (arr.length !== 16) {
+      throw new RangeError("Mat4 (arr): should be an Array with " +
+        "16 elements");
+    }
+
+    this.#arr = arr;
+  }
+  // ...
 
 	copy(other) {
     if (!(other instanceof Mat4)) {

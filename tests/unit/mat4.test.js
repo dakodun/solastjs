@@ -6,12 +6,63 @@ import Vec3 from '../../scr/vec3.js';
 import Vec4 from '../../scr/vec4.js';
 
 describe("construction", () => {
+  test("new Mat4(arr, ...) should populate 'arr' field with " +
+  "shallow copy of first supplied parameter", () => {
+    let arr = [1, 0, 0, 0, 0, 2, 0, 0, 0, 0, 3, 0, 0, 0, 0, 4];
+    let matrix = new Mat4(arr, [2]);
+    let expected = [1, 0, 0, 0, 0, 2, 0, 0, 0, 0, 3, 0, 0, 0, 0, 4];
+
+    expect(matrix.arr).toBe(arr);
+    expect(matrix.arr).toEqual(expected);
+  });
+
   test("new Mat4() should populate 'arr' field with " +
   "identity matrix", () => {
     let matrix = new Mat4();
     let expected = [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1];
 
     expect(matrix.arr).toEqual(expected);
+  });
+});
+
+describe("getters/setters", () => {
+  test("this.arr should throw an error when assigned a value that " +
+  "is not an 'Array'", () => {
+    let arrStr = "arrStr";
+    let matrix = new Mat4();
+
+    expect(() => matrix.arr = arrStr).toThrowError(/Array/);
+  });
+
+  test("this.arr should throw an error when assigned an 'Array' that " +
+  "does not have exactly 16 elements", () => {
+    let matrix = new Mat4();
+
+    expect(() => matrix.arr =
+      [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14]).
+      toThrowError(/16 elements/);
+    expect(() => matrix.arr =
+      [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16]).
+      toThrowError(/16 elements/);
+  });
+
+  test("this.arr should assign a shallow copy of the value", () => {
+    let arr = [1, 0, 0, 0, 0, 2, 0, 0, 0, 0, 3, 0, 0, 0, 0, 4];
+    let matrix = new Mat4();
+
+    matrix.arr = arr;
+
+    expect(matrix.arr).toBe(arr);
+  });
+
+  test("this.arr should return a shallow copy of 'this.arr'", () => {
+    let matrix = new Mat4(
+      [1, 0, 0, 0, 0, 2, 0, 0, 0, 0, 3, 0, 0, 0, 0, 4]
+    );
+
+    let expected = matrix.arr;
+
+    expect(expected).toBe(matrix.arr);
   });
 });
 

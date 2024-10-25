@@ -2,7 +2,11 @@ import Vec2 from './vec2.js';
 import Vec3 from './vec3.js';
 
 class Mat3 {
-	constructor() {
+  // private fields
+  #arr = [1, 0, 0, 0, 1, 0, 0, 0, 1];
+  // ...
+
+	constructor(arr = [1, 0, 0, 0, 1, 0, 0, 0, 1]) {
     /*
     .-COL-MAJOR-.
     | 0   3   6 |
@@ -11,9 +15,23 @@ class Mat3 {
     '-----------'
     */
     
-    this.arr = new Array();
-    this.identity();
-	}
+    this.arr = arr;
+	} 
+
+  // getters/setters
+  get arr() { return this.#arr; }
+  
+  set arr(arr) {
+    if (!(arr instanceof Array)) {
+      throw new TypeError("Mat3 (arr): should be an Array");
+    } else if (arr.length !== 9) {
+      throw new RangeError("Mat3 (arr): should be an Array with " +
+        "9 elements");
+    }
+
+    this.#arr = arr;
+  }
+  // ...
 
 	copy(other) {
     if (!(other instanceof Mat3)) {

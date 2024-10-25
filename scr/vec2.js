@@ -1,14 +1,34 @@
 class Vec2 {
-	constructor(x = 0, y = x) {
-    if (typeof x !== 'number') {
-      throw new TypeError("Vec2 (constructor): x should be a Number");
-    } else if (typeof y !== 'number') {
-      throw new TypeError("Vec2 (constructor): y should be a Number");
-    }
+  // private fields
+  #x = 0;
+  #y = 0;
+  // ...
 
+	constructor(x = 0, y = x) {
     this.x = x;
     this.y = y;
 	}
+
+  // getters/setters
+  get x() { return this.#x; }
+  get y() { return this.#y; }
+  
+  set x(x) {
+    if (typeof x !== 'number') {
+      throw new TypeError("Vec2 (x): should be a Number");
+    }
+
+    this.#x = x;
+  }
+
+  set y(y) {
+    if (typeof y !== 'number') {
+      throw new TypeError("Vec2 (y): should be a Number");
+    }
+
+    this.#y = y;
+  }
+  // ...
 
 	copy(other) {
     if (!(other instanceof Vec2)) {
@@ -108,8 +128,8 @@ class Vec2 {
 
       if (arr[i] !== undefined) {
         if (typeof arr[i] !== 'number') {
-          throw new TypeError(`Vec2 (fromArray): arr[${i}] should `
-          + "be a Number");
+          throw new TypeError(`Vec2 (fromArray): arr[${i}] should ` +
+            `be a Number`);
         }
 
         result[i] = arr[i];

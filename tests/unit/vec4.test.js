@@ -35,15 +35,106 @@ describe("construction", () => {
     expect(vector.z).toEqual(expected);
     expect(vector.w).toEqual(expected);
   });
+});
 
-  test("new Vec4(...) should throw an error if a parameter " + 
-  "supplied is not a 'Number'", () => {
+describe("getters/setters", () => {
+  test("this.x should throw an error when assigned a value that " +
+  "is not a 'Number'", () => {
     let str = "str";
+    let vector = new Vec4();
 
-    expect(() => new Vec4(str, 1, 2, 3)).toThrowError(/Number/);
-    expect(() => new Vec4(0, str, 2, 3)).toThrowError(/Number/);
-    expect(() => new Vec4(0, 1, str, 3)).toThrowError(/Number/);
-    expect(() => new Vec4(0, 1, 2, str)).toThrowError(/Number/);
+    expect(() => vector.x = str).toThrowError(/Number/);
+  });
+
+  test("this.x should assign a deep copy of the value", () => {
+    let num = 1;
+    let vector = new Vec4();
+
+    vector.x = num;
+
+    expect(vector.x).toEqual(num);
+  });
+
+  test("this.x should return a deep copy of 'this.x'", () => {
+    let vector = new Vec4(1, 2, 3, 4);
+    let expected = vector.x;
+
+    expect(expected).toEqual(vector.x);
+  });
+
+
+  test("this.y should throw an error when assigned a value that " +
+  "is not a 'Number'", () => {
+    let str = "str";
+    let vector = new Vec4();
+
+    expect(() => vector.y = str).toThrowError(/Number/);
+  });
+
+  test("this.y should assign a deep copy of the value", () => {
+    let num = 2;
+    let vector = new Vec4();
+
+    vector.y = num;
+
+    expect(vector.y).toEqual(num);
+  });
+
+  test("this.y should return a deep copy of 'this.y'", () => {
+    let vector = new Vec4(1, 2, 3, 4);
+    let expected = vector.y;
+
+    expect(expected).toEqual(vector.y);
+  });
+
+
+  test("this.z should throw an error when assigned a value that " +
+  "is not a 'Number'", () => {
+    let str = "str";
+    let vector = new Vec4();
+
+    expect(() => vector.z = str).toThrowError(/Number/);
+  });
+
+  test("this.z should assign a deep copy of the value", () => {
+    let num = 3;
+    let vector = new Vec4();
+
+    vector.z = num;
+
+    expect(vector.z).toEqual(num);
+  });
+
+  test("this.z should return a deep copy of 'this.z'", () => {
+    let vector = new Vec4(1, 2, 3, 4);
+    let expected = vector.z;
+
+    expect(expected).toEqual(vector.z);
+  });
+
+
+  test("this.w should throw an error when assigned a value that " +
+  "is not a 'Number'", () => {
+    let str = "str";
+    let vector = new Vec4();
+
+    expect(() => vector.w = str).toThrowError(/Number/);
+  });
+
+  test("this.w should assign a deep copy of the value", () => {
+    let num = 4;
+    let vector = new Vec4();
+
+    vector.w = num;
+
+    expect(vector.w).toEqual(num);
+  });
+
+  test("this.w should return a deep copy of 'this.w'", () => {
+    let vector = new Vec4(1, 2, 3, 4);
+    let expected = vector.w;
+
+    expect(expected).toEqual(vector.w);
   });
 });
 
