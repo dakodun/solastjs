@@ -1,9 +1,9 @@
 class Vec4 {
   // private fields
-  #x = 0;
-  #y = 0;
-  #z = 0;
-  #w = 0;
+    #x = 0;
+    #y = 0;
+    #z = 0;
+    #w = 0;
   // ...
 
 	constructor(x = 0, y = x, z = y, w = z) {

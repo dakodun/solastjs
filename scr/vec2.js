@@ -1,7 +1,7 @@
 class Vec2 {
   // private fields
-  #x = 0;
-  #y = 0;
+    #x = 0;
+    #y = 0;
   // ...
 
 	constructor(x = 0, y = x) {

@@ -3,7 +3,7 @@ import Vec3 from './vec3.js';
 
 class Mat3 {
   // private fields
-  #arr = [1, 0, 0, 0, 1, 0, 0, 0, 1];
+    #arr = [1, 0, 0, 0, 1, 0, 0, 0, 1];
   // ...
 
 	constructor(arr = [1, 0, 0, 0, 1, 0, 0, 0, 1]) {

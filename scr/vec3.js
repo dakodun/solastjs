@@ -1,8 +1,8 @@
 class Vec3 {
   // private fields
-  #x = 0;
-  #y = 0;
-  #z = 0;
+    #x = 0;
+    #y = 0;
+    #z = 0;
   // ...
 
 	constructor(x = 0, y = x, z = y) {
