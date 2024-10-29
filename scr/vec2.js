@@ -28,6 +28,15 @@ class Vec2 {
 
     this.#y = y;
   }
+
+  set xy(xy) {
+    if (!(xy instanceof Array)) {
+      throw new TypeError("Vec2 (xy): should be an Array");
+    }
+
+    this.x = xy[0];
+    this.y = (xy[1] !== undefined) ? xy[1] : this.#x;
+  }
   // ...
 
 	copy(other) {

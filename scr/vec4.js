@@ -50,6 +50,111 @@ class Vec4 {
 
     this.#w = w;
   }
+
+  set xy(xy) {
+    if (!(xy instanceof Array)) {
+      throw new TypeError("Vec2 (xy): should be an Array");
+    }
+
+    this.x = xy[0];
+    this.y = (xy[1] !== undefined) ? xy[1] : this.#x;
+  }
+
+  set xz(xz) {
+    if (!(xz instanceof Array)) {
+      throw new TypeError("Vec2 (xz): should be an Array");
+    }
+
+    this.x = xz[0];
+    this.z = (xz[1] !== undefined) ? xz[1] : this.#x;
+  }
+
+  set xw(xw) {
+    if (!(xw instanceof Array)) {
+      throw new TypeError("Vec2 (xw): should be an Array");
+    }
+
+    this.x = xw[0];
+    this.w = (xw[1] !== undefined) ? xw[1] : this.#x;
+  }
+
+  set yz(yz) {
+    if (!(yz instanceof Array)) {
+      throw new TypeError("Vec2 (yz): should be an Array");
+    }
+
+    this.y = yz[0];
+    this.z = (yz[1] !== undefined) ? yz[1] : this.#y;
+  }
+
+  set yw(yw) {
+    if (!(yw instanceof Array)) {
+      throw new TypeError("Vec2 (yw): should be an Array");
+    }
+
+    this.y = yw[0];
+    this.w = (yw[1] !== undefined) ? yw[1] : this.#y;
+  }
+
+  set zw(zw) {
+    if (!(zw instanceof Array)) {
+      throw new TypeError("Vec2 (zw): should be an Array");
+    }
+
+    this.z = zw[0];
+    this.w = (zw[1] !== undefined) ? zw[1] : this.#z;
+  }
+
+  set xyz(xyz) {
+    if (!(xyz instanceof Array)) {
+      throw new TypeError("Vec2 (xyz): should be an Array");
+    }
+
+    this.x = xyz[0];
+    this.y = (xyz[1] !== undefined) ? xyz[1] : this.#x;
+    this.z = (xyz[2] !== undefined) ? xyz[2] : this.#y;
+  }
+
+  set xyw(xyw) {
+    if (!(xyw instanceof Array)) {
+      throw new TypeError("Vec2 (xyw): should be an Array");
+    }
+
+    this.x = xyw[0];
+    this.y = (xyw[1] !== undefined) ? xyw[1] : this.#x;
+    this.w = (xyw[2] !== undefined) ? xyw[2] : this.#y;
+  }
+
+  set xzw(xzw) {
+    if (!(xzw instanceof Array)) {
+      throw new TypeError("Vec2 (xzw): should be an Array");
+    }
+
+    this.x = xzw[0];
+    this.z = (xzw[1] !== undefined) ? xzw[1] : this.#x;
+    this.w = (xzw[2] !== undefined) ? xzw[2] : this.#z;
+  }
+
+  set yzw(yzw) {
+    if (!(yzw instanceof Array)) {
+      throw new TypeError("Vec2 (yzw): should be an Array");
+    }
+
+    this.y = yzw[0];
+    this.z = (yzw[1] !== undefined) ? yzw[1] : this.#y;
+    this.w = (yzw[2] !== undefined) ? yzw[2] : this.#z;
+  }
+
+  set xyzw(xyzw) {
+    if (!(xyzw instanceof Array)) {
+      throw new TypeError("Vec2 (xyzw): should be an Array");
+    }
+
+    this.x = xyzw[0];
+    this.y = (xyzw[1] !== undefined) ? xyzw[1] : this.#x;
+    this.z = (xyzw[2] !== undefined) ? xyzw[2] : this.#y;
+    this.w = (xyzw[3] !== undefined) ? xyzw[3] : this.#z;
+  }
   // ...
 
 	copy(other) {

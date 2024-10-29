@@ -39,6 +39,43 @@ class Vec3 {
 
     this.#z = z;
   }
+
+  set xy(xy) {
+    if (!(xy instanceof Array)) {
+      throw new TypeError("Vec2 (xy): should be an Array");
+    }
+
+    this.x = xy[0];
+    this.y = (xy[1] !== undefined) ? xy[1] : this.#x;
+  }
+
+  set xz(xz) {
+    if (!(xz instanceof Array)) {
+      throw new TypeError("Vec2 (xz): should be an Array");
+    }
+
+    this.x = xz[0];
+    this.z = (xz[1] !== undefined) ? xz[1] : this.#x;
+  }
+
+  set yz(yz) {
+    if (!(yz instanceof Array)) {
+      throw new TypeError("Vec2 (yz): should be an Array");
+    }
+
+    this.y = yz[0];
+    this.z = (yz[1] !== undefined) ? yz[1] : this.#y;
+  }
+
+  set xyz(xyz) {
+    if (!(xyz instanceof Array)) {
+      throw new TypeError("Vec2 (xyz): should be an Array");
+    }
+
+    this.x = xyz[0];
+    this.y = (xyz[1] !== undefined) ? xyz[1] : this.#x;
+    this.z = (xyz[2] !== undefined) ? xyz[2] : this.#y;
+  }
   // ...
 
 	copy(other) {
