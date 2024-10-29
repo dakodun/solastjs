@@ -96,6 +96,33 @@ class List {
       node = node.next;
     }
   }
+
+  [Symbol.iterator]() {
+    let curr = null;
+    let next = this.#front;
+
+    return {
+      next : () => {
+        if (next !== null) {
+          curr = next;
+          next = next.next;
+
+          return {done: false, value: curr}; 
+        } else {
+          return {done: true, value: undefined};
+        }
+      },
+
+      return : () => {
+        next = null;
+        return {done: true, value: undefined};
+      },
+
+      [Symbol.iterator]() {
+        return this;
+      }
+    };
+  }
 };
 
 export default List;
