@@ -1,240 +1,395 @@
-import GL from './gl.js'
-
 import LayoutDivision from './layoutdivision.js';
-import LayoutParent from './layoutparent.js';
-import Shape from './shape.js';
+import List from './list.js';
 import Vec2 from './vec2.js';
 
+import * as enums from "./exportenums.js";
+
 class LayoutContainer {
-	constructor(position, width, height, parent, cell) {
-    this.position = new Vec2(0.0, 0.0);
-    if (position != undefined) {
-      this.position.copy(position);
-    }
+  /* 
+    a 2d rectangular area on the screen that contains elements and
+    other containers, and can be divided into cells via a division
 
-    this.width = 1;
-    if (width != undefined) {
-      this.width = width;
-    }
+    .--CONTAINER---------.
+    |                    |
+    |                    |
+    |                    |
+    '--------------------'
+  */
 
-    this.height = 1;
-    if (height != undefined) {
-      this.height = height;
-    }
+  // private fields
+    // a container or cell (of a division)
+    #parent = null;
 
-    this.containers = new Array();
-    this.divisions = new Array();
+    // the supplied dimensions of the container before any modifications
+    #inPosition = new Vec2();
+    #inWidth  = 0;
+    #inHeight = 0;
 
-    this.parent = new LayoutParent(parent, cell);
+    // the dimensions of the container accounting for relative sizing and
+    // optional clipping to parent dimensions
+    #outPosition = new Vec2();
+    #outWidth  = 0;
+    #outHeight = 0;
+  // ...
+  
+  constructor(position = new Vec2(0, 0), width = 0, height = width) {
+    // container alignment
+    this.halign  =      enums.Align.LEFT;
+    this.hsizing = enums.Sizing.ABSOLUTE;
+    this.valign  =    enums.Align.BOTTOM;
+    this.vsizing = enums.Sizing.ABSOLUTE;
+    this.clipped = true;
 
-    this.horizontalAlign = "left";
-    this.verticalAlign = "bottom";
+    this.childContainers = new Set();
+    this.childDivisions  = new Set();
 
-    this.containerHorizontalAlign = "left";
-    this.containerVerticalAlign = "bottom";
+    // elements alignment
+    this.halignElems =   enums.Align.LEFT;
+    this.valignElems = enums.Align.BOTTOM;
+    this.overflow = false;
+
+    this.parent = null;
+    
+    this.position = position;
+    this.resize(width, height);
   }
 
-  getPosition(coordinateSpace) {
-    let position = this.position.getCopy();
+  // getters/setters
+  get parent()   { return this.#parent;      }
+  get position() { return this.#outPosition; }
+  get width()    { return this.#outWidth;    }
+  get height()   { return this.#outHeight;   }
 
-    if (coordinateSpace == "global" && this.parent.exists()) {
-      let parentPosition = this.parent.getPosition(coordinateSpace);
+  set parent(parent) {
+    if (!(parent instanceof LayoutContainer) &&
+      !(parent instanceof LayoutDivision.Cell) && parent !== null) {
 
-      if (this.containerHorizontalAlign == "center") {
-        position.x += (this.parent.getWidth() / 2) - (this.width / 2);
-      }
-      else if (this.containerHorizontalAlign == "right") {
-        position.x += this.parent.getWidth() - this.width;
-      }
+      throw new TypeError("LayoutContainer (parent): should be a " +
+        "LayoutContainer, LayoutDivision.Cell or null");
+    }
 
-      if (this.containerVerticalAlign == "middle") {
-        position.y += (this.parent.getHeight() / 2) - (this.height / 2);
-      }
-      else if (this.containerVerticalAlign == "top") {
-        position.y += this.parent.getHeight() - this.height;
-      }
+    this.#parent = parent;
+  }
 
-      position.x += parentPosition.x;
-      position.y += parentPosition.y;
+  set position(position) {
+    if (!(position instanceof Vec2)) {
+      throw new TypeError("LayoutContainer (position): should be " +
+        "a Vec2");
     }
     
-    return position;
-  }
+    this.#inPosition = position;
+    this.#outPosition.copy(position);
 
-  getWidth() {
-    return this.width;
-  }
+    if (this.parent !== null) {
+      this.#outPosition.x += this.parent.position.x;
+      this.#outPosition.y += this.parent.position.y;
 
-  setWidth(width) {
-    this.width = width;
+      // if a sub container is clipped then a positional
+      // change might incur a dimensional change too
+      if (this.clipping) { this.resize(); }
+    }
 
-    for (let division of this.divisions) {
-      division.resizeCells();
+    for (let container of this.childContainers) {
+      if (container.clipping) { container.resize(); }
+    }
+
+    for (let division of this.childDivisions) {
+      division._resize();
     }
   }
 
-  getHeight() {
-    return this.height;
+  set width(width) {
+    if (typeof width !== 'number') {
+      throw new TypeError("LayoutContainer (width): should be " +
+        "a Number");
+    }
+
+    this.#inWidth = width;
+    this.resize();
+
+    for (let container of this.childContainers) {
+      container.resize();
+    }
+
+    for (let division of this.childDivisions) {
+      division._resize();
+    }
   }
 
-  setHeight(height) {
-    this.height = height;
+  set height(height) {
+    if (typeof height !== 'number') {
+      throw new TypeError("LayoutContainer (height): should be " +
+        "a Number");
+    }
 
-    for (let division of this.divisions) {
-      division.resizeCells();
+    this.#inHeight = height;
+    this.resize();
+
+    for (let container of this.childContainers) {
+      container.resize();
+    }
+
+    for (let division of this.childDivisions) {
+      division._resize();
+    }
+  }
+  // ...
+
+  resize(width = this.#inWidth, height = this.#inHeight) {
+    this.#outPosition.copy(this.#inPosition);
+
+    this.#inWidth  = width;
+    this.#outWidth = width;
+
+    this.#inHeight  = height;
+    this.#outHeight = height;
+
+    if (this.parent !== null) {
+      // calculate dimensions of container based on sizing property
+      if (this.hsizing === enums.Sizing.RELATIVE) {
+        let ratio = Math.min(100, Math.max(0,  width)) / 100;
+        this.#outWidth = this.parent.width * ratio;
+      }
+
+      if (this.vsizing === enums.Sizing.RELATIVE) {
+        let ratio = Math.min(100, Math.max(0,  height)) / 100;
+        this.#outHeight = this.parent.height * ratio;
+      }
+      // ...
+
+      // adjust position of container based on alignment property
+      this.#outPosition.x += this.parent.position.x;
+      if (this.halign === enums.Align.CENTER) {
+        this.position.x += (this.parent.width / 2) -
+          (this.#outWidth / 2);
+      } else if (this.halign === enums.Align.RIGHT) {
+        this.position.x += this.parent.width - this.#outWidth;
+      }
+
+      this.#outPosition.y += this.parent.position.y;
+      if (this.valign === enums.Align.MIDDLE) {
+        this.position.y += (this.parent.height / 2) -
+          (this.#outHeight / 2);
+      } else if (this.valign === enums.Align.TOP) {
+        this.position.y += this.parent.height - this.#outHeight;
+      }
+      // ...
+
+      if (this.clipped) {
+        // clip the upper left side by removing any offset that
+        // crosses the upper left bounds of the parent
+        this.#outPosition.xy = [
+          Math.min(Math.max(this.position.x, this.parent.position.x),
+            this.parent.position.x + this.parent.width),
+          Math.min(Math.max(this.position.y, this.parent.position.y),
+            this.parent.position.y + this.parent.height)
+        ];
+
+        // clip the lower right side by reducing the width and
+        // height, accounting for any offset from parent and a
+        // negative width or height
+        let posDiff = new Vec2(
+          this.position.x - this.parent.position.x,
+          this.position.y - this.parent.position.y
+        );
+
+        this.#outWidth = Math.max(
+          Math.min(this.#outWidth, this.parent.width - (posDiff.x)), 0
+        );
+
+        this.#outHeight = Math.max(
+          Math.min(this.#outHeight, this.parent.height - posDiff.y), 0
+        );
+        // ...
+      }
+    }
+
+    for (let container of this.childContainers) {
+      container.resize();
+    }
+
+    for (let division of this.childDivisions) {
+      division._resize();
     }
   }
 
   addContainer(container) {
-    container.setParent(this);
-    this.containers.push(container);
+    if (!(this.childContainers.has(container))) {
+      container.parent = this;
+      container.resize();
+
+      this.childContainers.add(container);
+    }
+
+    return container;
+  }
+
+  removeContainer(container) {
+    if (this.childContainers.has(container)) {
+      container.parent = null;
+      container.resize();
+
+      this.childContainers.delete(container);
+    }
   }
 
   addDivision(division) {
-    division.setParent(this);
-    this.divisions.push(division);
+    if (!(division instanceof LayoutDivision)) {
+      throw new TypeError("LayoutContainer (addDivision): division " +
+        "should be a LayoutDivision");
+    }
+
+    if (!(this.childDivisions.has(division))) {
+      division.parent = this;
+      division._resize();
+
+      this.childDivisions.add(division);
+    }
+
+    return division;
   }
 
-  setParent(parent, cell) {
-    this.parent.setParent(parent, cell);
+  removeDivision(division) {
+    if (!(division instanceof LayoutDivision)) {
+      throw new TypeError("LayoutContainer (removeDivision): division " +
+        "should be a LayoutDivision");
+    }
+
+    if (this.childDivisions.has(division)) {
+      division.parent = null;
+      division._resize();
+
+      this.childDivisions.delete(division);
+    }
   }
+  
+  positionElements(elements) {
+    let elemLines = [{width: 0, elems: new List()}];
 
-  positionElements(elementList) {
-    // position elements based on global container position
-    let position = this.getPosition("global");
+    let blockHeight = 0;
+    let lineSize = new Vec2(0, 0);
 
-    // dimensions of entire block of elements being positioned
-    let total = new Vec2(0, 0);
+    for (let node of elements) {
+      let elem = node.data;
 
-    // dimensions of current row of elements being positioned
-    let line = new Vec2(0, 0);
+      if (elem.float) {
+        // the element is floating and doesn't need to account
+        // for other elements in the container
 
-    // a store of elements grouped by line
-    let elementLines = new Array();
-    elementLines.push([0, []]);
+        elem.position = this.position.getCopy();
+        this.#adjustElem(elem, elem.width, elem.height);
+      } else {
+        let overlap = ((lineSize.x + elem.width) - this.width);
+        let limit = 0;
 
-    // store container dimension values used for positioning
-    let halfWidth = this.width / 2;
-    let halfHeight = this.height / 2;
+        if (this.overflow) {
+          // if overflow is enabled, the overlap and limit
+          // need to be adjusted depending on horizontal
+          // alignment
 
-    for (let element of elementList) {
-      if (element.float) {
-        // a floating element doesn't account for any other elements
-        // so position it based on alignment and container size
+          limit = elem.width;
 
-        element.position = position;
+          let front = elemLines.at(-1).elems.front;
+          let left = (front !== null) ? front.data : elem;
 
-        if (this.horizontalAlign == "center") {
-          element.position.x += halfWidth - (element.width / 2);
+          if (this.halignElems === enums.Align.CENTER) {
+            overlap *= 0.5;
+            limit = Math.min(left.width, elem.width);
+          } else if (this.halignElems === enums.Align.RIGHT) {
+            limit = left.width;
+          }
         }
-        else if (this.horizontalAlign == "right") {
-          element.position.x += this.width - element.width;
+
+        if (overlap > limit) {
+          // element doesn't fit on this line so update current line
+          // width and block height and add a new line
+
+          elemLines[elemLines.length - 1].width  = lineSize.x;
+          elemLines.push({height: 0, elems: new List()});
+
+          blockHeight += lineSize.y;
+          lineSize.xy = [0, 0];
         }
 
-        if (this.verticalAlign == "middle") {
-          element.position.y += halfHeight - (element.height / 2);
-        }
-        else if (this.verticalAlign == "top") {
-          element.position.y += this.height - element.height;
-        }
-      }
-      else {
-        if (line.x + element.width <= this.width &&
-            total.y + element.height <= this.height) { // if the element
-          // fits into the current line...
-          
-          // position the element based on the current line offset and add
-          // it to the current row
-          element.position = new Vec2(position.x + line.x,
-            position.y + total.y);
-          elementLines[elementLines.length - 1][1].push(element);
+        // position the element, add it to the current line
+        // and update the current lines dimensions
+        elem.position.xy = [
+          this.position.x + lineSize.x,
+          this.position.y + blockHeight
+        ];
 
-          // update the current line dimensions
-          line.x += element.width;
-          line.y = Math.max(element.height, line.y);
-        }
-        else if (element.width <= this.width &&
-            (line.y + total.y) + element.height <= this.height) {
-          
-          // update current line max height and then add a new row
-          elementLines[elementLines.length - 1][0] = line.y;
-          elementLines.push([0, []]);
-
-          // update the block size and reset the current line dimensions
-          total.x = Math.max(line.x, total.x);
-          total.y += line.y;
-          line.x = 0;
-          line.y = 0
-
-          element.position = new Vec2(position.x + line.x,
-            position.y + total.y);
-          elementLines[elementLines.length - 1][1].push(element);
-
-          line.x += element.width;
-          line.y = Math.max(element.height, line.y);
-        }
+        elemLines[elemLines.length - 1].elems.push(elem);
+        lineSize.x += elem.width;
+        lineSize.y = Math.max(elem.height, lineSize.y);
       }
     }
 
-    // update the last line dimensions and total block size
-    elementLines[elementLines.length - 1][0] = line.y;
-    total.x = Math.max(line.x, total.x);
-    total.y += line.y;
+    // update the last line width and final block height
+    elemLines[elemLines.length - 1].width = lineSize.x;
+    blockHeight += lineSize.y;
 
-    // store values for remaining space used for alignment positioning
-    let widthGap = this.width - total.x;
-    let heightGap = this.height - total.y;
-    let halfWidthGap = widthGap / 2;
-    let halfHeightGap = heightGap / 2;
-
-    for (let elementLine of elementLines) { // for all element lines...
-      let elements = elementLine[1];
-      for (let element of elements) { // for all elements in
-        // current line...
-        
-        if (this.horizontalAlign == "center") {
-          element.position.x += halfWidthGap;
-        }
-        else if (this.horizontalAlign == "right") {
-          element.position.x += widthGap;
-        }
-
-        if (this.verticalAlign == "middle") {
-          element.position.y += halfHeightGap;
-        }
-        else if (this.verticalAlign == "top") {
-          element.position.y += heightGap;
-        }
+    // adjust all non-floating elements to account for alignment
+    for (let line of elemLines) {
+      for (let node of line.elems) {
+        this.#adjustElem(node.data, line.width, blockHeight);
       }
     }
   }
 
-  getShapes() {
-    let shapes = new Array();
+  // return the vertices that form the container (as line pairs) and
+  // any child container/division (useful for visualising layout)
+  getVertices() {
+    let verts = new Array();
 
-    let shape = new Shape();
-    shape.pushVert(new Vec2(       0.0,         0.0));
-    shape.pushVert(new Vec2(this.width,         0.0));
-    shape.pushVert(new Vec2(this.width, this.height));
-    shape.pushVert(new Vec2(       0.0, this.height));
+    const pos = this.position;
+    const w =  this.width;
+    const h = this.height;
 
-    shape.setRenderMode(GL.LINE_LOOP);
+    verts.push(new Array());
+    verts.at(-1).push(new Vec2(    pos.x,     pos.y));
+    verts.at(-1).push(new Vec2(pos.x + w,     pos.y));
 
-    shape.setPosition(this.getPosition("global"));
-    shape.depth = -5;
-    shapes.push(shape);
+    verts.at(-1).push(new Vec2(pos.x + w,     pos.y));
+    verts.at(-1).push(new Vec2(pos.x + w, pos.y + h));
 
-    for (let container of this.containers) {
-      let childShapes = container.getShapes();
-      shapes = shapes.concat(childShapes);
+    verts.at(-1).push(new Vec2(pos.x + w, pos.y + h));
+    verts.at(-1).push(new Vec2(    pos.x, pos.y + h));
+  
+    verts.at(-1).push(new Vec2(    pos.x, pos.y + h));
+    verts.at(-1).push(new Vec2(    pos.x,     pos.y));
+
+    for (let container of this.childContainers) {
+      let childVerts = container.getVertices();
+      childVerts.forEach((e) => { verts.push(e); });
     }
 
-    for (let division of this.divisions) {
-      let childShapes = division.getShapes();
-      shapes = shapes.concat(childShapes);
+    for (let division of this.childDivisions) {
+      let childVerts = division.getVertices();
+      childVerts.forEach((e) => { verts.push(e); });
     }
 
-    return shapes;
+    return verts;
+  }
+
+  // adjust an element's position based on container's
+  // element alignment properties
+  #adjustElem(elem, width, height) {
+    let pos = elem.position.getCopy();
+
+    if (this.halignElems === enums.Align.CENTER) {
+      pos.x += (this.width - width) / 2;
+    } else if (this.halignElems === enums.Align.RIGHT) {
+      pos.x += this.width - width;
+    }
+
+    if (this.valignElems === enums.Align.MIDDLE) {
+      pos.y += (this.height - height) / 2;
+    } else if (this.valignElems === enums.Align.TOP) {
+      pos.y += this.height - height;
+    }
+
+    elem.position = pos;
+    elem.posCallback();
   }
 };
 

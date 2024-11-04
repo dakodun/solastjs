@@ -1,340 +1,413 @@
-import GL from './gl.js'
-
 import LayoutContainer from './layoutcontainer.js';
-import LayoutParent from './layoutparent.js';
-import Shape from './shape.js';
+import List from './list.js';
 import Vec2 from './vec2.js';
+
+import * as enums from "./exportenums.js";
 
 class LayoutDivision {
   static Cell = class {
-    constructor(position, width, height) {
-      this.position = new Vec2(0.0, 0.0);
-      if (position != undefined) {
-        this.position.copy(position);
+    /* 
+      a cell is part of a division and can be thought of as a much
+      simpler  container,  with  its  positioning  and  dimensions
+      controlled  entirely  by the  division  which it  belongs to
+
+      .--CELL---.
+      |         |
+      '---------'
+    */
+
+    // private fields
+      #position = new Vec2();
+      #width  = 0;
+      #height = 0;
+    // ...
+
+    constructor(position = new Vec2(0, 0), width = 0, height = width) {
+      this.childContainers = new Set();
+      this.childDivisions  = new Set();
+
+      // elements alignment
+      this.halignElems =   enums.Align.LEFT;
+      this.valignElems = enums.Align.BOTTOM;
+      this.overflow = false;
+
+      this.#position = position;
+      this.#width  =  width;
+      this.#height = height;
+    }
+
+    // getters/setters
+    get position() { return this.#position; }
+    get width()    { return this.#width;    }
+    get height()   { return this.#height;   }
+    // ...
+
+    addContainer(container) {
+      if (!(this.childContainers.has(container))) {
+        container.parent = this;
+        container.resize();
+
+        this.childContainers.add(container);
       }
 
-      this.width = 1;
-      if (width != undefined) {
-        this.width = width;
+      return container;
+    }
+
+    removeContainer(container = null) {
+      if (container === null) {
+        for (let con of this.childContainers) {
+          console.log("resizing container...");
+          con.parent = null;
+          con.resize();
+
+          this.childDivisions.delete(con);
+        }
+      } else if (this.childContainers.has(container)) {
+        container.parent = null;
+        container.resize();
+
+        this.childContainers.delete(container);
+      }
+    }
+
+    addDivision(division) {
+      if (!(division instanceof LayoutDivision)) {
+        throw new TypeError("LayoutContainer (addDivision): division " +
+          "should be a LayoutDivision");
       }
 
-      this.height = 1;
-      if (height != undefined) {
-        this.height = height;
+      if (!(this.childDivisions.has(division))) {
+        division.parent = this;
+        division._resize();
+
+        this.childDivisions.add(division);
       }
 
-      this.containers = new Array();
-      this.divisions = new Array();
+      return division;
+    }
 
-      this.horizontalAlign = "left";
-      this.verticalAlign = "bottom";
+    removeDivision(division = null) {
+      if (!(division instanceof LayoutDivision) && division !== null) {
+        throw new TypeError("LayoutContainer (removeDivision): division " +
+          "should be a LayoutDivision, or null");
+      }
+
+      if (division === null) {
+        for (let div of this.childDivisions) {
+          div.parent = null;
+          div._resize();
+
+          this.childDivisions.delete(div);
+        }
+      } else if (this.childDivisions.has(division)) {
+        division.parent = null;
+        division._resize();
+
+        this.childDivisions.delete(division);
+      }
+    }
+
+    positionElements(elements) {
+      let elemLines = [{width: 0, elems: new List()}];
+
+      let blockHeight = 0;
+      let lineSize = new Vec2(0, 0);
+
+      for (let node of elements) {
+        let elem = node.data;
+
+        if (elem.float) {
+          // the element is floating and doesn't need to
+          // account for other elements in the cell
+
+          elem.position = this.position.getCopy();
+          this.#adjustElem(elem, elem.width, elem.height);
+        } else {
+          let overlap = ((lineSize.x + elem.width) - this.width);
+          let limit = 0;
+
+          if (this.overflow) {
+            // if overflow is enabled, the overlap and limit
+            // need to be adjusted depending on horizontal
+            // alignment
+
+            limit = elem.width;
+
+            let front = elemLines.at(-1).elems.front;
+            let left = (front !== null) ? front.data : elem;
+
+            if (this.halignElems === enums.Align.CENTER) {
+              overlap *= 0.5;
+              limit = Math.min(left.width, elem.width);
+            } else if (this.halignElems === enums.Align.RIGHT) {
+              limit = left.width;
+            }
+          }
+
+          if (overlap > limit) {
+            // element doesn't fit on this line so update current
+            // line width and block height and add a new line
+
+            elemLines[elemLines.length - 1].width  = lineSize.x;
+            elemLines.push({height: 0, elems: new List()});
+
+            blockHeight += lineSize.y;
+            lineSize.xy = [0, 0];
+          }
+
+          // position the element, add it to the current line
+          // and update the current lines dimensions
+          elem.position.xy = [
+            this.position.x + lineSize.x,
+            this.position.y + blockHeight
+          ];
+
+          elemLines[elemLines.length - 1].elems.push(elem);
+          lineSize.x += elem.width;
+          lineSize.y = Math.max(elem.height, lineSize.y);
+        }
+      }
+
+      // update the last line width and final block height
+      elemLines[elemLines.length - 1].width = lineSize.x;
+      blockHeight += lineSize.y;
+
+      // adjust all non-floating elements to account for alignment
+      for (let line of elemLines) {
+        for (let node of line.elems) {
+          this.#adjustElem(node.data, line.width, blockHeight);
+        }
+      }
+    }
+
+    // internal use only - friend of LayoutDivision class
+    _resize(position = new Vec2(0, 0), width = 0, height = width) {
+      this.#position = position;
+      this.#width  =  width;
+      this.#height = height;
+
+      for (let container of this.childContainers) {
+        container.resize();
+      }
+
+      for (let division of this.childDivisions) {
+        division._resize();
+      }
+    }
+
+    // adjust an element's position based on cell's
+    // element alignment properties
+    #adjustElem(elem, width, height) {
+      let pos = elem.position.getCopy();
+
+      if (this.halignElems === enums.Align.CENTER) {
+        pos.x += (this.width - width) / 2;
+      } else if (this.halignElems === enums.Align.RIGHT) {
+        pos.x += this.width - width;
+      }
+
+      if (this.valignElems === enums.Align.MIDDLE) {
+        pos.y += (this.height - height) / 2;
+      } else if (this.valignElems === enums.Align.TOP) {
+        pos.y += this.height - height;
+      }
+
+      elem.position = pos;
+      elem.posCallback();
     }
   };
 
-	constructor(cellCount, parent, cell) {
-    this.cellCount = new Vec2(1, 1);
-    if (cellCount != undefined) {
-      this.cellCount.copy(cellCount);
+  /* 
+    a division divides a container or cell into cells (smaller
+    sub-rectangles)  which act as smaller,  simpler containers
+
+    .--DIVISION----------.
+    |      |      |      |
+    |------|------|------|
+    |      |      | CELL |
+    '--------------------'
+  */
+
+  // private fields
+    // a container or cell (of a division)
+    #parent = null;
+
+    // the layout of the division (rows, columns)
+    #cellCount = new Vec2();
+  // ...
+
+	constructor(cellCount = new Vec2(1, 1)) {
+    this.cells = new Array();
+    this.cellCount = cellCount;
+  }
+
+  // getters/setters
+  get parent()    { return this.#parent;    }
+  get cellCount() { return this.#cellCount; }
+
+  get position()  {
+    return (this.parent !== null) ? this.parent.position : new Vec2();
+  }
+
+  get width()  {
+    return (this.parent !== null) ? this.parent.width : 0;
+  }
+
+  get height()  {
+    return (this.parent !== null) ? this.parent.height : 0;
+  }
+
+  set parent(parent) {
+    if (!(parent instanceof LayoutContainer) &&
+      !(parent instanceof LayoutDivision.Cell) && parent !== null) {
+
+      throw new TypeError("LayoutDivision (parent): should be a " +
+        "LayoutContainer, LayoutDivision.Cell or null");
     }
 
-    this.parent = new LayoutParent(parent, cell);
-
-    this.createCells();
+    this.#parent = parent;
   }
 
-  getPosition(coordinateSpace) {
-    return this.parent.getPosition(coordinateSpace);
-  }
-
-  getWidth() {
-    return this.parent.getWidth();
-  }
-
-  getHeight() {
-    return this.parent.getHeight();
-  }
-
-  getCellPosition(cell, coordinateSpace) {
-    if (cell.x < this.cellCount.x || cell.y < this.cellCount.y) {
-      let cellIndex = cell.x + (cell.y * this.cellCount.x);
-      let position = this.cells[cellIndex].position.getCopy();
-      
-      if (coordinateSpace == "global" && this.parent.exists()) {
-        let parentPosition = this.parent.getPosition(coordinateSpace);
-
-        position.x += parentPosition.x;
-        position.y += parentPosition.y;
-      }
-
-      return position;
+  set cellCount(cellCount) {
+    if (!(cellCount instanceof Vec2)) {
+      throw new TypeError("LayoutDivision (cellCount): should be " +
+        "a Vec2");
+    } else if (cellCount.x <= 0 ) {
+      throw new RangeError("LayoutDivision (getCell): cellCount.x " +
+      "should be greater than 0");
+    } else if (cellCount.y <= 0) {
+      throw new RangeError("LayoutDivision (getCell): cellCount.y " +
+        "should be greater than 0");
     }
-  }
 
-  getCellWidth(cell) {
-    if (cell.x < this.cellCount.x || cell.y < this.cellCount.y) {
-      let cellIndex = cell.x + (cell.y * this.cellCount.x);
-      return this.cells[cellIndex].width;
-    }
-  }
+    let cells = new Array();
+    
+    let i = 0;
+    let x = 0;
+    let y = 0;
 
-  getCellHeight(cell) {
-    if (cell.x < this.cellCount.x || cell.y < this.cellCount.y) {
-      let cellIndex = cell.x + (cell.y * this.cellCount.x);
-      return this.cells[cellIndex].height;
-    }
-  }
-
-  getCellHorizontalAlign(cell) {
-    if (cell.x < this.cellCount.x || cell.y < this.cellCount.y) {
-      let cellIndex = cell.x + (cell.y * this.cellCount.x);
-      return this.cells[cellIndex].horizontalAlign;
-    }
-  }
-
-  setCellHorizontalAlign(cell, align) {
-    if (cell.x < this.cellCount.x || cell.y < this.cellCount.y) {
-      let cellIndex = cell.x + (cell.y * this.cellCount.x);
-      this.cells[cellIndex].horizontalAlign = align;
-    }
-  }
-
-  getCellVerticalAlign(cell) {
-    if (cell.x < this.cellCount.x || cell.y < this.cellCount.y) {
-      let cellIndex = cell.x + (cell.y * this.cellCount.x);
-      return this.cells[cellIndex].verticalAlign;
-    }
-  }
-
-  setCellVerticalAlign(cell, align) {
-    if (cell.x < this.cellCount.x || cell.y < this.cellCount.y) {
-      let cellIndex = cell.x + (cell.y * this.cellCount.x);
-      this.cells[cellIndex].verticalAlign = align;
-    }
-  }
-
-  addContainer(cell, container) {
-    if (cell.x < this.cellCount.x || cell.y < this.cellCount.y) {
-      let cellIndex = cell.x + (cell.y * this.cellCount.x);
-
-      container.setParent(this, cell);
-      this.cells[cellIndex].containers.push(container);
-    }
-  }
-
-  addDivision(cell, division) {
-    if (cell.x < this.cellCount.x || cell.y < this.cellCount.y) {
-      let cellIndex = cell.x + (cell.y * this.cellCount.x);
-
-      division.setParent(this, cell);
-      this.cells[cellIndex].divisions.push(division);
-    }
-  }
-
-  setParent(parent) {
-    this.parent.setParent(parent);
-    this.resizeCells();
-  }
-
-  positionElements(cell, elementList) {
-    // position elements based on global container position
-    let position = this.getCellPosition(cell, "global");
-
-    // dimensions of entire block of elements being positioned
-    let total = new Vec2(0, 0);
-
-    // dimensions of current row of elements being positioned
-    let line = new Vec2(0, 0);
-
-    // a store of elements grouped by line
-    let elementLines = new Array();
-    elementLines.push([0, []]);
-
-    // store container dimension values used for positioning
-    let width = this.getCellWidth(cell);
-    let height = this.getCellHeight(cell);
-    let halfWidth = width / 2;
-    let halfHeight = height / 2;
-
-    let halign = this.getCellHorizontalAlign(cell);
-    let valign = this.getCellVerticalAlign(cell);
-
-    for (let element of elementList) {
-      if (element.float) {
-        // a floating element doesn't account for any other elements
-        // so position it based on alignment and container size
-
-        element.position = position;
-
-        if (halign == "center") {
-          element.position.x += halfWidth - (element.width / 2);
-        }
-        else if (halign == "right") {
-          element.position.x += width - element.width;
+    for (y = 0 ; y < this.#cellCount.y; ++y) {
+      if (y < cellCount.y) {
+        // copy any exisiting cells over to new array or
+        // unset them if they no longer fit
+        for (x = 0; x < this.#cellCount.x; ++x, ++i) {
+          if (x < cellCount.x) {
+            cells.push(this.cells[i]);
+          } else {
+            this.cells[i].removeContainer();
+            this.cells[i].removeDivision();
+          }
         }
 
-        if (valign == "middle") {
-          element.position.y += halfHeight - (element.height / 2);
+        // pad any remaining spaces with a new cell
+        for (; x < cellCount.x; ++x) {
+          cells.push(new LayoutDivision.Cell());
         }
-        else if (valign == "top") {
-          element.position.y += height - element.height;
-        }
-      }
-      else {
-        if (line.x + element.width <= width &&
-            total.y + element.height <= height) { // if the element
-          // fits into the current line...
-          
-          // position the element based on the current line offset and add
-          // it to the current row
-          element.position = new Vec2(position.x + line.x,
-            position.y + total.y);
-          elementLines[elementLines.length - 1][1].push(element);
-
-          // update the current line dimensions
-          line.x += element.width;
-          line.y = Math.max(element.height, line.y);
-        }
-        else if (element.width <= width &&
-            (line.y + total.y) + element.height <= height) {
-          
-          // update current line max height and then add a new row
-          elementLines[elementLines.length - 1][0] = line.y;
-          elementLines.push([0, []]);
-
-          // update the block size and reset the current line dimensions
-          total.x = Math.max(line.x, total.x);
-          total.y += line.y;
-          line.x = 0;
-          line.y = 0
-
-          element.position = new Vec2(position.x + line.x,
-            position.y + total.y);
-          elementLines[elementLines.length - 1][1].push(element);
-
-          line.x += element.width;
-          line.y = Math.max(element.height, line.y);
+      } else {
+        for (x = 0; x < this.#cellCount.x; ++x, ++i) {
+          this.cells[i].removeContainer();
+          this.cells[i].removeDivision();
         }
       }
     }
 
-    // update the last line dimensions and total block size
-    elementLines[elementLines.length - 1][0] = line.y;
-    total.x = Math.max(line.x, total.x);
-    total.y += line.y;
-
-    // store values for remaining space used for alignment positioning
-    let widthGap = width - total.x;
-    let heightGap = height - total.y;
-    let halfWidthGap = widthGap / 2;
-    let halfHeightGap = heightGap / 2;
-
-    for (let elementLine of elementLines) { // for all element lines...
-      let elements = elementLine[1];
-      for (let element of elements) { // for all elements in
-        // current line...
-
-        if (halign == "center") {
-          element.position.x += halfWidthGap;
-        }
-        else if (halign == "right") {
-          element.position.x += widthGap;
-        }
-
-        if (valign == "middle") {
-          element.position.y += halfHeightGap;
-        }
-        else if (valign == "top") {
-          element.position.y += heightGap;
-        }
+    for (; y < cellCount.y; ++y) {
+      for (x = 0; x < cellCount.x; ++x) {
+        cells.push(new LayoutDivision.Cell());
       }
     }
+
+    this.cells = cells;
+    this.#cellCount = cellCount;
+
+    this._resize();
+  }
+  // ...
+
+  getCell(cell) {
+    if (!(cell instanceof Vec2)) {
+      throw new TypeError("LayoutDivision (getCell): cell should be " +
+        "a Vec2");
+    } else if (cell.x < 0 || cell.x >= this.cellCount.x) {
+      throw new RangeError("LayoutDivision (getCell): cell.x should " +
+        "be between 0 and cellCount.x - 1 (0 < cell.x < cellCount.x)");
+    } else if (cell.y < 0 || cell.y >= this.cellCount.y) {
+      throw new RangeError("LayoutDivision (getCell): cell.y should " +
+        "be between 0 and cellCount.y - 1 (0 < cell.y < cellCount.y)");
+    }
+    
+    return this.cells[cell.x + (cell.y * this.cellCount.x)];
   }
 
-  resizeCells() {
-    if (this.cellCount.x != 0 && this.cellCount.y != 0) {
-      let widthInc = this.getWidth() / this.cellCount.x;
-      let heightInc = this.getHeight() / this.cellCount.y;
+  // return the vertices that form the division (as line pairs) and
+  // any child container/division (useful for visualising layout)
+  getVertices() {
+    let verts = new Array();
 
-      for (let y = 0; y < this.cellCount.y; ++y) {
-        for (let x = 0; x < this.cellCount.x; ++x) {
-          let cellIndex = x + (y * this.cellCount.x);
+    if (this.parent !== null) {
+      const ccount = new Vec2(
+        Math.max(1, this.cellCount.x),
+        Math.max(1, this.cellCount.y)
+      );
 
-          this.cells[cellIndex].position = new Vec2(widthInc * x,
-            heightInc * y);
-          this.cells[cellIndex].width = widthInc;
-          this.cells[cellIndex].height = heightInc;
-        }
+      const pos = this.parent.position;
+      const w =  this.parent.width;
+      const h = this.parent.height;
+
+      const winc = w / ccount.x;
+      const hinc = h / ccount.y;
+
+      verts.push(new Array());
+
+      for (let x = 1; x < ccount.x; ++x) {
+        verts.at(-1).push(new Vec2(pos.x + (winc * x),     pos.y));
+        verts.at(-1).push(new Vec2(pos.x + (winc * x), pos.y + h));
+      }
+
+      for (let y = 1; y < ccount.y; ++y) {
+        verts.at(-1).push(new Vec2(    pos.x, pos.y + (hinc * y)));
+        verts.at(-1).push(new Vec2(pos.x + w, pos.y + (hinc * y)));
       }
 
       for (let cell of this.cells) {
-        for (let division of cell.divisions) {
-          division.resizeCells();
+        for (let container of cell.childContainers) {
+          let childVerts = container.getVertices();
+          childVerts.forEach((e) => { verts.push(e); });
+        }
+
+        for (let division of cell.childDivisions) {
+          let childVerts = division.getVertices();
+          childVerts.forEach((e) => { verts.push(e); });
         }
       }
     }
+
+    return verts;
   }
 
-  createCells() {
-    if (this.cellCount.x != 0 && this.cellCount.y != 0) {
-      let cells = new Array();
+  // internal use only - friend of LayoutContainer class
+  _resize() {
+    const ccount = new Vec2(
+      Math.max(1, this.cellCount.x),
+      Math.max(1, this.cellCount.y)
+    );
+    
+    const pos = (this.parent !== null) ?
+      this.parent.position : new Vec2(0, 0);
+    const winc = (this.parent !== null) ?
+      this.parent.width  / Math.max(1, ccount.x) : 0;
+    const hinc = (this.parent !== null) ?
+      this.parent.height / Math.max(1, ccount.y) : 0;
 
-      let widthInc = this.getWidth() / this.cellCount.x;
-      let heightInc = this.getHeight() / this.cellCount.y;
-
-      for (let y = 0; y < this.cellCount.y; ++y) {
-        for (let x = 0; x < this.cellCount.x; ++x) {
-          let cell = new LayoutDivision.Cell(
-            new Vec2(widthInc * x, heightInc * y), widthInc, heightInc
-          );
-
-          cells.push(cell);
-        }
-      }
-
-      this.cells = cells.slice();
-    }
-  }
-
-  getShapes() {
-    let shapes = new Array();
-
-    let width = this.getWidth();
-    let height = this.getHeight();
-
-    let widthInc = width / this.cellCount.x;
-    let heightInc = height / this.cellCount.y;
-
-    let shape = new Shape();
-
-    for (let x = 1; x < this.cellCount.x; ++x) {
-      shape.pushVert(new Vec2(widthInc * x,    0.0));
-      shape.pushVert(new Vec2(widthInc * x, height));
-    }
-
-    for (let y = 1; y < this.cellCount.y; ++y) {
-      shape.pushVert(new Vec2(  0.0, heightInc * y));
-      shape.pushVert(new Vec2(width, heightInc * y));
-    }
-
-    shape.setRenderMode(GL.LINES);
-
-    shape.setPosition(this.getPosition("global"));
-    shape.depth = -5;
-    shapes.push(shape);
-
-    for (let cell of this.cells) {
-      for (let container of cell.containers) {
-        let childShapes = container.getShapes();
-        shapes = shapes.concat(childShapes);
-      }
-
-      for (let division of cell.divisions) {
-        let childShapes = division.getShapes();
-        shapes = shapes.concat(childShapes);
+    for (let y = 0; y < ccount.y; ++y) {
+      for (let x = 0; x < ccount.x; ++x) {
+        let cell = this.cells[x + (y * ccount.x)];
+        cell._resize(
+          new Vec2(pos.x + (winc * x), pos.y + (hinc * y)),
+          winc, hinc
+        );
       }
     }
-
-    return shapes;
   }
 };
 
