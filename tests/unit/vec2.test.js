@@ -12,7 +12,7 @@ describe("construction", () => {
     expect(vector.y).toEqual(2);
   });
 
-  test("new Vec2(x, y)", () => {
+  test("new Vec2(x)", () => {
     // assign x and y; pad input
       // => new Vec2(1, 1)
     let vector = new Vec2(1);
