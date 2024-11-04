@@ -16,6 +16,7 @@ RUN printf "%s\n" \
   '    "test-verbose": "vitest --run --reporter=verbose",' \
   '    "test-bench": "vitest bench --run --browser.enabled",' \
   '    "test-coverage": "vitest --run --coverage",' \
+  '    "test-coverage-html": "vitest --run --coverage --coverage.reporter=html",' \
   '    "test-browser": "vitest --run --browser.enabled"' \
   '  }' \
   '}' \
@@ -31,6 +32,7 @@ RUN printf "%s\n" \
   "    coverage: {" \
   "      provider: 'istanbul'," \
   "      reporter: ['text']," \
+  "      reportsDirectory: 'solastjs/tests/coverage'," \
   "      include: ['solastjs/scr/**']" \
   "    }," \
   "    benchmark: {" \
