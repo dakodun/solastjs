@@ -33,6 +33,7 @@ describe("construction", () => {
   });
 });
 
+
 describe("getters/setters", () => {
   describe("this.position and this.offset", () => {
     test("position = this.position, ...", () => {
@@ -59,7 +60,7 @@ describe("getters/setters", () => {
     });
 
     test("this.position = new Vec2(10, 20), ...", () => {
-      // assign position or affset
+      // assign position or offset
       let elem = new LayoutElement();
 
       elem.position = new Vec2(10, 20);

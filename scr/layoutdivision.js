@@ -20,6 +20,10 @@ class LayoutDivision {
       #position = new Vec2();
       #width  = 0;
       #height = 0;
+
+      // elements alignment
+      #halignElems =   enums.Align.LEFT;
+      #valignElems = enums.Align.BOTTOM;
     // ...
 
     constructor(position = new Vec2(0, 0), width = 0, height = width) {
@@ -40,12 +44,42 @@ class LayoutDivision {
     get position() { return this.#position; }
     get width()    { return this.#width;    }
     get height()   { return this.#height;   }
+    get halignElems() { return this.#halignElems; }
+    get valignElems() { return this.#valignElems; }
+
+    set halignElems(halignElems)  {
+      if (typeof halignElems !== 'string') {
+        throw new TypeError("LayoutContainer (halignElems): should be " +
+          "a String");
+      }
+
+      this.#halignElems = (
+        halignElems === enums.Align.CENTER ||
+        halignElems === enums.Align.RIGHT
+        ) ? halignElems : enums.Align.LEFT;
+    }
+
+    set valignElems(valignElems)  {
+      if (typeof valignElems !== 'string') {
+        throw new TypeError("LayoutContainer (valignElems): should be " +
+          "a String");
+      }
+
+      this.#valignElems = (
+        valignElems === enums.Align.MIDDLE ||
+        valignElems === enums.Align.TOP
+        ) ? valignElems : enums.Align.BOTTOM;
+    }
     // ...
 
     addContainer(container) {
+      if (!(container instanceof LayoutContainer)) {
+        throw new TypeError("LayoutDivision (addContainer): " +
+          "container should be a LayoutContainer");
+      }
+      
       if (!(this.childContainers.has(container))) {
-        container.parent = this;
-        container.resize();
+        container._setParent(this);
 
         this.childContainers.add(container);
       }
@@ -54,17 +88,19 @@ class LayoutDivision {
     }
 
     removeContainer(container = null) {
+      if (!(container instanceof LayoutContainer) && container !== null) {
+        throw new TypeError("LayoutDivision (removeContainer): " +
+          "container should be a LayoutContainer, or null");
+      }
+
       if (container === null) {
         for (let con of this.childContainers) {
-          console.log("resizing container...");
-          con.parent = null;
-          con.resize();
+          con._setParent(null);
 
-          this.childDivisions.delete(con);
+          this.childContainers.delete(con);
         }
       } else if (this.childContainers.has(container)) {
-        container.parent = null;
-        container.resize();
+        container._setParent(null);
 
         this.childContainers.delete(container);
       }
@@ -72,13 +108,12 @@ class LayoutDivision {
 
     addDivision(division) {
       if (!(division instanceof LayoutDivision)) {
-        throw new TypeError("LayoutContainer (addDivision): division " +
+        throw new TypeError("LayoutDivision (addDivision): division " +
           "should be a LayoutDivision");
       }
 
       if (!(this.childDivisions.has(division))) {
-        division.parent = this;
-        division._resize();
+        division._setParent(this);
 
         this.childDivisions.add(division);
       }
@@ -88,20 +123,18 @@ class LayoutDivision {
 
     removeDivision(division = null) {
       if (!(division instanceof LayoutDivision) && division !== null) {
-        throw new TypeError("LayoutContainer (removeDivision): division " +
+        throw new TypeError("LayoutDivision (removeDivision): division " +
           "should be a LayoutDivision, or null");
       }
 
       if (division === null) {
         for (let div of this.childDivisions) {
-          div.parent = null;
-          div._resize();
+          div._setParent(null);
 
           this.childDivisions.delete(div);
         }
       } else if (this.childDivisions.has(division)) {
-        division.parent = null;
-        division._resize();
+        division._setParent(null);
 
         this.childDivisions.delete(division);
       }
@@ -191,7 +224,7 @@ class LayoutDivision {
       }
 
       for (let division of this.childDivisions) {
-        division._resize();
+        division.resize();
       }
     }
 
@@ -257,27 +290,13 @@ class LayoutDivision {
     return (this.parent !== null) ? this.parent.height : 0;
   }
 
-  set parent(parent) {
-    if (!(parent instanceof LayoutContainer) &&
-      !(parent instanceof LayoutDivision.Cell) && parent !== null) {
-
-      throw new TypeError("LayoutDivision (parent): should be a " +
-        "LayoutContainer, LayoutDivision.Cell or null");
-    }
-
-    this.#parent = parent;
-  }
-
   set cellCount(cellCount) {
     if (!(cellCount instanceof Vec2)) {
       throw new TypeError("LayoutDivision (cellCount): should be " +
         "a Vec2");
-    } else if (cellCount.x <= 0 ) {
+    } else if (cellCount.x <= 0 || cellCount.y <= 0) {
       throw new RangeError("LayoutDivision (getCell): cellCount.x " +
-      "should be greater than 0");
-    } else if (cellCount.y <= 0) {
-      throw new RangeError("LayoutDivision (getCell): cellCount.y " +
-        "should be greater than 0");
+      "and cellCount.y should both be greater than 0");
     }
 
     let cells = new Array();
@@ -319,8 +338,6 @@ class LayoutDivision {
 
     this.cells = cells;
     this.#cellCount = cellCount;
-
-    this._resize();
   }
   // ...
 
@@ -337,6 +354,30 @@ class LayoutDivision {
     }
     
     return this.cells[cell.x + (cell.y * this.cellCount.x)];
+  }
+
+  resize() {
+    const ccount = new Vec2(
+      Math.max(1, this.cellCount.x),
+      Math.max(1, this.cellCount.y)
+    );
+    
+    const pos = (this.parent !== null) ?
+      this.parent.position : new Vec2(0, 0);
+    const winc = (this.parent !== null) ?
+      this.parent.width  / Math.max(1, ccount.x) : 0;
+    const hinc = (this.parent !== null) ?
+      this.parent.height / Math.max(1, ccount.y) : 0;
+
+    for (let y = 0; y < ccount.y; ++y) {
+      for (let x = 0; x < ccount.x; ++x) {
+        let cell = this.cells[x + (y * ccount.x)];
+        cell._resize(
+          new Vec2(pos.x + (winc * x), pos.y + (hinc * y)),
+          winc, hinc
+        );
+      }
+    }
   }
 
   // return the vertices that form the division (as line pairs) and
@@ -386,28 +427,15 @@ class LayoutDivision {
   }
 
   // internal use only - friend of LayoutContainer class
-  _resize() {
-    const ccount = new Vec2(
-      Math.max(1, this.cellCount.x),
-      Math.max(1, this.cellCount.y)
-    );
-    
-    const pos = (this.parent !== null) ?
-      this.parent.position : new Vec2(0, 0);
-    const winc = (this.parent !== null) ?
-      this.parent.width  / Math.max(1, ccount.x) : 0;
-    const hinc = (this.parent !== null) ?
-      this.parent.height / Math.max(1, ccount.y) : 0;
+  _setParent(parent) {
+    if (!(parent instanceof LayoutContainer) &&
+      !(parent instanceof LayoutDivision.Cell) && parent !== null) {
 
-    for (let y = 0; y < ccount.y; ++y) {
-      for (let x = 0; x < ccount.x; ++x) {
-        let cell = this.cells[x + (y * ccount.x)];
-        cell._resize(
-          new Vec2(pos.x + (winc * x), pos.y + (hinc * y)),
-          winc, hinc
-        );
-      }
+      throw new TypeError("LayoutContainer (parent): should be a " +
+        "LayoutContainer, LayoutDivision.Cell or null");
     }
+
+    this.#parent = parent;
   }
 };
 

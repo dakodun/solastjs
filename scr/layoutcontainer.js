@@ -30,28 +30,28 @@ class LayoutContainer {
     #outPosition = new Vec2();
     #outWidth  = 0;
     #outHeight = 0;
+
+    // container alignment
+    #halign  =      enums.Align.LEFT;
+    #hsizing = enums.Sizing.ABSOLUTE;
+    #valign  =    enums.Align.BOTTOM;
+    #vsizing = enums.Sizing.ABSOLUTE;
+
+    // elements alignment
+    #halignElems =   enums.Align.LEFT;
+    #valignElems = enums.Align.BOTTOM;
   // ...
   
   constructor(position = new Vec2(0, 0), width = 0, height = width) {
-    // container alignment
-    this.halign  =      enums.Align.LEFT;
-    this.hsizing = enums.Sizing.ABSOLUTE;
-    this.valign  =    enums.Align.BOTTOM;
-    this.vsizing = enums.Sizing.ABSOLUTE;
-    this.clipped = true;
-
     this.childContainers = new Set();
     this.childDivisions  = new Set();
 
-    // elements alignment
-    this.halignElems =   enums.Align.LEFT;
-    this.valignElems = enums.Align.BOTTOM;
+    this.clipped  = false;
     this.overflow = false;
-
-    this.parent = null;
     
     this.position = position;
-    this.resize(width, height);
+    this.width  =  width;
+    this.height = height;
   }
 
   // getters/setters
@@ -59,17 +59,12 @@ class LayoutContainer {
   get position() { return this.#outPosition; }
   get width()    { return this.#outWidth;    }
   get height()   { return this.#outHeight;   }
-
-  set parent(parent) {
-    if (!(parent instanceof LayoutContainer) &&
-      !(parent instanceof LayoutDivision.Cell) && parent !== null) {
-
-      throw new TypeError("LayoutContainer (parent): should be a " +
-        "LayoutContainer, LayoutDivision.Cell or null");
-    }
-
-    this.#parent = parent;
-  }
+  get halign()  { return this.#halign;  }
+  get hsizing() { return this.#hsizing; }
+  get valign()  { return this.#valign;  }
+  get vsizing() { return this.#vsizing; }
+  get halignElems() { return this.#halignElems; }
+  get valignElems() { return this.#valignElems; }
 
   set position(position) {
     if (!(position instanceof Vec2)) {
@@ -79,23 +74,6 @@ class LayoutContainer {
     
     this.#inPosition = position;
     this.#outPosition.copy(position);
-
-    if (this.parent !== null) {
-      this.#outPosition.x += this.parent.position.x;
-      this.#outPosition.y += this.parent.position.y;
-
-      // if a sub container is clipped then a positional
-      // change might incur a dimensional change too
-      if (this.clipping) { this.resize(); }
-    }
-
-    for (let container of this.childContainers) {
-      if (container.clipping) { container.resize(); }
-    }
-
-    for (let division of this.childDivisions) {
-      division._resize();
-    }
   }
 
   set width(width) {
@@ -104,16 +82,8 @@ class LayoutContainer {
         "a Number");
     }
 
-    this.#inWidth = width;
-    this.resize();
-
-    for (let container of this.childContainers) {
-      container.resize();
-    }
-
-    for (let division of this.childDivisions) {
-      division._resize();
-    }
+    this.#inWidth  = width;
+    this.#outWidth = width;
   }
 
   set height(height) {
@@ -122,27 +92,85 @@ class LayoutContainer {
         "a Number");
     }
 
-    this.#inHeight = height;
-    this.resize();
+    this.#inHeight  = height;
+    this.#outHeight = height;
+  }
 
-    for (let container of this.childContainers) {
-      container.resize();
+  set halign(halign)  {
+    if (typeof halign !== 'string') {
+      throw new TypeError("LayoutContainer (halign): should be " +
+        "a String");
     }
 
-    for (let division of this.childDivisions) {
-      division._resize();
+    this.#halign = (
+      halign === enums.Align.CENTER ||
+      halign === enums.Align.RIGHT
+      ) ? halign : enums.Align.LEFT;
+  }
+
+  set hsizing(hsizing)  {
+    if (typeof hsizing !== 'string') {
+      throw new TypeError("LayoutContainer (hsizing): should be " +
+        "a String");
     }
+
+    this.#hsizing = (
+      hsizing === enums.Sizing.RELATIVE
+      ) ? hsizing : enums.Sizing.ABSOLUTE;
+  }
+
+  set valign(valign)  {
+    if (typeof valign !== 'string') {
+      throw new TypeError("LayoutContainer (valign): should be " +
+        "a String");
+    }
+
+    this.#valign = (
+      valign === enums.Align.MIDDLE ||
+      valign === enums.Align.TOP
+      ) ? valign : enums.Align.BOTTOM;
+  }
+
+  set vsizing(vsizing)  {
+    if (typeof vsizing !== 'string') {
+      throw new TypeError("LayoutContainer (vsizing): should be " +
+        "a String");
+    }
+
+    this.#vsizing = (
+      vsizing === enums.Sizing.RELATIVE
+      ) ? vsizing : enums.Sizing.ABSOLUTE;
+  }
+
+  set halignElems(halignElems)  {
+    if (typeof halignElems !== 'string') {
+      throw new TypeError("LayoutContainer (halignElems): should be " +
+        "a String");
+    }
+
+    this.#halignElems = (
+      halignElems === enums.Align.CENTER ||
+      halignElems === enums.Align.RIGHT
+      ) ? halignElems : enums.Align.LEFT;
+  }
+
+  set valignElems(valignElems)  {
+    if (typeof valignElems !== 'string') {
+      throw new TypeError("LayoutContainer (valignElems): should be " +
+        "a String");
+    }
+
+    this.#valignElems = (
+      valignElems === enums.Align.MIDDLE ||
+      valignElems === enums.Align.TOP
+      ) ? valignElems : enums.Align.BOTTOM;
   }
   // ...
 
-  resize(width = this.#inWidth, height = this.#inHeight) {
+  resize() {
     this.#outPosition.copy(this.#inPosition);
-
-    this.#inWidth  = width;
-    this.#outWidth = width;
-
-    this.#inHeight  = height;
-    this.#outHeight = height;
+    this.#outWidth  =  this.#inWidth;
+    this.#outHeight = this.#inHeight;
 
     if (this.parent !== null) {
       // calculate dimensions of container based on sizing property
@@ -209,14 +237,18 @@ class LayoutContainer {
     }
 
     for (let division of this.childDivisions) {
-      division._resize();
+      division.resize();
     }
   }
 
   addContainer(container) {
+    if (!(container instanceof LayoutContainer)) {
+      throw new TypeError("LayoutContainer (addContainer): " +
+        "container should be a LayoutContainer");
+    }
+
     if (!(this.childContainers.has(container))) {
-      container.parent = this;
-      container.resize();
+      container._setParent(this);
 
       this.childContainers.add(container);
     }
@@ -224,10 +256,20 @@ class LayoutContainer {
     return container;
   }
 
-  removeContainer(container) {
-    if (this.childContainers.has(container)) {
-      container.parent = null;
-      container.resize();
+  removeContainer(container = null) {
+    if (!(container instanceof LayoutContainer) && container !== null) {
+      throw new TypeError("LayoutContainer (removeContainer): " +
+        "container should be a LayoutContainer, or null");
+    }
+
+    if (container === null) {
+      for (let con of this.childContainers) {
+        con._setParent(null);
+
+        this.childContainers.delete(con);
+      }
+    } else if (this.childContainers.has(container)) {
+      container._setParent(null);
 
       this.childContainers.delete(container);
     }
@@ -240,8 +282,7 @@ class LayoutContainer {
     }
 
     if (!(this.childDivisions.has(division))) {
-      division.parent = this;
-      division._resize();
+      division._setParent(this);
 
       this.childDivisions.add(division);
     }
@@ -249,15 +290,20 @@ class LayoutContainer {
     return division;
   }
 
-  removeDivision(division) {
-    if (!(division instanceof LayoutDivision)) {
+  removeDivision(division = null) {
+    if (!(division instanceof LayoutDivision) && division !== null) {
       throw new TypeError("LayoutContainer (removeDivision): division " +
-        "should be a LayoutDivision");
+        "should be a LayoutDivision, or null");
     }
 
-    if (this.childDivisions.has(division)) {
-      division.parent = null;
-      division._resize();
+    if (division === null) {
+      for (let div of this.childDivisions) {
+        div._setParent(null);
+
+        this.childDivisions.delete(div);
+      }
+    } else if (this.childDivisions.has(division)) {
+      division._setParent(null);
 
       this.childDivisions.delete(division);
     }
@@ -369,6 +415,18 @@ class LayoutContainer {
     }
 
     return verts;
+  }
+
+  // internal use only - friend of LayoutDivision class
+  _setParent(parent) {
+    if (!(parent instanceof LayoutContainer) &&
+      !(parent instanceof LayoutDivision.Cell) && parent !== null) {
+
+      throw new TypeError("LayoutContainer (parent): should be a " +
+        "LayoutContainer, LayoutDivision.Cell or null");
+    }
+
+    this.#parent = parent;
   }
 
   // adjust an element's position based on container's
