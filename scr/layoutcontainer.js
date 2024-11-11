@@ -175,12 +175,12 @@ class LayoutContainer {
     if (this.parent !== null) {
       // calculate dimensions of container based on sizing property
       if (this.hsizing === enums.Sizing.RELATIVE) {
-        let ratio = Math.min(100, Math.max(0,  width)) / 100;
+        let ratio = Math.min(100, Math.max(0,  this.#inWidth)) / 100;
         this.#outWidth = this.parent.width * ratio;
       }
 
       if (this.vsizing === enums.Sizing.RELATIVE) {
-        let ratio = Math.min(100, Math.max(0,  height)) / 100;
+        let ratio = Math.min(100, Math.max(0,  this.#inHeight)) / 100;
         this.#outHeight = this.parent.height * ratio;
       }
       // ...
