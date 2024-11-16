@@ -8,32 +8,100 @@ import Vec2 from './vec2.js';
 import Vec3 from './vec3.js';
 import VBOVertex from './vbovertex.js';
 
-class Shape extends Renderable(Polygon) {
-	constructor(verts) {
-    super();
+class Shape {
+  // private fields
+    #polygon    =    new Polygon();
+    #renderable = new Renderable();
 
-    this.indices = new Array();
+    #currentFrame = 0;
+  // ...
 
-    if (verts != undefined) {
-      this.pushVerts(verts);
+	constructor(verts = []) {
+    this.#polygon.pushVerts(verts);
+    this.#renderable.asData = () => {
+      return this.#asData();
     }
 
-    this.frames = new Array();
-    this.currentFrame = 0;
+    this.indices = new Array();
+    this.colors = new Array();
 
+    this.frames = new Array();
     this.animated = false;
     this.startFrame = 0;
-    this.endFrame = 0;
-    this.direction = 1;
-    this.loopCount = 0;
-    this.loopMax = 0;
-    this.timer = 0;
-
-    this.colors = new Array();
+    this.endFrame   = 0;
+    this.direction  = 1;
+    this.loopCount  = 0;
+    this.loopMax    = 0;
+    this.timer      = 0;
   }
+
+  // getters/setters
+  get currentFrame() { return this.#currentFrame; }
+
+  set currentFrame(currentFrame) {
+    if (typeof currentFrame !== 'number') {
+      throw new TypeError("Shape (currentFrame): should be a Number");
+    } else if (currentFrame < 0 ||
+      currentFrame > this.frames.length) {
+
+      throw new RangeError("Shape (currentFrame): should be an " +
+      "integer between 0 and total number of frames (inclusively)");
+    }
+
+    this.timer = 0.0;
+    this.#currentFrame = currentFrame;
+  }
+
+  // helpers for working with polygon
+  get verts() { return this.#polygon.verts; }
+
+  // helpers for working with transformable (via polygon)
+  // - error handling occurs in Transformable2D class
+  get transformable() { return this.#polygon.transformable; }
+
+  get position() { return this.#polygon.position; }
+  get origin()   { return this.#polygon.origin;   }
+  get transMat() { return this.#polygon.transMat; }
+  get scale()    { return this.#polygon.scale;    }
+  get rotation() { return this.#polygon.rotation; }
+  get boundingBox() { return this.#polygon.boundingBox; }
+
+  set position(position) { this.#polygon.position = position; }
+  set origin(origin)     { this.#polygon.origin = origin;     }
+  set transMat(transMat) { this.#polygon.transMat = transMat; }
+  set scale(scale)       { this.#polygon.scale = scale;       }
+  set rotation(rotation) { this.#polygon.rotation = rotation; }
+
+  set boundingBox(boundingBox) {
+    this.#polygon.boundingBox = boundingBox;
+  }
+
+  // helpers for working with renderable - error
+  // handling occurs in Renderable class
+  get renderable() { return this.#renderable; }
+
+  get color() { return this.#renderable.color; }
+  get alpha() { return this.#renderable.alpha; }
+  get depth() { return this.#renderable.depth; }
+  get renderMode() { return this.#renderable.renderMode; }
+  get shader() { return this.#renderable.shader; }
+  get asData() { return this.#renderable.asData; }
+
+  set color(color) { this.#renderable.color = color; }
+  set alpha(alpha) { this.#renderable.alpha = alpha; }
+  set depth(depth) { this.#renderable.depth = depth; }
+
+  set renderMode(renderMode) {
+    this.#renderable.renderMode = renderMode;
+  }
+
+  set shader(shader) { this.#renderable.shader = shader; }
+  set asData(asData) { this.#renderable.asData = asData; }
+  // ...
   
   copy(other) {
-    super.copy(other);
+    this.#polygon    =    other.#polygon.getCopy();
+    this.#renderable = other.#renderable.getCopy();
 
     this.indices = other.indices.slice();
 
@@ -49,13 +117,13 @@ class Shape extends Renderable(Polygon) {
 
     this.currentFrame = other.currentFrame;
 
-    this.animated = other.animated;
+    this.animated   =   other.animated;
     this.startFrame = other.startFrame;
-    this.endFrame = other.endFrame;
-    this.direction = other.direction;
-    this.loopCount = other.loopCount;
-    this.loopMax = other.loopMax;
-    this.timer = other.timer;
+    this.endFrame   =   other.endFrame;
+    this.direction  =  other.direction;
+    this.loopCount  =  other.loopCount;
+    this.loopMax    =    other.loopMax;
+    this.timer      =      other.timer;
 
     this.colors.splice(0, this.colors.length);
     for (let c of other.colors) {
@@ -64,7 +132,9 @@ class Shape extends Renderable(Polygon) {
   }
 
   getCopy() {
-    let copy = new Shape(); copy.copy(this);
+    let copy = new Shape();
+    copy.copy(this);
+
     return copy;
   }
 
@@ -110,12 +180,12 @@ class Shape extends Renderable(Polygon) {
   }
 
   pushVert(vert) {
-    super.pushVert(vert);
+    this.#polygon.pushVert(vert);
     this.indices.splice(0, this.indices.length);
   }
 
   pushVerts(verts) {
-    super.pushVerts(verts);
+    this.#polygon.pushVerts(verts);
     this.indices.splice(0, this.indices.length);
   }
 
@@ -129,19 +199,21 @@ class Shape extends Renderable(Polygon) {
     this.frames.push([texture, coords, 0.0]);
   }
 
-  pushFrameStrip(texture, count, row, column, start, offset) {
-    let off = offset;
-    if (off == undefined) {
-      off = new Vec2(0.0, 0.0);
-    }
-    
+  pushFrameStrip(texture, count, row = count, column = 1,
+    start = 0, offset = new Vec2()) {
+
     let width = texture.width / row;
     let height = texture.height / column;
 
-    let increment = new Vec2((width - off.x) / texture.width,
-        (height - off.y) / texture.height);
-    let spacing = new Vec2(off.x / texture.width,
-        off.y / texture.height);
+    let increment = new Vec2(
+      (width - offset.x) / texture.width,
+      (height - offset.y) / texture.height
+    );
+
+    let spacing = new Vec2(
+      offset.x / texture.width,
+      offset.y / texture.height
+    );
 
     for (let i = start; i < count + start; ++i) {
       let s = i % row;
@@ -251,13 +323,6 @@ class Shape extends Renderable(Polygon) {
     this.currentFrame = this.startFrame;
   }
 
-  setCurrentFrame(frame) {
-    if (this.frames.length > 0) {
-      this.timer = 0.0;
-      this.currentFrame = Math.min(this.frames.length - 1, frame);
-    }
-  }
-
   // a naive ear clipping algorithm
   triangulate() {
     if (this.getWinding() < 0) {
@@ -358,7 +423,42 @@ class Shape extends Renderable(Polygon) {
     this.indices = indices.slice();
   }
 
-  getRenderBatchData() {
+  reverseWinding() {
+    this.indices.splice(0, this.indices.length);
+    
+    return super.reverseWinding();
+  }
+
+  setRenderMode(renderMode) {
+    if (renderMode != this.renderMode) {
+      this.indices.splice(0, this.indices.length);
+      this.renderMode = renderMode;
+    }
+  }
+
+  // helpers for working with polygon
+  getWinding() {
+    return this.#polygon.getWinding();
+  }
+
+  reverseWinding() {
+    return this.#polygon.reverseWinding();
+  }
+
+  makeCircle(diameter, resolution = 18) {
+    this.#polygon.makeCircle(diameter, resolution);
+  }
+
+  makePolyLine(verts, halfWidth) {
+    this.#polygon.makePolyLine(verts, halfWidth);
+  }
+
+  isPointInside(point) {
+    return this.#polygon.isPointInside(point);
+  }
+
+  //
+  #asData() {
     let renderMode = this.renderMode;
 
     switch (renderMode) {
@@ -422,8 +522,10 @@ class Shape extends Renderable(Polygon) {
     transMat.translate(this.origin.getNegated());
 
     let vboVerts = new Array();
-    let invMinMax = new Vec2(1 / (this.localBox[1].x - this.localBox[0].x),
-        1 / (this.localBox[1].y - this.localBox[0].y));
+    let invMinMax = new Vec2(
+      1 / (this.boundingBox.upper.x - this.boundingBox.lower.x),
+      1 / (this.boundingBox.upper.y - this.boundingBox.lower.y)
+    );
     
     // pad the color array to match the number of vertices
     let diff = this.verts.length - this.colors.length;
@@ -462,8 +564,10 @@ class Shape extends Renderable(Polygon) {
       vboVert.r = c.x; vboVert.g = c.y;
       vboVert.b = c.z; vboVert.a = this.alpha;
 
-      let ratio = new Vec2((v.x - this.localBox[0].x)  * invMinMax.x,
-          (v.y - this.localBox[0].y)  * invMinMax.y);
+      let ratio = new Vec2(
+        (v.x - this.boundingBox.lower.x) * invMinMax.x,
+        (v.y - this.boundingBox.lower.y) * invMinMax.y
+      );
 
       // pack floating point values into unsigned short
       vboVert.s = (((1 - ratio.x) * texRect[0].x) +
@@ -486,19 +590,6 @@ class Shape extends Renderable(Polygon) {
     rbd.depth = this.depth;
 
     return [rbd];
-  }
-
-  reverseWinding() {
-    this.indices.splice(0, this.indices.length);
-    
-    return super.reverseWinding();
-  }
-
-  setRenderMode(renderMode) {
-    if (renderMode != this.renderMode) {
-      this.indices.splice(0, this.indices.length);
-      this.renderMode = renderMode;
-    }
   }
 };
 

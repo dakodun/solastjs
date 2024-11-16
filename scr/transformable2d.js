@@ -1,120 +1,141 @@
 import Mat3 from './mat3.js';
 import Vec2 from './vec2.js';
 
-const Transformable2D = (Transformable2D) => class extends Transformable2D {
+class Transformable2D {
+  /*
+    serves  as an  interface  (via  composition)  to  allow
+    a class to be transformed via 2d matrix transformations
+  */
+
+  // private fields
+    #position = new Vec2(0.0, 0.0);
+    #origin   = new Vec2(0.0, 0.0);
+    
+    #transMat = new Mat3();
+    #scale = new Vec2(1.0, 1.0);
+    #rotation = 0;
+
+    #boundingBox = {
+      lower: new Vec2(Number.POSITIVE_INFINITY,
+        Number.POSITIVE_INFINITY),
+      upper: new Vec2(Number.NEGATIVE_INFINITY,
+        Number.NEGATIVE_INFINITY)
+    };
+  // ...
+		
   constructor() {
-    super();
-
-    this.position = new Vec2(0.0, 0.0);
-		this.origin = new Vec2(0.0, 0.0);
-		
-		this.transMat = new Mat3();
-		this.scale = new Vec2(1.0, 1.0);
-		this.rotation = 0;
-		
-		this.localBox = new Array(
-        new Vec2(Number.POSITIVE_INFINITY, Number.POSITIVE_INFINITY),
-        new Vec2(Number.NEGATIVE_INFINITY, Number.NEGATIVE_INFINITY)
-    );
-
-		this.globalBox = new Array(
-        new Vec2(Number.POSITIVE_INFINITY, Number.POSITIVE_INFINITY),
-        new Vec2(Number.NEGATIVE_INFINITY, Number.NEGATIVE_INFINITY)
-    );
-		
-	  this.localMask = new Array();
-		this.globalMask = new Array();
+    
   }
+
+  // getters/setters
+  get position() { return this.#position; }
+  get origin()   { return this.#origin;   }
+  get transMat() { return this.#transMat; }
+  get scale()    { return this.#scale;    }
+  get rotation() { return this.#rotation; }
+  get boundingBox() { return this.#boundingBox; }
+
+  set position(position) {
+    if (!(position instanceof Vec2)) {
+      throw new TypeError("Transformable2D (position): should " +
+        "be a Vec2");
+    }
+
+    this.#position = position;
+  }
+
+  set origin(origin) {
+    if (!(origin instanceof Vec2)) {
+      throw new TypeError("Transformable2D (origin): should " +
+        "be a Vec2");
+    }
+
+    this.#origin = origin;
+  }
+
+  set transMat(transMat) {
+    if (!(transMat instanceof Mat3)) {
+      throw new TypeError("Transformable2D (transMat): should " +
+        "be a Mat3");
+    }
+
+    this.#transMat = transMat;
+  }
+  
+  set scale(scale) {
+    if (!(scale instanceof Vec2)) {
+      throw new TypeError("Transformable2D (scale): should " +
+        "be a Vec2");
+    }
+
+    this.#scale = scale;
+  }
+
+  set rotation(rotation) {
+    if (typeof rotation !== 'number') {
+      throw new TypeError("Transformable2D (rotation): should " +
+        "be a Number");
+    }
+
+    this.#rotation = rotation;
+  }
+
+  set boundingBox(boundingBox) {
+    if (typeof boundingBox !== 'object' ||
+      boundingBox.lower === undefined ||
+      boundingBox.upper === undefined ||
+      !(boundingBox.lower instanceof Vec2) ||
+      !(boundingBox.upper instanceof Vec2)) {
+      
+      throw new TypeError("Transformable2D (boundingBox): should " +
+        "be an Object with a Vec2 field 'lower', and a Vec2 field " +
+        "'upper'");
+    }
+
+    this.#boundingBox = boundingBox;
+  }
+  // ...
 
   copy(other) {
-    this.position = other.position.getCopy();
-		this.origin = other.origin.getCopy();
+    if (!(other instanceof Transformable2D)) {
+      throw new TypeError("Transformable2D (copy): other should be " +
+        "a Transformable2D");
+    }
+
+    this.#position = other.#position.getCopy();
+		this.#origin   =   other.#origin.getCopy();
 		
-		this.transMat = other.transMat.getCopy();
-		this.scale = other.scale.getCopy();
-		this.rotation = other.rotation;
+		this.#transMat = other.#transMat.getCopy();
+		this.#scale = other.#scale.getCopy();
+		this.#rotation = other.#rotation;
 		
-    this.localBox.splice(0, this.localBox.length);
-    for (let i of other.localBox) {
-      this.localBox.push(i);
+    this.#boundingBox = {
+      lower: other.boundingBox.lower.getCopy(),
+      upper: other.boundingBox.upper.getCopy()
+    };
+  }
+
+  getCopy() {
+    let copy = new Transformable2D();
+    copy.copy(this);
+
+    return copy;
+  }
+  
+  static [Symbol.hasInstance](instance) {
+    // return true if instance is a Transformable2D or exposes
+    // a Transformable2D field via 'get transformable()'
+    if (Function.prototype[Symbol.hasInstance].
+      call(Transformable2D, instance)) {
+
+      return true;
+    } else if (instance.transformable !== undefined &&
+      instance.transformable instanceof Transformable2D) {
+
+      return true;
     }
-
-    this.globalBox.splice(0, this.globalBox.length);
-    for (let i of other.globalBox) {
-      this.globalBox.push(i);
-    }
-
-    this.localMask.splice(0, this.localMask.length);
-    for (let i of other.localMask) {
-      this.localMask.push(i);
-    }
-
-    this.globalMask.splice(0, this.globalMask.length);
-    for (let i of other.globalMask) {
-      this.globalMask.push(i);
-    }
-  }
-
-  updateGlobalBox() {
-    // should be defined in child class
-  }
-
-  updateGlobalMask() {
-    // should be defined in child class
-  }
-
-  createLocalMask() {
-    // should be defined in child class
-  }
-
-  setPosition(position) {
-    this.position.copy(position);
-
-    this.updateGlobalBox();
-	  this.updateGlobalMask();
-  }
-
-  setOrigin(origin) {
-    this.origin.copy(origin);
-
-    this.updateGlobalBox();
-	  this.updateGlobalMask();
-  }
-
-  setTransMat(transMat) {
-    this.transMat.copy(transMat);
-
-    this.updateGlobalBox();
-	  this.updateGlobalMask();
-  }
-
-  setScale(scale) {
-    this.scale.copy(scale);
-
-    this.updateGlobalBox();
-	  this.updateGlobalMask();
-  }
-
-  setRotation(rotation) {
-    this.rotation = rotation;
-
-    this.updateGlobalBox();
-	  this.updateGlobalMask();
-  }
-
-  setLocalMask(mask) {
-    if (newMask == undefined) {
-      this.createLocalMask();
-	    this.updateGlobalMask();
-    }
-    else {
-      this.localMask.splice(0, this.localMask.length);
-      for (let m of mask) {
-        localMask.push(m.getCopy());
-      }
-
-      this.updateGlobalMask();
-    }
+    
+    return false;
   }
 };
 

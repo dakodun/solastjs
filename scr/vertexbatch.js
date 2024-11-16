@@ -8,46 +8,72 @@ import Vec3 from './vec3.js';
 import Vec4 from './vec4.js';
 import VBOVertex from './vbovertex.js';
 
-class VertexBatchBase extends Transformable3D(Object) {
-  constructor() {
-    super();
+class VertexBatch {
+  // private fields
+    #transformable = new Transformable3D();
+    #renderable = new Renderable();
+  // ...
 
-    this.verts = new Array();
+  constructor() {
+    this.#renderable.asData = () => {
+      return this.#asData();
+    }
+
+    this.verts   = new Array();
     this.indices = new Array();
     this.normals = new Array();
     
-    this.colors = new Array();
+    this.colors  = new Array();
 
     this.lighting = false;
   }
 
-  calculateNormals() {
-    this.normals.splice(0, this.normals.length);
-    
-    const verts = new Array(3);
-    for (let i = 2; i < this.indices.length; i += 3) {
-      const v0 = this.verts[this.indices[i - 2]];
-      const v1 = this.verts[this.indices[i - 1]];
-      const v2 = this.verts[this.indices[i    ]];
-      
-      let v10 = new Vec3(v1.x - v0.x, v1.y - v0.y, v1.z - v0.z);
-      let v20 = new Vec3(v2.x - v0.x, v2.y - v0.y, v2.z - v0.z);
+  // getters/setters
+  // helpers for working with transformable - error
+  // handling occurs in Transformable3D class
+  get transformable() { return this.#transformable; }
+  
+  get position() { return this.#transformable.position; }
+  get origin()   { return this.#transformable.origin;   }
+  get transMat() { return this.#transformable.transMat; }
+  get scale()    { return this.#transformable.scale;    }
+  get rotation() { return this.#transformable.rotation; }
+  get boundingBox() { return this.#transformable.boundingBox; }
 
-      let cross = v10.getCross(v20); cross.normalize();
+  set position(position) { this.#transformable.position = position; }
+  set origin(origin)     { this.#transformable.origin = origin;     }
+  set transMat(transMat) { this.#transformable.transMat = transMat; }
+  set scale(scale)       { this.#transformable.scale = scale;       }
+  set rotation(rotation) { this.#transformable.rotation = rotation; }
 
-      for (let j = 0; j < 3; ++j) {
-        this.normals.push(cross);
-      }
-    }
-  }
-}
-
-class VertexBatch extends Renderable(VertexBatchBase) {
-  constructor() {
-    super();
+  set boundingBox(boundingBox) {
+    this.#transformable.boundingBox = boundingBox;
   }
 
-  getRenderBatchData() {
+  // helpers for working with renderable - error
+  // handling occurs in Renderable class
+  get renderable() { return this.#renderable; }
+
+  get color() { return this.#renderable.color; }
+  get alpha() { return this.#renderable.alpha; }
+  get depth() { return this.#renderable.depth; }
+  get renderMode() { return this.#renderable.renderMode; }
+  get shader() { return this.#renderable.shader; }
+  get asData() { return this.#renderable.asData; }
+
+  set color(color) { this.#renderable.color = color; }
+  set alpha(alpha) { this.#renderable.alpha = alpha; }
+  set depth(depth) { this.#renderable.depth = depth; }
+
+  set renderMode(renderMode) {
+    this.#renderable.renderMode = renderMode;
+  }
+
+  set shader(shader) { this.#renderable.shader = shader; }
+  set asData(asData) { this.#renderable.asData = asData; }
+  // ...
+
+  #asData() {
     let transMat = this.transMat.getCopy();
 
     let offsetPos = new Vec3(this.position.x - this.origin.x,
@@ -126,6 +152,26 @@ class VertexBatch extends Renderable(VertexBatchBase) {
     rbd.depth = this.depth;
 
     return [rbd];
+  }
+
+  calculateNormals() {
+    this.normals.splice(0, this.normals.length);
+    
+    const verts = new Array(3);
+    for (let i = 2; i < this.indices.length; i += 3) {
+      const v0 = this.verts[this.indices[i - 2]];
+      const v1 = this.verts[this.indices[i - 1]];
+      const v2 = this.verts[this.indices[i    ]];
+      
+      let v10 = new Vec3(v1.x - v0.x, v1.y - v0.y, v1.z - v0.z);
+      let v20 = new Vec3(v2.x - v0.x, v2.y - v0.y, v2.z - v0.z);
+
+      let cross = v10.getCross(v20); cross.normalize();
+
+      for (let j = 0; j < 3; ++j) {
+        this.normals.push(cross);
+      }
+    }
   }
 };
 

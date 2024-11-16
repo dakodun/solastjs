@@ -1,5 +1,6 @@
 import GLStates from './glstates.js'
 
+import Renderable from './renderable.js'
 import RenderBatchData from './renderbatchdata.js'
 import VBO from './vbo.js'
 import VBOSegment from './vbosegment.js'
@@ -9,26 +10,21 @@ function renderDataSort(first, second) {
 
 	if (first.pass < second.pass) {
 		result = -1;
-	}
-	else if (first.pass == second.pass) {
-    if (first.depthSort == true && first.depth < second.depth) {
+	} else if (first.pass === second.pass) {
+    if (first.depthSort === true && first.depth < second.depth) {
       result = -1;
-    }
-    else if (first.depthSort == true && first.depth == second.depth ||
-        first.depthSort != true) {
+    } else if ((first.depthSort === true && first.depth === second.depth) ||
+        first.depthSort !== true) {
 
       if (first.shader.programID < second.shader.programID) {
         result = -1;
-      }
-      else if (first.shader.programID == second.shader.programID) {
+      } else if (first.shader.programID === second.shader.programID) {
         if (first.textureID < second.textureID) {
           result = -1;
-        }
-        else if (first.textureID == second.textureID) {
+        } else if (first.textureID === second.textureID) {
           if (first.renderMode < second.renderMode) {
             result = -1;
-          }
-          else if (first.renderMode == second.renderMode) {
+          } else if (first.renderMode === second.renderMode) {
             result = 0;
           }
         }
@@ -51,31 +47,33 @@ class RenderBatch {
     this.vbo.delete();
   }
 	
-	add(renderable, pass) {
-    if (pass == undefined) {
-      this.add(renderable, 0);
+	add(renderable, pass = 0) {
+    if (!(renderable instanceof Renderable)) {
+      throw new TypeError("RenderBatch (add): renderable " +
+      "should be a Renderable");
     }
-    else {
-      this.vbo.init();
 
-      if (this.depthSort[pass] == undefined) {
-        this.depthSort[pass] = false;
+    this.vbo.init();
+
+    if (this.depthSort[pass] === undefined) {
+      this.depthSort[pass] = false;
+    }
+
+    let data = renderable.asData();
+    for (let r of data) {
+      let d = new RenderBatchData();
+
+      if (r.shader === null) {
+        r.shader = GLStates.defaultShader;
+      }
+      
+      r.pass = pass;
+
+      if (this.depthSort[pass]) {
+        r.depthSort = true;
       }
 
-      let renderableData = renderable.getRenderBatchData();
-      for (let r of renderableData) {
-        if (r.shader == null) {
-          r.shader = GLStates.defaultShader;
-        }
-        
-        r.pass = pass;
-
-        if (this.depthSort[pass]) {
-          r.depthSort = true;
-        }
-
-        this.renderData.push(r);
-      }
+      this.renderData.push(r);
     }
   }
 
@@ -146,17 +144,12 @@ class RenderBatch {
     }
   }
 
-  draw(pass) {
-    if (pass == undefined) {
-      this.draw(0);
-    }
-    else {
-      this.vbo.draw(pass);
-    }
+  draw(pass = 0) {
+    this.vbo.draw(pass);
   }
 
   setDepthSort(pass, enabled) {
-    if (this.depthSort[pass] != enabled) {
+    if (this.depthSort[pass] !== enabled) {
       for (let r of this.renderData) {
         r.depthSort = enabled;
       }
