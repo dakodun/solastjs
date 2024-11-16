@@ -61,10 +61,9 @@ class App {
     this.frameTimer.reset();
   }
 
-  // needs to be called separately from other init upon a user input
+  // needs to be called seperately from other init upon a user input
   initAudio() {
-    this.audioContext = new AudioContext();
-    acSetContext(this.audioContext);
+    acSetContext(new AudioContext());
   }
 
   delete() {

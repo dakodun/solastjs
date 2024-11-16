@@ -16,6 +16,8 @@ export { default as List }            from            './list.js';
 export { default as Mat3 } from './mat3.js';
 export { default as Mat4 } from './mat4.js';
 
+export { default as Polygon }         from          './polygon.js';
+export { default as Renderable }      from       './renderable.js';
 export { default as RenderBatch }     from      './renderbatch.js';
 export { default as RenderBatchData } from  './renderbatchdata.js';
 export { default as RenderBuffer }    from     './renderbuffer.js';
@@ -31,8 +33,10 @@ export { default as SolError }        from         './solerror.js';
 export { default as Sound }           from            './sound.js';
 export { default as SoundBuffer }     from      './soundbuffer.js';
 
-export { default as Texture } from './texture.js';
-export { default as Timer }   from   './timer.js';
+export { default as Texture }         from         './texture.js';
+export { default as Timer }           from           './timer.js';
+export { default as Transformable2D } from './transformable2d.js';
+export { default as Transformable3D } from './transformable3d.js';
 
 export { default as VBO }         from         './vbo.js';
 export { default as VBOVertex }   from   './vbovertex.js';

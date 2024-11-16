@@ -102,7 +102,7 @@ class List {
     let next = this.#front;
 
     return {
-      next : () => {
+      next: () => {
         if (next !== null) {
           curr = next;
           next = next.next;
@@ -113,7 +113,7 @@ class List {
         }
       },
 
-      return : () => {
+      return: () => {
         next = null;
         return {done: true, value: undefined};
       },
