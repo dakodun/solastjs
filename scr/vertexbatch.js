@@ -15,9 +15,9 @@ class VertexBatch {
   // ...
 
   constructor() {
-    this.#renderable.asData = () => {
-      return this.#asData();
-    }
+    this.#renderable.asData = function(caller = this) {
+      return caller.#asData();
+    }.bind(this);
 
     this.verts   = new Array();
     this.indices = new Array();
@@ -39,6 +39,7 @@ class VertexBatch {
   get scale()    { return this.#transformable.scale;    }
   get rotation() { return this.#transformable.rotation; }
   get boundingBox() { return this.#transformable.boundingBox; }
+  get asData() { return this.#renderable.asData; }
 
   set position(position) { this.#transformable.position = position; }
   set origin(origin)     { this.#transformable.origin = origin;     }
@@ -58,8 +59,7 @@ class VertexBatch {
   get alpha() { return this.#renderable.alpha; }
   get depth() { return this.#renderable.depth; }
   get renderMode() { return this.#renderable.renderMode; }
-  get shader() { return this.#renderable.shader; }
-  get asData() { return this.#renderable.asData; }
+  get shaderRef() { return this.#renderable.shaderRef; }
 
   set color(color) { this.#renderable.color = color; }
   set alpha(alpha) { this.#renderable.alpha = alpha; }
@@ -69,8 +69,9 @@ class VertexBatch {
     this.#renderable.renderMode = renderMode;
   }
 
-  set shader(shader) { this.#renderable.shader = shader; }
-  set asData(asData) { this.#renderable.asData = asData; }
+  set shaderRef(shaderRef) {
+    this.#renderable.shaderRef = shaderRef;
+  }
   // ...
 
   #asData() {
@@ -147,7 +148,7 @@ class VertexBatch {
     let rbd = new RenderBatchData();
     rbd.vertices = vboVerts;
     rbd.indices = this.indices.slice();
-    rbd.textureID = null;
+    rbd.textureRef = null;
     rbd.renderMode = this.renderMode;
     rbd.depth = this.depth;
 

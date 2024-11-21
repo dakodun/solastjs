@@ -18,9 +18,9 @@ class Shape {
 
 	constructor(verts = []) {
     this.#polygon.pushVerts(verts);
-    this.#renderable.asData = () => {
+    this.#renderable.asData = function() {
       return this.#asData();
-    }
+    }.bind(this);
 
     this.indices = new Array();
     this.colors = new Array();
@@ -84,8 +84,7 @@ class Shape {
   get alpha() { return this.#renderable.alpha; }
   get depth() { return this.#renderable.depth; }
   get renderMode() { return this.#renderable.renderMode; }
-  get shader() { return this.#renderable.shader; }
-  get asData() { return this.#renderable.asData; }
+  get shaderRef() { return this.#renderable.shaderRef; }
 
   set color(color) { this.#renderable.color = color; }
   set alpha(alpha) { this.#renderable.alpha = alpha; }
@@ -95,8 +94,9 @@ class Shape {
     this.#renderable.renderMode = renderMode;
   }
 
-  set shader(shader) { this.#renderable.shader = shader; }
-  set asData(asData) { this.#renderable.asData = asData; }
+  set shaderRef(shaderRef) {
+    this.#renderable.shaderRef = shaderRef;
+  }
   // ...
   
   copy(other) {
@@ -463,7 +463,7 @@ class Shape {
 
     switch (renderMode) {
       case GL.POINTS :
-        if (this.indices.length == 0) {
+        if (this.indices.length === 0) {
           for (let i = 0; i < this.verts.length; ++i) {
             this.indices.push(i);
           }
@@ -471,7 +471,7 @@ class Shape {
 
         break;
       case GL.LINES :
-        if (this.indices.length == 0 && this.verts.length > 1) {
+        if (this.indices.length === 0 && this.verts.length > 1) {
           for (let i = 0; i < this.verts.length; ++i) {
             this.indices.push(i);
           }
@@ -481,13 +481,13 @@ class Shape {
       case GL.LINE_LOOP :
         renderMode = GL.LINES; // manually loop lines
 
-        if (this.indices.length == 0 && this.verts.length > 1) {
+        if (this.indices.length === 0 && this.verts.length > 1) {
           for (let i = 0; i < this.verts.length; ++i) {
             this.indices.push(i);
+
             if (i + 1 < this.verts.length) {
               this.indices.push(i + 1);
-            }
-            else {
+            } else {
               this.indices.push(0);
             }
           }
@@ -496,7 +496,7 @@ class Shape {
         break;
       case GL.TRIANGLES :
       default :
-        if (this.indices.length == 0) {
+        if (this.indices.length === 0) {
           this.triangulate();
         }
 
@@ -504,16 +504,16 @@ class Shape {
     }
 
     let texRect = [new Vec2(0.0, 1.0), new Vec2(1.0, 0.0)];
-    let texID = null;
+    let tex = null;
     if (this.currentFrame < this.frames.length) {
       texRect = this.frames[this.currentFrame][1];
-      texID = this.frames[this.currentFrame][0].textureID;
+      tex = this.frames[this.currentFrame][0].texture;
     }
 
     let transMat = this.transMat.getCopy();
 
     let offsetPos = new Vec2(this.position.x - this.origin.x,
-        this.position.y - this.origin.y);
+      this.position.y - this.origin.y);
     transMat.translate(offsetPos);
     
     transMat.translate(this.origin);
@@ -542,10 +542,10 @@ class Shape {
 
       let vboVert = new VBOVertex();
 
-      vboVert.x = (transMat.arr[0] * v.x) + (transMat.arr[3] * v.y) +
-          transMat.arr[6];
-      vboVert.y = (transMat.arr[1] * v.x) + (transMat.arr[4] * v.y) +
-          transMat.arr[7];
+      vboVert.x = (transMat.arr[0] * v.x) +
+        (transMat.arr[3] * v.y) + transMat.arr[6];
+      vboVert.y = (transMat.arr[1] * v.x) +
+        (transMat.arr[4] * v.y) + transMat.arr[7];
       vboVert.z = this.depth;
 
       // es 1.0
@@ -571,11 +571,11 @@ class Shape {
 
       // pack floating point values into unsigned short
       vboVert.s = (((1 - ratio.x) * texRect[0].x) +
-          (ratio.x * texRect[1].x)) * 65535;
+        (ratio.x * texRect[1].x)) * 65535;
       vboVert.t = (((1 - ratio.y) * texRect[0].y) +
-          (ratio.y * texRect[1].y)) * 65535;
+        (ratio.y * texRect[1].y)) * 65535;
       
-      if (texID) {
+      if (tex) {
         vboVert.textureFlag = 255;
       }
 
@@ -585,8 +585,11 @@ class Shape {
     let rbd = new RenderBatchData();
     rbd.vertices = vboVerts;
     rbd.indices = this.indices.slice();
-    rbd.textureID = texID;
+    
     rbd.renderMode = renderMode;
+
+    rbd.textureRef = tex;
+
     rbd.depth = this.depth;
 
     return [rbd];
