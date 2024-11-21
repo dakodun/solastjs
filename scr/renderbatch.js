@@ -5,36 +5,6 @@ import RenderBatchData from './renderbatchdata.js'
 import VBO from './vbo.js'
 import VBOSegment from './vbosegment.js'
 
-function renderDataSort(first, second) {
-  let result = 1;
-
-	if (first.pass < second.pass) {
-		result = -1;
-	} else if (first.pass === second.pass) {
-    if (first.depthSort === true && first.depth < second.depth) {
-      result = -1;
-    } else if ((first.depthSort === true && first.depth === second.depth) ||
-        first.depthSort !== true) {
-
-      if (first.shader.programID < second.shader.programID) {
-        result = -1;
-      } else if (first.shader.programID === second.shader.programID) {
-        if (first.textureID < second.textureID) {
-          result = -1;
-        } else if (first.textureID === second.textureID) {
-          if (first.renderMode < second.renderMode) {
-            result = -1;
-          } else if (first.renderMode === second.renderMode) {
-            result = 0;
-          }
-        }
-      }
-    }
-  }
-
-  return result;
-};
-
 class RenderBatch {
 	constructor() {
     this.renderData = new Array();
@@ -47,10 +17,12 @@ class RenderBatch {
     this.vbo.delete();
   }
 	
-	add(renderable, pass = 0) {
+	add(renderBase, pass = 0) {
+    let renderable = renderBase.renderable
+
     if (!(renderable instanceof Renderable)) {
-      throw new TypeError("RenderBatch (add): renderable " +
-      "should be a Renderable");
+      throw new TypeError("RenderBatch (add): renderBase should " +
+      "have a 'renderable' field, which should be a Renderable");
     }
 
     this.vbo.init();
@@ -60,37 +32,66 @@ class RenderBatch {
     }
 
     let data = renderable.asData();
-    for (let r of data) {
-      let d = new RenderBatchData();
 
-      if (r.shader === null) {
-        r.shader = GLStates.defaultShader;
+    for (const datum of data) {
+      let rbd = datum.getCopy();
+
+      rbd.pass = pass;
+
+      if (rbd.shaderRef === null) {
+        rbd.shaderRef = GLStates.defaultShader;
       }
       
-      r.pass = pass;
-
       if (this.depthSort[pass]) {
-        r.depthSort = true;
+        rbd.depthSort = true;
       }
 
-      this.renderData.push(r);
+      this.renderData.push(rbd);
     }
   }
 
   upload() {
-    if (this.renderData.length != 0) {
+    if (this.renderData.length !== 0) {
       let vertices = new Array();
       let indices = new Array();
       let segments = new Array();
       let vertexCount = 0;
 
-      this.renderData.sort(renderDataSort);
+      // 1. sort the data first by pass
+      // 2. then sort by depth only if depth sorting is enabled
+      // 3. then sort by shader id
+      // 4. then sort by texture id (group non-textured)
+      // 5. and finally sort by render mode
+      this.renderData.sort((first, second) => {
+        let dsort = this.depthSort[first.pass];
+
+        // assign a null texture reference as id 0
+        let firstTex = (first.textureRef === null) ?
+          0 : first.textureRef.id;
+        let secondTex = (second.textureRef === null) ?
+          0 : second.textureRef.id;
+
+        return (first.pass < second.pass) ? -1 :
+          (first.pass > second.pass) ? 1 :
+        
+          (dsort && first.depth < second.depth) ? -1 :
+            (dsort && first.depth > second.depth) ? 1 :
+          
+          (first.shaderRef.id < second.shaderRef.id) ? -1 :
+            (first.shaderRef.id > second.shaderRef.id) ? 1 :
+          
+          (firstTex < secondTex) ? -1 :
+            (firstTex > secondTex) ? 1 :
+          
+          (first.renderMode < second.renderMode) ? -1 :
+            (first.renderMode > second.renderMode) ? 1 : 0;
+      });
 
       // info for the current vbo segment
       let currPass = this.renderData[0].pass;
-      let currShader = this.renderData[0].shader;
-      let currTexID = this.renderData[0].textureID;
       let currRenderMode = this.renderData[0].renderMode;
+      let currShader = this.renderData[0].shaderRef;
+      let currTex = this.renderData[0].textureRef;
       let currCount = 0;
       let currOffset = 0;
 
@@ -101,17 +102,18 @@ class RenderBatch {
 
         vertexCount += r.vertices.length;
 
-        // if we need to start a new vbo segment...
-        if (r.pass != currPass || r.shader != currShader ||
-            r.textureID != currTexID || r.renderMode != currRenderMode) {
-        
-          segments.push(new VBOSegment(currPass, currShader, currTexID,
+        if (r.pass !== currPass || r.shaderRef !== currShader ||
+          r.textureRef !== currTex || r.renderMode !== currRenderMode) {
+          // something changed from previous segment so we need to
+          // start a new segment
+
+          segments.push(new VBOSegment(currPass, currShader, currTex,
               currRenderMode, currCount, currOffset));
 
           currPass = r.pass;
-          currShader = r.shader;
-          currTexID = r.textureID;
           currRenderMode = r.renderMode;
+          currShader = r.shaderRef;
+          currTex = r.textureRef;
           currOffset += currCount;
           currCount = 0;
         }
@@ -122,14 +124,14 @@ class RenderBatch {
         indices = indices.concat(r.indices);
       }
 
-      segments.push(new VBOSegment(currPass, currShader, currTexID,
+      segments.push(new VBOSegment(currPass, currShader, currTex,
           currRenderMode, currCount, currOffset));
 
       // get the size of the vertex object from the first one
       // in the array
       let byteSize = 0;
       if (vertices.length > 0) {
-        byteSize = vertices[0].byteSize;
+        byteSize = vertices[0].constructor.byteSize;
       }
 
       let buffer = new ArrayBuffer(byteSize * vertices.length);
