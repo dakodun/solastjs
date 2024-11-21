@@ -1,259 +1,136 @@
 import GL from './gl.js'
-import GLStates from './glstates.js'
-
-import VBOVertex from './vbovertex.js'
 
 class Shader {
+  // private fields
+    // assign a unique id to a shader object
+    static #idCount = BigInt(1);
+    
+    #program = null;
+
+    #vertSrc = "";
+    #fragSrc = "";
+
+    #id = BigInt(0);
+  // ... 
+  
   constructor() {
-    this.programID = null;
-
-    this.vertSrc = null;
-    this.fragSrc = null;
-
-    this.initCallback = () => {
-      this.init();
-      this.useProgram();
-
-      this.uniformLocations.projectionMatrix=
-          GL.getUniformLocation(this.programID, "vertProj");
-      this.uniformLocations.viewMatrix =
-          GL.getUniformLocation(this.programID, "vertView");
-
-      this.uniformLocations.texture =
-          GL.getUniformLocation(this.programID, "fragBaseTex");
-      GL.uniform1i(this.textureLocation, 0);
-      
-      this.attributeLocations.vertexPosition =
-          GL.getAttribLocation(this.programID, "vertXYZ");
-      this.attributeLocations.vertexColor =
-          GL.getAttribLocation(this.programID, "vertRGBA");
-      this.attributeLocations.vertexTexture =
-          GL.getAttribLocation(this.programID, "vertST");
-      this.attributeLocations.vertexFlags =
-          GL.getAttribLocation(this.programID, "vertFlags");
-      this.attributeLocations.vertexNormal =
-          GL.getAttribLocation(this.programID, "vertNormal");
-    }
-
-    this.vaCallback = () => {
-      let v = new VBOVertex();
-      let byteSize = v.byteSize;
-      let offset = 0;
-
-      if (this.attributeLocations.vertexPosition != -1) {
-        GL.enableVertexAttribArray(this.attributeLocations.vertexPosition);
-        GL.vertexAttribPointer(this.attributeLocations.vertexPosition,
-            3, GL.FLOAT, false, byteSize, offset);
-      } offset += 12;
-
-      if (this.attributeLocations.vertexColor != -1) {
-        GL.enableVertexAttribArray(this.attributeLocations.vertexColor);
-        GL.vertexAttribPointer(this.attributeLocations.vertexColor,
-            4, GL.UNSIGNED_BYTE, true, byteSize, offset);
-      } offset += 4;
-
-      if (this.attributeLocations.vertexTexture != -1) {
-        GL.enableVertexAttribArray(this.attributeLocations.vertexTexture);
-        GL.vertexAttribPointer(this.attributeLocations.vertexTexture,
-            2, GL.UNSIGNED_SHORT, true, byteSize, offset);
-      } offset += 4;
-
-      if (this.attributeLocations.vertexFlags != -1) {
-        GL.enableVertexAttribArray(this.attributeLocations.vertexFlags);
-        GL.vertexAttribPointer(this.attributeLocations.vertexFlags,
-            4, GL.UNSIGNED_BYTE, true, byteSize, offset);
-      } offset += 4;
-
-      // es 1.0
-      if (this.attributeLocations.vertexNormal != -1) {
-        GL.enableVertexAttribArray(this.attributeLocations.vertexNormal);
-        GL.vertexAttribPointer(this.attributeLocations.vertexNormal,
-            3, GL.FLOAT, true, byteSize, offset);
-      } offset += 12;
-      
-      // es 3.0
-      /* if (this.vertexNormal != -1) {
-        GL.enableVertexAttribArray(this.attributeLocations.vertexNormal);
-        GL.vertexAttribPointer(this.attributeLocations.vertexNormal,
-            4, GL.INT_2_10_10_10_REV, true, byteSize, offset);
-      } offset += 4; */
-    }
-
-    this.renderCallback = () => {
-      GL.uniformMatrix4fv(this.uniformLocations.projectionMatrix, false,
-          Float32Array.from(GLStates.projectionMatrix.arr));
-      GL.uniformMatrix4fv(this.uniformLocations.viewMatrix, false,
-          Float32Array.from(GLStates.viewMatrix.arr));
-    }
-
-    this.uniformLocations = {
-      projectionMatrix: null,
-      viewMatrix: null,
-      texture: null
-    };
-
-    this.attributeLocations = {
-      vertexPosition: null, // (3 4-byte)
-      vertexColor: null, // (4 1-byte)
-      vertexTexture: null, // (2 2-byte)
-      vertexFlags: null, // (4 1-byte)
-      vertexNormal: null // (3 4-byte) es 1.0
-      // vertexNormal = null // (1 4-byte) es 3.0
-    };
+    this.uniformLocations   = { };
+    this.attributeLocations = { };
   }
 
+  // getters/setters
+  get program() { return this.#program; }
+  get vertSrc() { return this.#vertSrc; }
+  get fragSrc() { return this.#fragSrc; }
+  get id() { return this.#id; }
+
+  set vertSrc(vertSrc) {
+    if (typeof vertSrc !== 'string') {
+      throw new TypeError("Shader (vertSrc): should " +
+        "be a String");
+    }
+
+    this.#vertSrc = vertSrc;
+  }
+
+  set fragSrc(fragSrc) {
+    if (typeof fragSrc !== 'string') {
+      throw new TypeError("Shader (fragSrc): should " +
+        "be a String");
+    }
+
+    this.#fragSrc = fragSrc;
+  }
+  // ...
+
   init() {
-    if (this.programID == null) {
-      this.programID = GL.createProgram();
+    if (this.#program === null) {
+      this.#program = GL.createProgram();
+      this.#id = Shader.#idCount++;
     }
   }
 
   delete() {
-    if (this.programID != null) {
-      GL.deleteProgram(this.programID);
-      this.programID = null;
+    if (this.#program !== null) {
+      GL.deleteProgram(this.#program);
+      this.#program = null;
+      this.#id = BigInt(0);
     }
   }
 
-  linkProgram() {
+  copy(other) {
+    throw new Error("Shader (copy): can't perform a deep copy of " +
+     "a Shader - instead create a new instance and copy over " +
+     "properties then re-initialise WebGLShader");
+  }
+
+  getCopy() {
+    let copy = new Shader();
+    copy.copy(this);
+
+    return copy;
+  }
+
+  compileAndLink() {
     this.init();
 
-    let vertShaderID = 0;
+    // vertex shader
     let vertAttached = false;
-    if (this.vertSrc) {
-      vertShaderID = GL.createShader(GL.VERTEX_SHADER);
-      GL.shaderSource(vertShaderID, this.vertSrc);
-      GL.compileShader(vertShaderID);
+    let vertShader = GL.createShader(GL.VERTEX_SHADER);
+    GL.shaderSource(vertShader, this.vertSrc);
+    GL.compileShader(vertShader);
 
-      if (GL.getShaderParameter(vertShaderID, GL.COMPILE_STATUS)) {
-        GL.attachShader(this.programID, vertShaderID);
-        vertAttached = true;
-      }
-      else {
-        console.log("compilation of the vertex shader failed: " +
-            GL.getShaderInfoLog(vertShaderID));
-      }
+    if (GL.getShaderParameter(vertShader, GL.COMPILE_STATUS)) {
+      GL.attachShader(this.#program, vertShader);
+      vertAttached = true;
+    } else {
+      throw new Error("Shader (compileAndLink): compilation of the " +
+        "vertex shader failed: " + GL.getShaderInfoLog(vertShader));
     }
 
-    let fragShaderID = 0;
+    // fragment shader
     let fragAttached = false;
-    if (this.fragSrc) {
-      fragShaderID = GL.createShader(GL.FRAGMENT_SHADER);
-      GL.shaderSource(fragShaderID, this.fragSrc);
-      GL.compileShader(fragShaderID);
+    let fragShader = GL.createShader(GL.FRAGMENT_SHADER);
+    GL.shaderSource(fragShader, this.fragSrc);
+    GL.compileShader(fragShader);
 
-      if (GL.getShaderParameter(fragShaderID, GL.COMPILE_STATUS)) {
-        GL.attachShader(this.programID, fragShaderID);
-        fragAttached = true;
-      }
-      else {
-        console.log("compilation of the fragment shader failed: " +
-            GL.getShaderInfoLog(fragShaderID));
-      }
+    if (GL.getShaderParameter(fragShader, GL.COMPILE_STATUS)) {
+      GL.attachShader(this.#program, fragShader);
+      fragAttached = true;
+    } else {
+      throw new Error("Shader (compileAndLink): compilation of the " +
+        "fragment shader failed: " + GL.getShaderInfoLog(fragShader));
     }
 
-    GL.linkProgram(this.programID);
+    GL.linkProgram(this.#program);
 
-    if (vertShaderID) {
-      if (vertAttached) {
-        GL.detachShader(this.programID, vertShaderID);
-      }
-
-      GL.deleteShader(vertShaderID);
+    // cleanup
+    if (vertAttached) {
+      GL.detachShader(this.#program, vertShader);
     }
 
-    if (fragShaderID) {
-      if (fragAttached) {
-        GL.detachShader(this.programID, fragShaderID);
-      }
-
-      GL.deleteShader(fragShaderID);
+    if (fragAttached) {
+      GL.detachShader(this.#program, fragShader);
     }
 
-    if (!GL.getProgramParameter(this.programID, GL.LINK_STATUS)) {
-      console.log("linking of the program failed: " +
-          GL.getProgramInfoLog(this.programID));
+    GL.deleteShader(vertShader);
+    GL.deleteShader(fragShader);
+
+    if (!GL.getProgramParameter(this.#program, GL.LINK_STATUS)) {
+      throw new Error("Shader (compileAndLink): linking of the " +
+        "program failed: " + GL.getProgramInfoLog(this.#program));
     }
   }
 
   useProgram() {
-    GL.useProgram(this.programID);
+    GL.useProgram(this.#program);
   }
 
-  setVertexSrc(shaderStr) {
-    let vertSrc = shaderStr;
-    if (vertSrc == undefined) {
-      vertSrc = `
-uniform mat4 vertView;
-uniform mat4 vertProj;
-
-attribute vec3 vertXYZ;
-attribute vec4 vertRGBA;
-attribute vec2 vertST;
-attribute vec4 vertFlags;
-
-// es 1.0
-attribute vec3 vertNormal;
-
-// es 3.0
-// attribute vec4 vertNormal;
-
-varying mediump vec4 fragRGBA;
-varying mediump vec2 fragST;
-
-varying mediump float fragTextured;
-varying mediump float fragLighting;
-
-varying mediump vec3 fragNormal;
-
-void main() {
-  mat4 vp = vertProj * vertView;
-  gl_Position = vp * vec4(vertXYZ, 1.0);
-  
-  fragRGBA = vertRGBA;
-  fragST = vertST;
-
-  fragTextured = vertFlags.x;
-  fragLighting = vertFlags.y;
-
-  fragNormal = vertNormal;
-}
-`;
-    }
-
-    this.vertSrc = vertSrc;
-  }
-
-  setFragmentSrc(shaderStr) {
-    let fragSrc = shaderStr;
-    if (fragSrc == undefined) {
-      fragSrc = `
-precision mediump float;
-
-uniform sampler2D fragBaseTex;
-
-varying mediump vec4 fragRGBA;
-varying mediump vec2 fragST;
-
-varying mediump float fragTextured;
-varying mediump float fragLighting;
-
-varying mediump vec3 fragNormal;
-
-void main() {
-  vec4 texColor = clamp(texture2D(fragBaseTex, fragST) +
-      (1.0 - fragTextured), 0.0, 1.0);
-  gl_FragColor = texColor * vec4(fragRGBA.r, fragRGBA.g,
-      fragRGBA.b, fragRGBA.a);
-
-  float light = max(1.0 - fragLighting,
-      dot(fragNormal, vec3(0.0, 0.0, 1.0)));
-  gl_FragColor.rgb *= max(0.1, light);
-}
-`;
-    }
-
-    this.fragSrc = fragSrc;
+  renderCallback() {
+    // called when switching to this shader during rendering,
+    // using a vbo and the shader, to bind vertex attributes,
+    // specify layout and perform any other setup such as
+    // specifying uniform matrices
   }
 };
 
