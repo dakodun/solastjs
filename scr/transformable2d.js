@@ -3,8 +3,10 @@ import Vec2 from './vec2.js';
 
 class Transformable2D {
   /*
-    serves  as an  interface  (via  composition)  to  allow
-    a class to be transformed via 2d matrix transformations
+    serves  as an  interface  (via  composition)  to allow a
+    class to be transformed via  2D matrix transformations -
+    an implementating class should contain a 'transformable'
+    field (exposed via a getter if private)
   */
 
   // private fields
@@ -121,21 +123,20 @@ class Transformable2D {
 
     return copy;
   }
-  
-  static [Symbol.hasInstance](instance) {
-    // return true if instance is a Transformable2D or exposes
-    // a Transformable2D field via 'get transformable()'
-    if (Function.prototype[Symbol.hasInstance].
-      call(Transformable2D, instance)) {
 
-      return true;
-    } else if (instance.transformable !== undefined &&
-      instance.transformable instanceof Transformable2D) {
-
-      return true;
+  equals(other) {
+    if (!(other instanceof Transformable2D)) {
+      throw new TypeError("Transformable2D (equals): other should be " +
+        "a Transformable2D");
     }
     
-    return false;
+    return (
+      this.#position.equals(other.#position) &&
+      this.#origin.equals(other.#origin)     &&
+      this.#transMat.equals(other.#transMat) &&
+      this.#scale.equals(other.#scale)       &&
+      this.#rotation === other.#rotation
+    );
   }
 };
 

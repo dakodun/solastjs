@@ -3,8 +3,10 @@ import Vec3 from './vec3.js';
 
 class Transformable3D {
   /*
-    serves  as an  interface  (via  composition)  to  allow
-    a class to be transformed via 3d matrix transformations
+    serves  as an  interface  (via  composition)  to allow a
+    class to be transformed via  3D matrix transformations -
+    an implementating class should contain a 'transformable'
+    field (exposed via a getter if private)
   */
 
   // private fields
@@ -122,20 +124,19 @@ class Transformable3D {
     return copy;
   }
 
-  static [Symbol.hasInstance](instance) {
-    // return true if instance is a Transformable3D or exposes
-    // a Transformable3D field via 'get transformable()'
-    if (Function.prototype[Symbol.hasInstance].
-      call(Transformable3D, instance)) {
-
-      return true;
-    } else if (instance.transformable !== undefined &&
-      instance.transformable instanceof Transformable3D) {
-
-      return true;
+  equals(other) {
+    if (!(other instanceof Transformable3D)) {
+      throw new TypeError("Transformable3D (equals): other should be " +
+        "a Transformable3D");
     }
     
-    return false;
+    return (
+      this.#position.equals(other.#position) &&
+      this.#origin.equals(other.#origin)     &&
+      this.#transMat.equals(other.#transMat) &&
+      this.#scale.equals(other.#scale)       &&
+      this.#rotation.equals(other.#rotation)
+    );
   }
 };
 
