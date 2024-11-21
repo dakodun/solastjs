@@ -47,6 +47,20 @@ class Mat4 {
     return copy;
   }
 
+  equals(other) {
+    if (!(other instanceof Mat4)) {
+      throw new TypeError("Mat4 (equals): other should be a Mat4");
+    }
+
+    for (let i = 0; i < this.#arr.length; ++i) {
+      if (this.#arr[i] !== other.#arr[i]) {
+        return false;
+      }
+    }
+
+    return true;
+  }
+
   identity() {
     this.arr.splice(0, this.arr.length);
     this.arr = [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1];
@@ -55,8 +69,8 @@ class Mat4 {
   transpose() {
     let copy = this.getCopy();
 
-    for (var x = 0; x < 4; ++x) {
-		  for (var y = 0; y < 4; ++y) {
+    for (let x = 0; x < 4; ++x) {
+		  for (let y = 0; y < 4; ++y) {
         this.arr[(x * 4) + y] = copy.arr[(y * 4) + x];
       }
     }
@@ -141,8 +155,8 @@ class Mat4 {
     let result = new Mat4();
 
     // post multiplication - this row * other column
-    for (var x = 0; x < 4; ++x) {
-		  for (var y = 0; y < 4; ++y) {
+    for (let x = 0; x < 4; ++x) {
+		  for (let y = 0; y < 4; ++y) {
         result.arr[(x * 4) + y] =
           (this.arr[y     ] * other.arr[(x * 4)    ]) +
           (this.arr[y +  4] * other.arr[(x * 4) + 1]) +
@@ -171,7 +185,7 @@ class Mat4 {
     let arrIn = multVec.asArray();
     let arrOut = new Array();
 
-    for (var i = 0; i < 4; ++i) {
+    for (let i = 0; i < 4; ++i) {
       arrOut[i] =
         (this.arr[i     ] * arrIn[0]) +
         (this.arr[i +  4] * arrIn[1]) +
@@ -409,8 +423,8 @@ class Mat4 {
   asString() {
     let matStr = "";
 
-    for (var x = 0; x < 4; ++x) {
-		  for (var y = 0; y < 4; ++y) {
+    for (let x = 0; x < 4; ++x) {
+		  for (let y = 0; y < 4; ++y) {
         matStr += this.arr[(y * 4) + x];
         matStr += "  ";
 

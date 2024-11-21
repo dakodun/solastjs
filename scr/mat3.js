@@ -46,6 +46,20 @@ class Mat3 {
     return copy;
   }
 
+  equals(other) {
+    if (!(other instanceof Mat3)) {
+      throw new TypeError("Mat3 (equals): other should be a Mat3");
+    }
+
+    for (let i = 0; i < this.#arr.length; ++i) {
+      if (this.#arr[i] !== other.#arr[i]) {
+        return false;
+      }
+    }
+
+    return true;
+  }
+
   identity() {
     this.arr.splice(0, this.arr.length);
     this.arr = [1, 0, 0, 0, 1, 0, 0, 0, 1];
@@ -54,8 +68,8 @@ class Mat3 {
   transpose() {
     let copy = this.getCopy();
 
-    for (var x = 0; x < 3; ++x) {
-		  for (var y = 0; y < 3; ++y) {
+    for (let x = 0; x < 3; ++x) {
+		  for (let y = 0; y < 3; ++y) {
         this.arr[(x * 3) + y] = copy.arr[(y * 3) + x];
       }
     }
@@ -76,8 +90,8 @@ class Mat3 {
     let result = new Mat3();
 
     // post multiplication - this row * other column
-    for (var x = 0; x < 3; ++x) {
-		  for (var y = 0; y < 3; ++y) {
+    for (let x = 0; x < 3; ++x) {
+		  for (let y = 0; y < 3; ++y) {
         result.arr[(x * 3) + y] =
           (this.arr[y    ] * other.arr[(x * 3)    ]) +
           (this.arr[y + 3] * other.arr[(x * 3) + 1]) +
@@ -104,7 +118,7 @@ class Mat3 {
     let arrIn = multVec.asArray();
     let arrOut = new Array();
 
-    for (var i = 0; i < 3; ++i) {
+    for (let i = 0; i < 3; ++i) {
       arrOut[i] =
         (this.arr[i    ] * arrIn[0]) +
         (this.arr[i + 3] * arrIn[1]) +
@@ -185,8 +199,8 @@ class Mat3 {
   asString() {
     let matStr = "";
 
-    for (var x = 0; x < 3; ++x) {
-		  for (var y = 0; y < 3; ++y) {
+    for (let x = 0; x < 3; ++x) {
+		  for (let y = 0; y < 3; ++y) {
         matStr += this.arr[(y * 3) + x];
         matStr += "  ";
 
