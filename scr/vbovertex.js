@@ -1,11 +1,11 @@
 class VBOVertex {
-	constructor() {
     // es 1.0
-    this.byteSize = 36;
+    static byteSize = 36;
 
     // es 3.0
     // this.byteSize = 28;
 
+	constructor() {
     this.x = 0.0; // (3 4-byte)
     this.y = 0.0;
     this.z = 0.0;
@@ -33,6 +33,11 @@ class VBOVertex {
 	}
 
 	copy(other) {
+    if (!(other instanceof VBOVertex)) {
+      throw new TypeError("VBOVertex (copy): other should " +
+        "be a VBOVertex");
+    }
+
     this.x = other.x;
     this.y = other.y;
     this.z = other.z;
@@ -60,12 +65,14 @@ class VBOVertex {
   }
 
   getCopy() {
-    let copy = new VBOVertex(); copy.copy(this);
+    let copy = new VBOVertex();
+    copy.copy(this);
+
     return copy;
   }
 
   toBuffer(buffer, index) {
-    let offset = this.byteSize * index;
+    let offset = VBOVertex.byteSize * index;
 
     buffer.setFloat32(offset    , this.x, true);
     buffer.setFloat32(offset + 4, this.y, true);
