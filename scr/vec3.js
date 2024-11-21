@@ -104,8 +104,8 @@ class Vec3 {
     }
 
     return (Math.abs(this.x - other.x) <= tolerance &&
-            Math.abs(this.y - other.y) <= tolerance &&
-            Math.abs(this.z - other.z) <= tolerance) ? true : false;
+      Math.abs(this.y - other.y) <= tolerance &&
+      Math.abs(this.z - other.z) <= tolerance) ? true : false;
   }
 
   negate() {
