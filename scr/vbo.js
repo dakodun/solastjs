@@ -4,84 +4,79 @@ import VBOSegment from './vbosegment.js'
 
 class VBO {
 	constructor() {
-    this.vertBufferID = null;
-    this.indexBufferID = null;
+    this.vertBuffer = null;
+    this.indexBuffer = null;
 
     this.segments = new Map();
 	}
 
   init() {
-    if (this.vertBufferID == null) {
-      this.vertBufferID = GL.createBuffer();
+    if (this.vertBuffer === null) {
+      this.vertBuffer = GL.createBuffer();
     }
 
-    if (this.indexBufferID == null) {
-      this.indexBufferID = GL.createBuffer();
+    if (this.indexBuffer === null) {
+      this.indexBuffer = GL.createBuffer();
     }
   }
 
   delete() {
-    if (this.vertBufferID != null) {
-      GL.deleteBuffer(this.vertBufferID);
-      this.vertBufferID = null;
+    if (this.vertBuffer !== null) {
+      GL.deleteBuffer(this.vertBuffer);
+      this.vertBuffer = null;
     }
 
-    if (this.indexBufferID != null) {
-      GL.deleteBuffer(this.indexBufferID);
-      this.indexBufferID = null;
+    if (this.indexBuffer !== null) {
+      GL.deleteBuffer(this.indexBuffer);
+      this.indexBuffer = null;
     }
   }
 
-  addData(vertices, indices, segments) {
-    if (segments == undefined) {
-      addData(vertices, indices, [new VBOSegment(0, null, null,
-          indices.length, 0)]);
-    }
-    else {
-      this.init();
+  addData(vertices, indices, segments =
+    [new VBOSegment(0, null, null, indices.length, 0)]) {
 
-      GL.bindBuffer(GL.ARRAY_BUFFER, this.vertBufferID);
-      GL.bufferData(GL.ARRAY_BUFFER, vertices, GL.STATIC_DRAW);
+    this.init();
 
-      GL.bindBuffer(GL.ELEMENT_ARRAY_BUFFER, this.indexBufferID);
-      GL.bufferData(GL.ELEMENT_ARRAY_BUFFER,
-          new Uint16Array(indices), GL.STATIC_DRAW);
+    GL.bindBuffer(GL.ARRAY_BUFFER, this.vertBuffer);
+    GL.bufferData(GL.ARRAY_BUFFER, vertices, GL.STATIC_DRAW);
 
-      this.segments.clear();
+    GL.bindBuffer(GL.ELEMENT_ARRAY_BUFFER, this.indexBuffer);
+    GL.bufferData(GL.ELEMENT_ARRAY_BUFFER,
+        new Uint16Array(indices), GL.STATIC_DRAW);
 
-      for (let s of segments) {
-        if (!this.segments.has(s.pass)) {
-          this.segments.set(s.pass, []);
-        }
-        
-        let passSeg = this.segments.get(s.pass);
-        passSeg.push(s);
+    this.segments.clear();
+
+    for (let s of segments) {
+      if (!this.segments.has(s.pass)) {
+        this.segments.set(s.pass, []);
       }
+      
+      let passSeg = this.segments.get(s.pass);
+      passSeg.push(s);
     }
   }
 
   draw(pass) {
     if (this.segments.has(pass)) {
-      GL.bindBuffer(GL.ARRAY_BUFFER, this.vertBufferID);
-      GL.bindBuffer(GL.ELEMENT_ARRAY_BUFFER, this.indexBufferID);
+      GL.bindBuffer(GL.ARRAY_BUFFER, this.vertBuffer);
+      GL.bindBuffer(GL.ELEMENT_ARRAY_BUFFER, this.indexBuffer);
 
       let segments = this.segments.get(pass);
       let currShader = null;
       let currTex = null;
 
       for (let s of segments) {
-        if (s.shader.programID != currShader) {
-          s.shader.vaCallback();
-          s.shader.useProgram();
-          s.shader.renderCallback();
+        if (s.shaderRef !== currShader) {
+          s.shaderRef.useProgram();
+          s.shaderRef.renderCallback();
 
-          currShader = s.shader.programID;
+          currShader = s.shaderRef;
         }
 
-        if (s.textureID != currTex) {
-          GL.bindTexture(GL.TEXTURE_2D, s.textureID);
+        if (s.textureRef !== currTex) {
+          GL.bindTexture(GL.TEXTURE_2D, s.textureRef);
 
-          currTex = s.textureID;
+          currTex = s.textureRef;
         }
         
         GL.drawElements(s.renderMode, s.count,

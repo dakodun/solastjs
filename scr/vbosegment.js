@@ -1,8 +1,8 @@
 class VBOSegment {
-  constructor(pass, shader, textureID, renderMode, count, offset) {
+  constructor(pass, shaderRef, textureRef, renderMode, count, offset) {
     this.pass = pass;
-    this.shader = shader;
-    this.textureID = textureID;
+    this.shaderRef = shaderRef;
+    this.textureRef = textureRef;
     this.renderMode = renderMode;
 
     this.count = count;
