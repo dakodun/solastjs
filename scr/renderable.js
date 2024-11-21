@@ -1,11 +1,14 @@
 import GL from './gl.js'
 
+import Shader from './shader.js';
 import Vec3 from './vec3.js';
 
 class Renderable {
   /*
-    serves  as an  interface  (via  composition)  to allow
-    a class to be rendered via the default render pipeline
+    serves as an  interface  (via  composition)  to allow a
+    class to be rendered via the default  render pipeline -
+    an implementating  class should  contain a 'renderable'
+    field (exposed via a getter if private)
   */
 
   // private fields
@@ -14,12 +17,9 @@ class Renderable {
     #depth = -1.0;
 
     #renderMode = GL.TRIANGLES;
-    #shader = null;
 
-    // callback function used by default render piepline to
-    // retrieve render data - should return an array of
-    // RenderBatchData
-    #asData = () => { return []; };
+    // reference to a shader instance
+    #shaderRef = null;
   // ...
 
   constructor() {
@@ -31,9 +31,7 @@ class Renderable {
   get alpha() { return this.#alpha; }
   get depth() { return this.#depth; }
   get renderMode() { return this.#renderMode; }
-  get shader() { return this.#shader; }
-
-  get asData() { return this.#asData; }
+  get shaderRef() { return this.#shaderRef; }
 
   set color(color) {
     if (!(color instanceof Vec3)) {
@@ -68,17 +66,16 @@ class Renderable {
         "be a Number");
     }
 
-
     this.#renderMode = renderMode;
   }
 
-  set asData(asData) {
-    if (typeof asData !== 'function') {
-      throw new TypeError("Renderable (asData): should " +
-        "be a Function");
+  set shaderRef(shaderRef) {
+    if (!(shaderRef instanceof Shader)) {
+      throw new TypeError("Renderable (shaderRef): should " +
+        "be a reference to a Shader instance");
     }
 
-    this.#asData = asData;
+    this.#shaderRef = shaderRef;
   }
   // ...
 
@@ -93,9 +90,7 @@ class Renderable {
     this.#depth = other.#depth;
 
     this.#renderMode = other.#renderMode;
-    this.#shader = other.#shader;
-
-    this.#asData = other.#asData;
+    this.#shaderRef = other.#shaderRef;
   }
 
   getCopy() {
@@ -105,20 +100,28 @@ class Renderable {
     return copy;
   }
 
-  static [Symbol.hasInstance](instance) {
-    // return true if instance is a Renderable or exposes
-    // a Renderable field via 'get renderable()'
-    if (Function.prototype[Symbol.hasInstance].
-      call(Renderable, instance)) {
-
-      return true;
-    } else if (instance.renderable !== undefined &&
-      instance.renderable instanceof Renderable) {
-
-      return true;
+  equals(other) {
+    if (!(other instanceof Renderable)) {
+      throw new TypeError("Renderable (equals): other should be " +
+        "a Renderable");
     }
     
-    return false;
+    return (
+      this.#color.equals(other.#color) &&
+      this.#alpha === other.#alpha &&
+      this.#depth === other.#depth &&
+      this.#renderMode === other.#renderMode &&
+      this.#shaderRef === other.#shaderRef
+    );
+  }
+
+  asData() {
+    // callback function used by default render piepline to
+    // retrieve render data - should return an array of
+    // renderable data (RenderBatchData by default although
+    // it is possible to define your own - see RenderBatchData)
+
+    return [];
   }
 };
 
