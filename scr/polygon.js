@@ -229,7 +229,7 @@ class Polygon {
       }
     }
     
-    return windingNum;
+    return (windingNum > 0) ? true : false;
   }
 
   #findOutline = (ptA, ptB, ptC, ptD) => {

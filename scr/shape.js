@@ -179,16 +179,6 @@ class Shape {
     return false;
   }
 
-  pushVert(vert) {
-    this.#polygon.pushVert(vert);
-    this.indices.splice(0, this.indices.length);
-  }
-
-  pushVerts(verts) {
-    this.#polygon.pushVerts(verts);
-    this.indices.splice(0, this.indices.length);
-  }
-
   pushFrame(texture) {
     let coords = [new Vec2(0.0, 1.0), new Vec2(1.0, 0.0)];
     this.frames.push([texture, coords, 0.0]);
@@ -331,93 +321,85 @@ class Shape {
 
     let indices = new Array();
     let indexArray = new Array();
-
-    { // create a doubly linked list of indices
-      let len = this.verts.length;
-      for (let i = 0; i < len; ++i) {
-        indexArray.push([i, (((i - 1) % len) + len) % len,
-            (i + 1) % len]);
-      }
+    
+    // create a doubly linked list of indices
+    let len = this.verts.length;
+    for (let i = 0; i < len; ++i) {
+      indexArray.push([i, (((i - 1) % len) + len) % len,
+          (i + 1) % len]);
     }
 
-    {
-      let indexCount = this.verts.length;
-      let loopCount = 0;
-      let curr = 0;
+    let indexCount = this.verts.length;
+    let loopCount = 0;
+    let curr = 0;
+    
+    while (indexCount > 3 && loopCount < indexCount) {
+      const i  = indexArray[curr             ][0];
+      const i2 = indexArray[indexArray[i ][2]][0];
+      const i3 = indexArray[indexArray[i2][2]][0];
+
+      const v  = this.verts[i ];
+      const v2 = this.verts[i2];
+      const v3 = this.verts[i3];
+
+      // we don't need the exact angle; a negative determinant
+      // indicates a convex angle (a determinant of 0 means vertices
+      // are in parallel i.e., in a line so we treat them as convex
+      // for the purposes of rendering
       
-      while (indexCount > 3 && loopCount < indexCount) {
-        const i  = indexArray[curr             ][0];
-        const i2 = indexArray[indexArray[i ][2]][0];
-        const i3 = indexArray[indexArray[i2][2]][0];
+      const v2v  = new Vec2( v.x - v2.x,  v.y - v2.y);
+      const v2v3 = new Vec2(v3.x - v2.x, v3.y - v2.y);
+      const det = v2v.getDeterminant(v2v3);
+      
+      if (det <= 0) {
+        let success = true;
+        let c = indexArray[indexArray[i3][2]][0];
 
-        const v  = this.verts[i ];
-        const v2 = this.verts[i2];
-        const v3 = this.verts[i3];
+        do {
+          // check all other vertices in the polygon to ensure none
+          // are inside the 'ear' we are clipping
 
-        /*
-        .-------------------------------------------------------------.
-        | we don't need the exact angle; a negative determinant       |
-        | indicates a convex angle (a determinant of 0 means vertices |
-        | are in parallel i.e., in a line so we treat them as convex  |
-        | for the purposes of rendering                               |
-        '-------------------------------------------------------------'
-        */
-        
-        const v2v  = new Vec2( v.x - v2.x,  v.y - v2.y);
-        const v2v3 = new Vec2(v3.x - v2.x, v3.y - v2.y);
-        const det = v2v.getDeterminant(v2v3);
-        
-        if (det <= 0) {
-          let success = true;
-          let c = indexArray[indexArray[i3][2]][0];
+          let poly = new Polygon;
+          poly.pushVerts([v, v2, v3]);
+          let pt = this.verts[c];
 
-          do { // check all other vertices in the polygon to ensure none
-            // are inside the 'ear' we are clipping
-
-            let poly = new Polygon; poly.pushVerts([v, v2, v3]);
-            let pt = this.verts[c];
-
-            if (!poly.isPointInside(pt)) {
-              c = indexArray[indexArray[c][2]][0];
-            }
-            else {
-              c = i;
-              success = false;
-            }
-          } while (c != i);
-
-          if (success) {  // if the current triangle is a valid 'ear'...
-            indices.push(i, i2, i3);
-            indexArray[curr][2] = i3;
-            indexArray[i3  ][1] = curr;
-            --indexCount;
-            loopCount = 0;
+          if (!poly.isPointInside(pt)) {
+            c = indexArray[indexArray[c][2]][0];
+          } else {
+            c = i;
+            success = false;
           }
-          else {
-            curr = i2;
-            ++loopCount;
-          }
-        }
-        else { // current 'ear' is not valid (concave)
+        } while (c != i);
+
+        if (success) {  // if the current triangle is a valid 'ear'...
+          indices.push(i, i2, i3);
+          indexArray[curr][2] = i3;
+          indexArray[i3  ][1] = curr;
+          --indexCount;
+          loopCount = 0;
+        } else {
           curr = i2;
           ++loopCount;
         }
+      } else { // current 'ear' is not valid (concave)
+        curr = i2;
+        ++loopCount;
       }
+    }
 
-      if (loopCount == indexCount) { // if we broke out of loop due to
-        // not finding a valid 'ear' after looping all vertices
-        
-        throw new RangeError("triangulate(): failed to triangulate " +
-        "polygon (no valid ears)");
-      }
+    if (loopCount === indexCount) { // if we broke out of loop due to
+      // not finding a valid 'ear' after looping all vertices
+      
+      throw new RangeError("triangulate(): failed to triangulate " +
+      "polygon (no valid ears)");
+    }
 
-      if (indexCount == 3) { // handle the last triangle
-        const i  = indexArray[curr             ][0];
-        const i2 = indexArray[indexArray[i ][2]][0];
-        const i3 = indexArray[indexArray[i2][2]][0];
+    if (indexCount === 3) { // handle the last triangle
+      const i  = indexArray[curr             ][0];
+      const i2 = indexArray[indexArray[i ][2]][0];
+      const i3 = indexArray[indexArray[i2][2]][0];
 
-        indices.push(i, i2, i3);
-      }
+      indices.push(i, i2, i3);
     }
 
     this.indices = indices.slice();
@@ -437,6 +419,16 @@ class Shape {
   }
 
   // helpers for working with polygon
+  pushVert(vert) {
+    this.#polygon.pushVert(vert);
+    this.indices.splice(0, this.indices.length);
+  }
+
+  pushVerts(verts) {
+    this.#polygon.pushVerts(verts);
+    this.indices.splice(0, this.indices.length);
+  }
+
   getWinding() {
     return this.#polygon.getWinding();
   }
@@ -454,7 +446,22 @@ class Shape {
   }
 
   isPointInside(point) {
-    return this.#polygon.isPointInside(point);
+    // create a new polygon that is transformed using
+    // shape's transformable properties
+    let transMat = this.transformable.asMat3();
+    let p = new Polygon();
+
+    this.verts.forEach((e) => {
+      p.pushVert(new Vec2(
+        (transMat.arr[0] * e.x) + (transMat.arr[3] * e.y) +
+          transMat.arr[6],
+        (transMat.arr[1] * e.x) + (transMat.arr[4] * e.y) +
+          transMat.arr[7]
+      ) );
+    });
+
+    // check using our transformed polygon
+    return p.isPointInside(point);
   }
 
   //
@@ -510,16 +517,7 @@ class Shape {
       tex = this.frames[this.currentFrame][0].texture;
     }
 
-    let transMat = this.transMat.getCopy();
-
-    let offsetPos = new Vec2(this.position.x - this.origin.x,
-      this.position.y - this.origin.y);
-    transMat.translate(offsetPos);
-    
-    transMat.translate(this.origin);
-    transMat.rotate(this.rotation);
-    transMat.scale(this.scale);
-    transMat.translate(this.origin.getNegated());
+    let transMat = this.transformable.asMat3();
 
     let vboVerts = new Array();
     let invMinMax = new Vec2(

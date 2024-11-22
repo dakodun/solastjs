@@ -138,6 +138,23 @@ class Transformable2D {
       this.#rotation === other.#rotation
     );
   }
+
+  // return this transformable as a matrix - that is, a
+  // matrix which has all transformations applied
+  asMat3() {
+    let transMat = this.#transMat.getCopy();
+
+    let offsetPos = new Vec2(this.#position.x - this.#origin.x,
+      this.#position.y - this.#origin.y);
+    transMat.translate(offsetPos);
+    
+    transMat.translate(this.#origin);
+    transMat.rotate(this.#rotation);
+    transMat.scale(this.#scale);
+    transMat.translate(this.#origin.getNegated());
+
+    return transMat;
+  }
 };
 
 export default Transformable2D;

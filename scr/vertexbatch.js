@@ -15,8 +15,8 @@ class VertexBatch {
   // ...
 
   constructor() {
-    this.#renderable.asData = function(caller = this) {
-      return caller.#asData();
+    this.#renderable.asData = function() {
+      return this.#asData();
     }.bind(this);
 
     this.verts   = new Array();
