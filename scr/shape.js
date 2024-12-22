@@ -8,6 +8,8 @@ import Vec2 from './vec2.js';
 import Vec3 from './vec3.js';
 import VBOVertex from './vbovertex.js';
 
+import * as enums from "./exportenums.js";
+
 class Shape {
   // private fields
     #polygon    =    new Polygon();
@@ -53,7 +55,13 @@ class Shape {
   }
 
   // helpers for working with polygon
+  // - error handling occurs in Polygon class
   get verts() { return this.#polygon.verts; }
+  
+  set verts(verts) {
+    this.#polygon.verts = verts;
+    this.indices.splice(0, this.indices.length);
+  }
 
   // helpers for working with transformable (via polygon)
   // - error handling occurs in Transformable2D class
@@ -85,6 +93,8 @@ class Shape {
   get depth() { return this.#renderable.depth; }
   get renderMode() { return this.#renderable.renderMode; }
   get shaderRef() { return this.#renderable.shaderRef; }
+  get outline() { return this.#renderable.outline; }
+  get lineWidth() { return this.#renderable.lineWidth; }
 
   set color(color) { this.#renderable.color = color; }
   set alpha(alpha) { this.#renderable.alpha = alpha; }
@@ -96,6 +106,14 @@ class Shape {
 
   set shaderRef(shaderRef) {
     this.#renderable.shaderRef = shaderRef;
+  }
+
+  set outline(outline) {
+    this.#renderable.outline = outline;
+  }
+
+  set lineWidth(lineWidth) {
+    this.#renderable.lineWidth = lineWidth;
   }
   // ...
   
@@ -315,100 +333,96 @@ class Shape {
 
   // a naive ear clipping algorithm
   triangulate() {
-    if (this.getWinding() < 0) {
-      this.reverseWinding();
-    }
+    if (this.verts.length > 2) {
+      if (!this.isCCW()) {
+        this.reverseWinding();
+      }
 
-    let indices = new Array();
-    let indexArray = new Array();
-    
-    // create a doubly linked list of indices
-    let len = this.verts.length;
-    for (let i = 0; i < len; ++i) {
-      indexArray.push([i, (((i - 1) % len) + len) % len,
-          (i + 1) % len]);
-    }
-
-    let indexCount = this.verts.length;
-    let loopCount = 0;
-    let curr = 0;
-    
-    while (indexCount > 3 && loopCount < indexCount) {
-      const i  = indexArray[curr             ][0];
-      const i2 = indexArray[indexArray[i ][2]][0];
-      const i3 = indexArray[indexArray[i2][2]][0];
-
-      const v  = this.verts[i ];
-      const v2 = this.verts[i2];
-      const v3 = this.verts[i3];
-
-      // we don't need the exact angle; a negative determinant
-      // indicates a convex angle (a determinant of 0 means vertices
-      // are in parallel i.e., in a line so we treat them as convex
-      // for the purposes of rendering
+      let indices = new Array();
+      let indexArray = new Array();
       
-      const v2v  = new Vec2( v.x - v2.x,  v.y - v2.y);
-      const v2v3 = new Vec2(v3.x - v2.x, v3.y - v2.y);
-      const det = v2v.getDeterminant(v2v3);
+      // create a doubly linked list of indices
+      let len = this.verts.length;
+      for (let i = 0; i < len; ++i) {
+        indexArray.push([i, (((i - 1) % len) + len) % len,
+            (i + 1) % len]);
+      }
+
+      let indexCount = this.verts.length;
+      let loopCount = 0;
+      let curr = 0;
       
-      if (det <= 0) {
-        let success = true;
-        let c = indexArray[indexArray[i3][2]][0];
+      while (indexCount > 3 && loopCount < indexCount) {
+        const i  = indexArray[curr             ][0];
+        const i2 = indexArray[indexArray[i ][2]][0];
+        const i3 = indexArray[indexArray[i2][2]][0];
 
-        do {
-          // check all other vertices in the polygon to ensure none
-          // are inside the 'ear' we are clipping
+        const v  = this.verts[i ];
+        const v2 = this.verts[i2];
+        const v3 = this.verts[i3];
 
-          let poly = new Polygon;
-          poly.pushVerts([v, v2, v3]);
-          let pt = this.verts[c];
+        // we don't need the exact angle; a negative determinant
+        // indicates a convex angle (a determinant of 0 means vertices
+        // are in parallel i.e., in a line so we treat them as convex
+        // for the purposes of rendering
+        
+        const v2v  = new Vec2( v.x - v2.x,  v.y - v2.y);
+        const v2v3 = new Vec2(v3.x - v2.x, v3.y - v2.y);
+        const det = v2v.getDeterminant(v2v3);
+        
+        if (det <= 0) {
+          let success = true;
+          let c = indexArray[indexArray[i3][2]][0];
 
-          if (!poly.isPointInside(pt)) {
-            c = indexArray[indexArray[c][2]][0];
+          do {
+            // check all other vertices in the polygon to ensure none
+            // are inside the 'ear' we are clipping
+
+            let poly = new Polygon;
+            poly.pushVerts([v, v2, v3]);
+            let pt = this.verts[c];
+
+            if (!poly.isPointInside(pt)) {
+              c = indexArray[indexArray[c][2]][0];
+            } else {
+              c = i;
+              success = false;
+            }
+          } while (c != i);
+
+          if (success) {  // if the current triangle is a valid 'ear'...
+            indices.push(i, i2, i3);
+            indexArray[curr][2] = i3;
+            indexArray[i3  ][1] = curr;
+            --indexCount;
+            loopCount = 0;
           } else {
-            c = i;
-            success = false;
+            curr = i2;
+            ++loopCount;
           }
-        } while (c != i);
-
-        if (success) {  // if the current triangle is a valid 'ear'...
-          indices.push(i, i2, i3);
-          indexArray[curr][2] = i3;
-          indexArray[i3  ][1] = curr;
-          --indexCount;
-          loopCount = 0;
-        } else {
+        } else { // current 'ear' is not valid (concave)
           curr = i2;
           ++loopCount;
         }
-      } else { // current 'ear' is not valid (concave)
-        curr = i2;
-        ++loopCount;
       }
+
+      if (loopCount === indexCount) { // if we broke out of loop due to
+        // not finding a valid 'ear' after looping all vertices
+        
+        throw new RangeError("triangulate(): failed to triangulate " +
+        "polygon (no valid ears)");
+      }
+
+      if (indexCount === 3) { // handle the last triangle
+        const i  = indexArray[             curr][0];
+        const i2 = indexArray[indexArray[i ][2]][0];
+        const i3 = indexArray[indexArray[i2][2]][0];
+
+        indices.push(i, i2, i3);
+      }
+
+      this.indices = indices.slice();
     }
-
-    if (loopCount === indexCount) { // if we broke out of loop due to
-      // not finding a valid 'ear' after looping all vertices
-      
-      throw new RangeError("triangulate(): failed to triangulate " +
-      "polygon (no valid ears)");
-    }
-
-    if (indexCount === 3) { // handle the last triangle
-      const i  = indexArray[curr             ][0];
-      const i2 = indexArray[indexArray[i ][2]][0];
-      const i3 = indexArray[indexArray[i2][2]][0];
-
-      indices.push(i, i2, i3);
-    }
-
-    this.indices = indices.slice();
-  }
-
-  reverseWinding() {
-    this.indices.splice(0, this.indices.length);
-    
-    return super.reverseWinding();
   }
 
   setRenderMode(renderMode) {
@@ -418,7 +432,7 @@ class Shape {
     }
   }
 
-  // helpers for working with polygon
+  // helpers for working with polygon...
   pushVert(vert) {
     this.#polygon.pushVert(vert);
     this.indices.splice(0, this.indices.length);
@@ -431,6 +445,14 @@ class Shape {
 
   getWinding() {
     return this.#polygon.getWinding();
+  }
+
+  isCW() {
+    return this.#polygon.isCW();
+  }
+
+  isCCW() {
+    return this.#polygon.isCCW();
   }
 
   reverseWinding() {
@@ -463,10 +485,12 @@ class Shape {
     // check using our transformed polygon
     return p.isPointInside(point);
   }
+  // ...
 
   //
   #asData() {
     let renderMode = this.renderMode;
+    let verts = this.verts;
 
     switch (renderMode) {
       case GL.POINTS :
@@ -501,6 +525,16 @@ class Shape {
         }
 
         break;
+      case enums.Rendering.LINE_LOOP :
+        if (this.indices.length === 0) {
+          this.#generateOutline(this.lineWidth);
+        }
+
+        // render outline as triangles
+        verts = this.outline;
+        renderMode = GL.TRIANGLES;
+
+        break;
       case GL.TRIANGLES :
       default :
         if (this.indices.length === 0) {
@@ -525,8 +559,11 @@ class Shape {
       1 / (this.boundingBox.upper.y - this.boundingBox.lower.y)
     );
     
+    // [!] for colors and outline we need to double the
+    // colors
+
     // pad the color array to match the number of vertices
-    let diff = this.verts.length - this.colors.length;
+    let diff = verts.length - this.colors.length;
     let colors = this.colors.slice();
     if (diff > 0) {
       colors = colors.concat(
@@ -534,8 +571,8 @@ class Shape {
       );
     }
 
-    for (let i = 0; i < this.verts.length; ++i) {
-      const v = this.verts[i];
+    for (let i = 0; i < verts.length; ++i) {
+      const v = verts[i];
       const c = colors[i];
 
       let vboVert = new VBOVertex();
@@ -591,6 +628,90 @@ class Shape {
     rbd.depth = this.depth;
 
     return [rbd];
+  }
+
+  #generateOutline(halfWidth = 1) {
+    let rects   = new Array();
+    const verts = this.verts;
+
+    let indices = new Array();
+
+    for (let i = 0; i < verts.length; ++i) {
+      // calculate the rectangles that surround
+      // the polygon's lines
+
+      const a = verts[i];
+      const b = verts[(i + 1) % verts.length];
+
+      if (!a.equals(b, 0.01)) {
+        // if vertices are not coincident then get the
+        // _perpendicular_ unit vector from this point
+        // to the next (A -> B)
+        let ab = new Vec2(a.y - b.y, b.x - a.x);
+        let norm = ab.getNormalized();
+
+        let offs = new Vec2(norm.x * halfWidth,
+            norm.y * halfWidth);
+
+        rects.push(
+          new Vec2(a.x + offs.x, a.y + offs.y),
+          new Vec2(b.x + offs.x, b.y + offs.y),
+          new Vec2(b.x - offs.x, b.y - offs.y),
+          new Vec2(a.x - offs.x, a.y - offs.y)
+        );
+      }
+    }
+
+    for (let i = 0; i < rects.length; i += 4) {
+      // every rectangle will have one side that intersects
+      // and on side that has a gap unless they are collinear
+
+      let j = (i + 4) % rects.length;
+
+      // [!] find which lines in the rectangle we are
+      // checking for intersection and which we are connecting
+
+      // deal with the intersection...
+      let intersect = Polygon.SegSeg(
+        [rects[i], rects[i + 1]],
+        [rects[j], rects[j +1]]
+      );
+
+      if (intersect.intersects) {
+        rects[i + 1] = intersect.point.getCopy();
+        rects[j    ] = intersect.point.getCopy();
+      }
+      // ...
+
+      // deal with the gap...
+
+      // square miter: just connect them together with
+      // another line segment and half it
+      let lne = new Vec2(
+        (rects[j + 3].x + rects[i + 2].x) * 0.5,
+        (rects[j + 3].y + rects[i + 2].y) * 0.5
+      )
+
+      // [!] point miter: find the point of intersection
+      // of both lines extended
+
+      // [!] round miter: add triangles to form an arc
+      // depending on resolution (and length of gap)
+
+      rects[i + 2] = lne.getCopy();
+      rects[j + 3] = lne.getCopy();
+      // ...
+
+      let offs = i;
+      indices.push(
+            offs, offs + 3, offs + 1,
+        offs + 1, offs + 3, offs + 2
+      );
+      // ...
+    }
+
+    this.outline = rects;
+    this.indices = indices;
   }
 };
 

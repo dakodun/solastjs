@@ -20,6 +20,11 @@ class Renderable {
 
     // reference to a shader instance
     #shaderRef = null;
+
+    // for rendering lines with a set width
+    // - internally rendered as triangles
+    #outline = new Array();
+    #lineWidth = 1;
   // ...
 
   constructor() {
@@ -32,6 +37,8 @@ class Renderable {
   get depth() { return this.#depth; }
   get renderMode() { return this.#renderMode; }
   get shaderRef() { return this.#shaderRef; }
+  get outline() { return this.#outline; }
+  get lineWidth() { return this.#lineWidth; }
 
   set color(color) {
     if (!(color instanceof Vec3)) {
@@ -76,6 +83,24 @@ class Renderable {
     }
 
     this.#shaderRef = shaderRef;
+  }
+
+  set outline(outline) {
+    if (!(outline instanceof Array)) {
+      throw new TypeError("Renderable (outline): outline should " +
+        "be an Array of Vec2");
+    }
+    
+    this.#outline = outline;
+  }
+
+  set lineWidth(lineWidth) {
+    if (typeof lineWidth !== 'number') {
+      throw new TypeError("Renderable (lineWidth): should " +
+        "be a Number");
+    }
+
+    this.#lineWidth = lineWidth;
   }
   // ...
 
