@@ -1,26 +1,40 @@
 class Timer {
+  // private fields...
+    #startTime = 0;
+  // ...
+
 	constructor() {
-		this.startTime = 0;
   	this.reset();
 	}
 
+  // getters/setters...
+  get startTime() { return this.#startTime; }
+  // ...
+
   copy(other) {
-    this.startTime = other.startTime;
+    if (!(other instanceof Timer)) {
+      throw new TypeError("Timer (copy): other should be a Timer");
+    }
+
+    this.#startTime = other.#startTime;
   }
 
   getCopy() {
-    let copy = new Timer(); copy.copy(this);
+    let copy = new Timer();
+    copy.copy(this);
+
     return copy;
   }
 
   reset() {
     let d = new Date();
-    this.startTime = d.getTime();
+    this.#startTime = d.getTime();
   }
 
   getElapsed() {
     let d = new Date();
-    return d.getTime() - this.startTime;
+
+    return d.getTime() - this.#startTime;
   }
 };
 
