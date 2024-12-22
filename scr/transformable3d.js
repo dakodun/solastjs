@@ -138,6 +138,23 @@ class Transformable3D {
       this.#rotation.equals(other.#rotation)
     );
   }
+
+  // return this transformable as a matrix - that is, a
+  // matrix which has all transformations applied
+  asMat4() {
+    let transMat = this.#transMat.getCopy();
+
+    let offsetPos = new Vec3(this.position.x - this.origin.x,
+      this.position.y - this.origin.y, this.position.z - this.origin.z);
+    transMat.translate(offsetPos);
+    
+    transMat.translate(this.#origin);
+    transMat.rotateEuler(this.#rotation);
+    transMat.scale(this.#scale);
+    transMat.translate(this.#origin.getNegated());
+
+    return transMat;
+  }
 };
 
 export default Transformable3D;
