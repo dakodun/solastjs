@@ -4,8 +4,11 @@ import Vec2 from './vec2.js';
 import Vec3 from './vec3.js';
 
 class Camera2D {
+  // private fields
+    #view = new Mat4();
+  // ...
+
 	constructor() {
-    this.view = new Mat4();
     this.update = false;
 
     this.position = new Vec2(0.0, 0.0);
@@ -17,8 +20,15 @@ class Camera2D {
 
 	}
 
+  // getters/setters
+  get view() {
+    this.#updateView()
+    return this.#view;
+  }
+  // ...
+
 	copy(other) {
-    this.view = other.view.getCopy();
+    this.#view = other.#view.getCopy();
     this.update = other.update;
 
     this.position = position.origin.getCopy();
@@ -54,7 +64,7 @@ class Camera2D {
     this.update = true;
   }
 
-  getViewMatrix() {
+  #updateView() {
     if (this.update) {
       let transMat = this.transMat.getCopy();
 
@@ -71,24 +81,22 @@ class Camera2D {
       transMat.translate(this.origin.getNegated());
       
       // convert our 3d matrix to a 4d matrix by omitting the z component...
-      this.view.identity();
-      this.view.arr[ 0] = transMat.arr[0];
-      this.view.arr[ 1] = transMat.arr[1];
-      this.view.arr[ 3] = transMat.arr[2];
+      this.#view.identity();
+      this.#view.arr[ 0] = transMat.arr[0];
+      this.#view.arr[ 1] = transMat.arr[1];
+      this.#view.arr[ 3] = transMat.arr[2];
 
-      this.view.arr[ 4] = transMat.arr[3];
-      this.view.arr[ 5] = transMat.arr[4];
-      this.view.arr[ 7] = transMat.arr[5];
+      this.#view.arr[ 4] = transMat.arr[3];
+      this.#view.arr[ 5] = transMat.arr[4];
+      this.#view.arr[ 7] = transMat.arr[5];
 
-      this.view.arr[12] = transMat.arr[6];
-      this.view.arr[13] = transMat.arr[7];
-      this.view.arr[15] = transMat.arr[8];
+      this.#view.arr[12] = transMat.arr[6];
+      this.#view.arr[13] = transMat.arr[7];
+      this.#view.arr[15] = transMat.arr[8];
       // ...
 
       this.update = false;
     }
-
-    return this.view;
   }
 };
 

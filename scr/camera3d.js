@@ -8,16 +8,26 @@ class Camera3D {
     XY : 4,
   };
 
+  // private fields
+    #view = new Mat4();
+  // ...
+
 	constructor() {
-    this.view = new Mat4();
     this.update = false;
 
     this.position = new Vec3(0.0, 0.0, 0.0);
     this.rotation = new Vec3(0.0, 0.0, 0.0);
 	}
 
+  // getters/setters
+  get view() {
+    this.#updateView()
+    return this.#view;
+  }
+  // ...
+
 	copy(other) {
-    this.view = other.view.getCopy();
+    this.#view = other.#view.getCopy();
     this.update = other.update;
 
     this.position = other.position.getCopy();
@@ -42,7 +52,7 @@ class Camera3D {
   }
 
   translate(direction, plane) {
-    this.getViewMatrix();
+    this.#updateView();
 
     let axis = new Array(3);
     let dist = direction.asArray();
@@ -51,9 +61,12 @@ class Camera3D {
       if (Math.abs(dist[i]) > 1e-15) {
         // get the transformed axis to move along
         axis[i] = new Vec3(
-          ((plane & Camera3D.Plane.YZ) === 0) ? this.view.arr[0 + i] : 0,
-          ((plane & Camera3D.Plane.XZ) === 0) ? this.view.arr[4 + i] : 0,
-          ((plane & Camera3D.Plane.XY) === 0) ? this.view.arr[8 + i] : 0
+          ((plane & Camera3D.Plane.YZ) === 0) ?
+            this.#view.arr[0 + i] : 0,
+          ((plane & Camera3D.Plane.XZ) === 0) ?
+            this.#view.arr[4 + i] : 0,
+          ((plane & Camera3D.Plane.XY) === 0) ?
+            this.#view.arr[8 + i] : 0
         ); axis[i].normalize();
 
         this.position.x += axis[i].x * dist[i];
@@ -90,29 +103,29 @@ class Camera3D {
     let u = s.getCross(f);
 
     // create the view matrix
-    this.view.identity();
+    this.#view.identity();
 
-    this.view.arr[ 0] = s.x;
-    this.view.arr[ 4] = s.y;
-    this.view.arr[ 8] = s.z;
+    this.#view.arr[ 0] = s.x;
+    this.#view.arr[ 4] = s.y;
+    this.#view.arr[ 8] = s.z;
     
-    this.view.arr[ 1] = u.x;
-    this.view.arr[ 5] = u.y;
-    this.view.arr[ 9] = u.z;
+    this.#view.arr[ 1] = u.x;
+    this.#view.arr[ 5] = u.y;
+    this.#view.arr[ 9] = u.z;
     
-    this.view.arr[ 2] = -f.x;
-    this.view.arr[ 6] = -f.y;
-    this.view.arr[10] = -f.z;
+    this.#view.arr[ 2] = -f.x;
+    this.#view.arr[ 6] = -f.y;
+    this.#view.arr[10] = -f.z;
 
-    this.view.arr[12] = 0;
-    this.view.arr[13] = 0;
-    this.view.arr[14] = 0;
+    this.#view.arr[12] = 0;
+    this.#view.arr[13] = 0;
+    this.#view.arr[14] = 0;
 
-    this.view.translate(eyeVec.getNegated());
+    this.#view.translate(eyeVec.getNegated());
     // ...
 
     // get the position and rotation from the matrix
-    let decom = this.view.decompose();
+    let decom = this.#view.decompose();
 
     this.position.copy(decom[0]);
 
@@ -123,17 +136,15 @@ class Camera3D {
     // ...
   }
 
-  getViewMatrix() {
+  #updateView() {
     if (this.update) {
-      this.view.identity();
+      this.#view.identity();
 
-      this.view.rotateEuler(this.rotation.getNegated());
-      this.view.translate(this.position.getNegated());
+      this.#view.rotateEuler(this.rotation.getNegated());
+      this.#view.translate(this.position.getNegated());
 
       this.update = false;
     }
-
-    return this.view;
   }
 };
 
