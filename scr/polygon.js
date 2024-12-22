@@ -15,6 +15,38 @@ class Polygon {
   // getters/setters
   get verts() { return this.#verts; }
 
+  set verts(verts) {
+    if (!(verts instanceof Array)) {
+      throw new TypeError("Polygon (verts): verts should " +
+        "be an Array of Vec2");
+    }
+
+    let bbox = {
+      lower: new Vec2(Number.POSITIVE_INFINITY,
+        Number.POSITIVE_INFINITY),
+      upper: new Vec2(Number.NEGATIVE_INFINITY,
+        Number.NEGATIVE_INFINITY)
+    };
+
+    for (const vert of verts) {
+      if (!(vert instanceof Vec2)) {
+        throw new TypeError("Polygon (verts): vert should " +
+          "be a Vec2");
+      }
+
+      bbox.lower.x = Math.min(vert.x, bbox.lower.x);
+      bbox.lower.y = Math.min(vert.y, bbox.lower.y);
+
+      bbox.upper.x = Math.max(vert.x, bbox.upper.x);
+      bbox.upper.y = Math.max(vert.y, bbox.upper.y);
+    }
+    
+    
+
+    this.boundingBox = bbox;
+    this.#verts = verts;
+  }
+
   // helpers for working with transformable - error
   // handling occurs in Transformable2D class
   get transformable() { return this.#transformable; }
@@ -89,15 +121,26 @@ class Polygon {
   }
 
   getWinding() {
+    // if area is positive then polygon is clockwise
     let area = 0.0;
+
     for (let i = 0; i < this.#verts.length; ++i) {
+      // next vertex; wrap around
       let ii = (i + 1) % this.#verts.length;
 
       area += (this.#verts[ii].x - this.#verts[i].x) *
         (this.#verts[ii].y + this.#verts[i].y);
     }
     
-    return (area >= 0) ? -1 : 1;
+    return (area >= 0) ? 1 : -1;
+  }
+
+  isCW() {
+    return (this.getWinding() > 0) ? true : false;
+  }
+
+  isCCW() {
+    return !this.isCW();
   }
 
   reverseWinding() {
@@ -144,8 +187,9 @@ class Polygon {
 
     for (let i = 0; i < verts.length - 1; ++i) {
       // create rectangles around all line segments
-      let vAB = new Vec2(verts[i + 1].x - verts[i].x,
-          verts[i + 1].y - verts[i].y);
+      let j = (i + 1) % verts.length;
+      let vAB = new Vec2(verts[j].x - verts[i].x,
+          verts[j].y - verts[i].y);
       
       let vNorm = (new Vec2(-vAB.y, vAB.x)).getNormalized();
       let vOffset = new Vec2(vNorm.x * halfWidth,
@@ -154,10 +198,10 @@ class Polygon {
       rectangles.push([
         new Vec2(verts[i].x + vOffset.x,
           verts[i].y + vOffset.y),
-        new Vec2(verts[i + 1].x + vOffset.x,
-          verts[i + 1].y + vOffset.y),
-        new Vec2(verts[i + 1].x - vOffset.x,
-          verts[i + 1].y - vOffset.y),
+        new Vec2(verts[j].x + vOffset.x,
+          verts[j].y + vOffset.y),
+        new Vec2(verts[j].x - vOffset.x,
+          verts[j].y - vOffset.y),
         new Vec2(verts[i].x - vOffset.x,
           verts[i].y - vOffset.y)
       ]);
@@ -208,28 +252,27 @@ class Polygon {
   // checks if the point is inside this polygon
   isPointInside(point) {
     let windingNum = 0;
-    
-    for (let i = 0; i < this.#verts.length; ++i) {
-      const vertCurr = this.#verts[i];
-      const vertNext = this.#verts[(i + 1) % this.#verts.length];
 
-      const vertCurrNext = new Vec2(vertNext.x - vertCurr.x,
-        vertNext.y - vertCurr.y);
-      const vertCurrPoint = new Vec2(point.x - vertCurr.x,
-        point.y - vertCurr.y);
+    for (let i = 0; i < this.#verts.length; ++i) { 
+      let curr = this.#verts[i];
+      let next = this.#verts[(i + 1) % this.#verts.length];
 
-      const det = vertCurrNext.getDeterminant(vertCurrPoint);
-      
-      if ((vertCurr.y <= point.y) &&
-        (vertNext.y > point.y && det > 0)) {
+      const cn = new Vec2( next.x - curr.x,  next.y - curr.y);
+      const cp = new Vec2(point.x - curr.x, point.y - curr.y);
+      let det = cn.getDeterminant(cp);
 
-        ++windingNum;
-      } else if (vertNext.y <= point.y && det < 0) {
-        --windingNum;
+      if (curr.y <= point.y) {
+        if (next.y > point.y && det > 0) {
+          ++windingNum;
+        }
+      } else {
+        if (next.y <= point.y && det < 0) {
+          --windingNum;
+        }
       }
     }
-    
-    return (windingNum > 0) ? true : false;
+
+    return (windingNum !== 0) ? true : false;
   }
 
   #findOutline = (ptA, ptB, ptC, ptD) => {
@@ -269,6 +312,67 @@ class Polygon {
     } else {
       return [ptB.getCopy()];
     }
+  }
+
+  static SegSeg(frstSeg, scndSeg) {
+    // an alias function for segment-segment intersection
+    return Polygon.SegmentSegmentIntersect(frstSeg, scndSeg);
+  }
+
+  static SegmentSegmentIntersect(frstSeg, scndSeg) {
+    // from Graphics Gems 3
+
+    let result = {
+      intersects : false,
+      point : undefined
+    };
+
+    // a -> b is the first segment
+    // c -> d is the second segment
+    const a = frstSeg[0];
+    const b = frstSeg[1];
+    const c = scndSeg[0];
+    const d = scndSeg[1];
+
+    // ensure correct direction
+    const ab = new Vec2(b.x - a.x, b.y - a.y);
+    const dc = new Vec2(c.x - d.x, c.y - d.y);
+
+    // if the denominator is 0 then the lines are parallel
+    const dcabDet = dc.getDeterminant(ab);
+    if (dcabDet === 0) {
+      return result;
+    }
+    
+    const ca = new Vec2(a.x - c.x, a.y - c.y);
+
+    const cadcDet = ca.getDeterminant(dc);
+    if (cadcDet < 0 || cadcDet > dcabDet) {
+      return result;
+    }
+
+    const abcaDet = ab.getDeterminant(ca);
+    if (abcaDet < 0 || abcaDet > dcabDet) {
+      return result;
+    }
+
+    const alpha = cadcDet / dcabDet;
+
+    result.intersects = true;
+    result.point = new Vec2(
+      a.x + (alpha * ab.x),
+      a.y + (alpha * ab.y)
+    );
+
+    return result;
+  }
+
+  static isLeft(top, bot, cur) {
+    const tb = new Vec2(bot.x - top.x, bot.y - top.y);
+    const tc = new Vec2(cur.x - top.x, cur.y - top.y);
+    const det = tb.getDeterminant(tc);
+    
+    return (det <= 0) ? true : false;
   }
 };
 
