@@ -2,17 +2,33 @@ import { describe, test, expect } from 'vitest';
 
 import Renderable from '../../scr/renderable.js';
 
-import { glSetContext } from '../../scr/gl.js'
+import GL, { glSetContext } from '../../scr/gl.js'
 import Shader from '../../scr/shader.js';
+import Vec2 from '../../scr/vec2.js';
 import Vec3 from '../../scr/vec3.js';
 
-// need a valid context to retrieve render mode enums
-var fakeContext = {
-  TRIANGLES: 0
-};
+describe("construction", () => {
+  test("renderMode value when GL is defined or not", () => {
+    // if GL exists then use that,
+    // otherwise use default value of 0
+    
+    // GL is null
+    let render = new Renderable();
+      expect(render.renderMode).toStrictEqual(0);
 
-glSetContext(fakeContext);
+    // create and set a fake context with
+    // necessary enums
+    var fakeContext = {
+      TRIANGLES: 8
+    };
 
+    glSetContext(fakeContext);
+
+    // GL exists
+    render = new Renderable();
+      expect(render.renderMode).toStrictEqual(8);
+  });
+});
 
 describe("getters/setters", () => {
   describe("this.color", () => {
@@ -47,13 +63,16 @@ describe("getters/setters", () => {
   });
 
 
-  describe("this.alpha, this.depth, and this.renderMode", () => {
+  describe("this.alpha, this.depth, this.lineWidth, " +
+    "and this.renderMode", () => {
+
     test("alpha = this.alpha, ...", () => {
-      // return alpha, depth, and renderMode
+      // return alpha, depth, lineWidth, and renderMode
       let render = new Renderable();
         render.alpha = 4;
         render.depth = 5;
-        render.renderMode = 6;
+        render.lineWidth = 6;
+        render.renderMode = 7;
 
       let alp = render.alpha;
         expect(alp).toStrictEqual(4);
@@ -61,8 +80,11 @@ describe("getters/setters", () => {
       let dep = render.depth;
         expect(dep).toStrictEqual(5);
       
+      let lin = render.lineWidth;
+        expect(lin).toStrictEqual(6);
+      
       let ren = render.renderMode;
-        expect(ren).toStrictEqual(6);
+        expect(ren).toStrictEqual(7);
     });
 
     test("this.alpha = 'string', ...", () => {
@@ -73,12 +95,14 @@ describe("getters/setters", () => {
           toThrowError(/Number/);
         expect(() => { render.depth = "number"; }).
           toThrowError(/Number/);
+        expect(() => { render.lineWidth = "number"; }).
+          toThrowError(/Number/);
         expect(() => { render.renderMode = "number"; }).
           toThrowError(/Number/);
     });
 
     test("this.alpha = 4, ...", () => {
-      // assign alpha, depth, and renderMode
+      // assign alpha, depth, lineWidth, and renderMode
       let render = new Renderable();
 
       render.alpha = 4;
@@ -87,46 +111,82 @@ describe("getters/setters", () => {
       render.depth = 5;
         expect(render.depth).toStrictEqual(5);
       
+      render.lineWidth = 7;
+        expect(render.lineWidth).toStrictEqual(7);
+      
       render.renderMode = 6;
         expect(render.renderMode).toStrictEqual(6);
     });
   });
 
 
-  describe("this.shaderRef", () => {
-    test("shaderRef = this.shaderRef", () => {
-      // return shaderRef
+  describe("this.shader", () => {
+    test("shader = this.shader", () => {
+      // return shader
       let render = new Renderable();
       let shader = new Shader();
-        render.shaderRef = shader;
+        render.shader = shader;
 
-      let shaderRef = render.shaderRef;
+      let shaderRef = render.shader;
         expect(shaderRef).toStrictEqual(shader);
         expect(shaderRef).toBe(shader);
     });
 
-    test("this.shaderRef = 'string'", () => {
+    test("this.shader = 'string'", () => {
       // throw an error
       let render = new Renderable();
 
-        expect(() => { render.shaderRef = "vector"; }).
+        expect(() => { render.shader = "shader"; }).
           toThrowError(/Shader/);
     });
 
-    test("this.shaderRef = new Vec3(x, y, z)", () => {
-      // assign shaderRef
+    test("this.shader = new Vec3(x, y, z)", () => {
+      // assign shader
       let render = new Renderable();
       let shader = new Shader();
 
-      render.shaderRef = shader;
-        expect(render.shaderRef).toStrictEqual(shader);
-        expect(render.shaderRef).toBe(shader);
+      render.shader = shader;
+        expect(render.shader).toStrictEqual(shader);
+        expect(render.shader).toBe(shader);
+    });
+  });
+
+
+  describe("this.outline", () => {
+    test("outline = this.outline", () => {
+      // return outline (shallow)
+      let render = new Renderable();
+        render.outline = [];
+
+      let outline = render.outline;
+        expect(outline).toStrictEqual(render.outline);
+        expect(outline).toBe(render.outline);
+    });
+
+    test("this.outline = 'string'", () => {
+      // throw an error
+      let render = new Renderable();
+
+        expect(() => { render.outline = "array"; }).
+          toThrowError(/Array/);
+        expect(() => { render.outline = "array"; }).
+          toThrowError(/Vec2/);
+    });
+
+    test("this.outline = [Vec2, ...]", () => {
+      // assign outline (shallow)
+      let render = new Renderable();
+      let outline = [new Vec2(0, 0)];
+
+      render.outline = outline;
+        expect(render.outline).toStrictEqual(outline);
+        expect(render.outline).toBe(outline);
     });
   });
 });
 
 
-describe("copying", () => {
+describe("copying/comparison", () => {
   describe("this.copy()", () => {
     test("this.copy(other)", () => {
       // make a deep copy of other
@@ -138,7 +198,7 @@ describe("copying", () => {
       other.alpha = 4;
       other.depth = 5;
       other.renderMode = 6;
-      other.shaderRef = shader;
+      other.shader = shader;
         
         expect(render.equals(other)).toStrictEqual(false);
 
@@ -153,8 +213,8 @@ describe("copying", () => {
         expect(other.alpha).toStrictEqual(4);
         expect(other.depth).toStrictEqual(5);
         expect(other.renderMode).toStrictEqual(6);
-        expect(other.shaderRef).toStrictEqual(shader);
-        expect(other.shaderRef).toBe(shader);
+        expect(other.shader).toStrictEqual(shader);
+        expect(other.shader).toBe(shader);
     });
 
     test("this.copy('string')", () => {
@@ -167,30 +227,25 @@ describe("copying", () => {
   });
 
 
-  describe("this.getCopy()", () => {
-    test("this.getCopy()", () => {
-      // return a Renderable
-      let render = new Renderable();
-      let shader = new Shader();
+  test("this.getCopy()", () => {
+    // return a Renderable
+    let render = new Renderable();
+    let shader = new Shader();
 
-      render.color = new Vec3(1, 2, 3);
-      render.alpha = 4;
-      render.depth = 5;
-      render.renderMode = 6;
-      render.shaderRef = shader;
+    render.color = new Vec3(1, 2, 3);
+    render.alpha = 4;
+    render.depth = 5;
+    render.renderMode = 6;
+    render.shader = shader;
 
-      let other = render.getCopy();
-        expect(other).toBeInstanceOf(Renderable);
+    let other = render.getCopy();
+      expect(other).toBeInstanceOf(Renderable);
 
-      // should be a deep copy of this
-        expect(other.equals(render)).toStrictEqual(true);
-        expect(other).not.toBe(render);
-    });
+    // should be a deep copy of this
+      expect(other.equals(render)).toStrictEqual(true);
+      expect(other).not.toBe(render);
   });
-});
 
-
-describe("comparison", () => {
   describe("this.equals()", () => {
     test("this.equals(other)", () => {
       // initally should equal each other
@@ -207,7 +262,7 @@ describe("comparison", () => {
       render.depth = 5;
 
       render.renderMode = 6;
-      render.shaderRef = shader;
+      render.shader = shader;
 
         expect(other.equals(render)).toStrictEqual(false);
         expect(other).not.toBe(render);
@@ -218,7 +273,7 @@ describe("comparison", () => {
       other.depth = 5;
 
       other.renderMode = 6;
-      other.shaderRef = shader;
+      other.shader = shader;
 
         expect(other.equals(render)).toStrictEqual(true);
         expect(other).not.toBe(render);
@@ -237,9 +292,15 @@ describe("comparison", () => {
 
 describe("callback", () => {
   test("this.asData()", () => {
-    // default method returns empty array
-    let render = new Renderable();
-    let result = render.asData();
+    let parent = {
+      render: new Renderable(),
+      asData() {
+        return [];
+      },
+    }
+
+    let render = parent.render;
+    let result = render.asData(parent);
 
       expect(result).toBeInstanceOf(Array);
       expect(result.length).toStrictEqual(0);

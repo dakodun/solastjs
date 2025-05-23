@@ -125,18 +125,19 @@ class VertexBatch {
       vboVert.s = 0;
       vboVert.t = 0;
       
-      // es 1.0
       let normVec = transMat.getMultVec4(new Vec4(n.x, n.y, n.z, 0.0));
-      normVec.normalize();
-      vboVert.nx = normVec.x;
-      vboVert.ny = normVec.y;
-      vboVert.nz = normVec.z;
 
-      // es 3.0
-      /* vboVert.normal = vboVert.normal | (0 << 30); // padding
-      vboVert.normal = vboVert.normal | (511 << 20); // z
-      vboVert.normal = vboVert.normal | (0 << 10); // y
-      vboVert.normal = vboVert.normal | (0 << 0); // x */
+      // normalize normal vector between [0.0: 1.0]
+      normVec.normalize();
+      normVec.x = (normVec.x + 1.0) * 0.5;
+      normVec.y = (normVec.y + 1.0) * 0.5;
+      normVec.z = (normVec.z + 1.0) * 0.5;
+      
+      // pack normal into 32bit unsigned int which is normalized
+      // to the range [-1.0: 1.0] when unpacked
+      vboVert.normal =              0 | ((normVec.z * 1023) << 20);
+      vboVert.normal = vboVert.normal | ((normVec.y * 1023) << 10);
+      vboVert.normal = vboVert.normal | ((normVec.x * 1023) <<  0);
 
       vboVerts.push(vboVert);
 

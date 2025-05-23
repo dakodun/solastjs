@@ -1,9 +1,5 @@
 class VBOVertex {
-    // es 1.0
-    static byteSize = 36;
-
-    // es 3.0
-    // this.byteSize = 28;
+  static byteSize = 28;
 
 	constructor() {
     this.x = 0.0; // (3 4-byte)
@@ -23,13 +19,7 @@ class VBOVertex {
     this.flag3 = 0;
     this.flag4 = 0;
 
-    // es 1.0
-    this.nx = 0.0; // (3 4-byte)
-    this.ny = 0.0;
-    this.nz = 1.0;
-
-    // es 3.0
-    // this.normal = 0 | (511 << 20); // (1 4-byte)
+    this.normal = 0; // (1 4-byte)
 	}
 
 	copy(other) {
@@ -55,13 +45,7 @@ class VBOVertex {
     this.flag3 = other.flag3;
     this.flag4 = other.flag4;
 
-    // es 1.0
-    this.nx = other.nx;
-    this.ny = other.ny;
-    this.nz = other.nz;
-
-    // es 3.0
-    // this.normal = other.normal;
+    this.normal = other.normal;
   }
 
   getCopy() {
@@ -95,15 +79,8 @@ class VBOVertex {
     buffer.setUint8(offset + 3,       this.flag4);
     offset += 4;
 
-    // es 1.0
-    buffer.setFloat32(offset    , this.nx, true);
-    buffer.setFloat32(offset + 4, this.ny, true);
-    buffer.setFloat32(offset + 8, this.nz, true);
-    offset += 12;
-
-    // es 3.0
-    // buffer.setInt32(offset, this.normal, true);
-    // offset += 4;
+    buffer.setUint32(offset, this.normal, true);
+    offset += 4;
   }
 };
 

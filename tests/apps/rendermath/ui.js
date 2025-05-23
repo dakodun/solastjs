@@ -165,7 +165,7 @@ class UI {
       for (let v of verts) {
         let s = new sol.Shape();
         
-        s.setRenderMode(GL.LINES);
+        s.renderMode = GL.LINES;
         s.depth = -5;
         v.forEach((e) => { s.pushVert(e); });
 
@@ -196,7 +196,7 @@ class UI {
         s.color = new sol.Vec3(255, 0, 255);
 
         s.position = e.position.getCopy();
-        s.setRenderMode(GL.LINE_LOOP);
+        s.renderMode = GL.LINE_LOOP;
         
         this.#batch.add(s, 1);
       }

@@ -31,7 +31,7 @@ class RenderBatch {
       this.depthSort[pass] = false;
     }
 
-    let data = renderable.asData();
+    let data = renderable.asData(renderBase);
 
     for (const datum of data) {
       let rbd = datum.getCopy();

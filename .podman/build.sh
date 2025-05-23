@@ -14,10 +14,10 @@
 podman pod create --name sol-pod --volume ../:/workspace/solastjs \
   --publish 8080:80
 
-podman pull docker.io/node:22.9-bookworm-slim
+podman pull docker.io/library/node:22.9-bookworm-slim
 podman build --file node.containerfile --tag localhost/sol-node-img .
 podman run -dt --pod sol-pod --name sol-node localhost/sol-node-img
 
-podman pull docker.io/nginx:1.27-alpine
+podman pull docker.io/library/nginx:1.27-alpine
 podman build --file nginx.containerfile --tag localhost/sol-nginx-img .
 podman run -dt --pod sol-pod --name sol-nginx localhost/sol-nginx-img

@@ -8,8 +8,14 @@ class Polygon {
     #verts = new Array();
   // ...
 
-  constructor(verts = []) {
-    this.pushVerts(verts);
+  constructor(verts = undefined) {
+    // checking for undefined here lets us call this
+    // constructor from a derived class (namely shape)
+    // by passing nothing, which prevents calling the
+    // derived setter for verts
+    if (verts !== undefined) {
+      this.verts = verts;
+    }
   }
 
   // getters/setters
@@ -41,8 +47,6 @@ class Polygon {
       bbox.upper.y = Math.max(vert.y, bbox.upper.y);
     }
     
-    
-
     this.boundingBox = bbox;
     this.#verts = verts;
   }
@@ -88,6 +92,22 @@ class Polygon {
     copy.copy(this);
 
     return copy;
+  }
+
+  equals(other) {
+    if (!(other instanceof Polygon)) {
+      throw new TypeError("Polygon (equals): other should be " +
+        "a Polygon");
+    }
+    
+    return (
+      this.#verts.length === other.#verts.length &&
+      this.#verts.every((e, i) => {
+         return e.equals(other.#verts[i]);
+      }) &&
+
+      this.#transformable.equals(other.#transformable)
+    );
   }
 
   pushVert(vert) {

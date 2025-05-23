@@ -8,7 +8,8 @@ class Renderable {
     serves as an  interface  (via  composition)  to allow a
     class to be rendered via the default  render pipeline -
     an implementating  class should  contain a 'renderable'
-    field (exposed via a getter if private)
+    field (exposed via a getter if private) and an 'asData'
+    method
   */
 
   // private fields
@@ -16,10 +17,9 @@ class Renderable {
     #alpha =  255;
     #depth = -1.0;
 
-    #renderMode = GL.TRIANGLES;
+    #renderMode = (GL) ? GL.TRIANGLES : 0;
 
-    // reference to a shader instance
-    #shaderRef = null;
+    #shader = null;
 
     // for rendering lines with a set width
     // - internally rendered as triangles
@@ -36,7 +36,7 @@ class Renderable {
   get alpha() { return this.#alpha; }
   get depth() { return this.#depth; }
   get renderMode() { return this.#renderMode; }
-  get shaderRef() { return this.#shaderRef; }
+  get shader() { return this.#shader; }
   get outline() { return this.#outline; }
   get lineWidth() { return this.#lineWidth; }
 
@@ -76,13 +76,13 @@ class Renderable {
     this.#renderMode = renderMode;
   }
 
-  set shaderRef(shaderRef) {
-    if (!(shaderRef instanceof Shader)) {
-      throw new TypeError("Renderable (shaderRef): should " +
-        "be a reference to a Shader instance");
+  set shader(shader) {
+    if (shader !== null && !(shader instanceof Shader)) {
+      throw new TypeError("Renderable (shader): should " +
+        "be a Shader (or null)");
     }
 
-    this.#shaderRef = shaderRef;
+    this.#shader = shader;
   }
 
   set outline(outline) {
@@ -115,7 +115,7 @@ class Renderable {
     this.#depth = other.#depth;
 
     this.#renderMode = other.#renderMode;
-    this.#shaderRef = other.#shaderRef;
+    this.#shader = other.#shader;
   }
 
   getCopy() {
@@ -136,17 +136,17 @@ class Renderable {
       this.#alpha === other.#alpha &&
       this.#depth === other.#depth &&
       this.#renderMode === other.#renderMode &&
-      this.#shaderRef === other.#shaderRef
+      this.#shader === other.#shader
     );
   }
 
-  asData() {
-    // callback function used by default render piepline to
+  asData(base) {
+    // callback function used by default render pipeline to
     // retrieve render data - should return an array of
     // renderable data (RenderBatchData by default although
     // it is possible to define your own - see RenderBatchData)
 
-    return [];
+    return base.asData();
   }
 };
 

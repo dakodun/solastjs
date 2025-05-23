@@ -195,27 +195,22 @@ class App {
     let shader = GLStates.defaultShader;
 
     shader.vertSrc =
-      `uniform mat4 vertView;
+      `#version 300 es
+      
+      uniform mat4 vertView;
       uniform mat4 vertProj;
 
-      attribute vec3 vertXYZ;
-      attribute vec4 vertRGBA;
-      attribute vec2 vertST;
-      attribute vec4 vertFlags;
+      layout(location = 0) in vec3 vertXYZ;
+      layout(location = 1) in vec4 vertRGBA;
+      layout(location = 2) in vec2 vertST;
+      layout(location = 3) in vec4 vertFlags;
+      layout(location = 4) in vec4 vertNormal;
 
-      // es 1.0
-      attribute vec3 vertNormal;
-
-      // es 3.0
-      // attribute vec4 vertNormal;
-
-      varying mediump vec4 fragRGBA;
-      varying mediump vec2 fragST;
-
-      varying mediump float fragTextured;
-      varying mediump float fragLighting;
-
-      varying mediump vec3 fragNormal;
+      out mediump vec4 fragRGBA;
+      out mediump vec2 fragST;
+      out mediump float fragTextured;
+      out mediump float fragLighting;
+      out mediump vec3 fragNormal;
 
       void main() {
         mat4 vp = vertProj * vertView;
@@ -227,33 +222,35 @@ class App {
         fragTextured = vertFlags.x;
         fragLighting = vertFlags.y;
 
-        fragNormal = vertNormal;
+        fragNormal = vertNormal.xyz;
       }`;
     
     shader.fragSrc =
-      `precision mediump float;
+      `#version 300 es
+      
+      precision mediump float;
 
       uniform sampler2D fragBaseTex;
 
-      varying mediump vec4 fragRGBA;
-      varying mediump vec2 fragST;
+      in mediump vec4 fragRGBA;
+      in mediump vec2 fragST;
+      in mediump float fragTextured;
+      in mediump float fragLighting;
+      in mediump vec3 fragNormal;
 
-      varying mediump float fragTextured;
-      varying mediump float fragLighting;
-
-      varying mediump vec3 fragNormal;
+      layout(location = 0) out mediump vec4 fragColor;
 
       void main() {
-        vec4 texColor = clamp(texture2D(fragBaseTex, fragST) +
-            (1.0 - fragTextured), 0.0, 1.0);
-        gl_FragColor = texColor * vec4(fragRGBA.r, fragRGBA.g,
-            fragRGBA.b, fragRGBA.a);
+        vec4 texColor = clamp(texture(fragBaseTex, fragST) +
+          (1.0 - fragTextured), 0.0, 1.0);
+        fragColor = texColor * vec4(fragRGBA.r, fragRGBA.g,
+          fragRGBA.b, fragRGBA.a);
 
         float light = max(1.0 - fragLighting,
-            dot(fragNormal, vec3(0.0, 0.0, 1.0)));
-        gl_FragColor.rgb *= max(0.1, light);
+          dot(fragNormal, vec3(0.0, 0.0, 1.0)));
+        fragColor.rgb *= max(0.1, light);
       }`;
-    
+
     shader.uniformLocations = {
       projectionMatrix : null,
       viewMatrix       : null,
@@ -261,62 +258,52 @@ class App {
     };
 
     shader.attributeLocations = {
-      vertexPosition : null, // (3 4-byte)
-      vertexColor    : null, // (4 1-byte)
-      vertexTexture  : null, // (2 2-byte)
-      vertexFlags    : null, // (4 1-byte)
-      vertexNormal   : null, // (3 4-byte) es 1.0
-      // vertexNormal: null // (1 4-byte) es 3.0
+      vertexPosition : -1, // (3 4-byte)
+      vertexColor    : -1, // (4 1-byte)
+      vertexTexture  : -1, // (2 2-byte)
+      vertexFlags    : -1, // (4 1-byte)
+      vertexNormal   : -1, // (1 4-byte)
     };
 
     shader.renderCallback = function() {
       let byteSize = VBOVertex.byteSize;
       let offset = 0;
 
-      if (this.attributeLocations.vertexPosition != -1) {
+      if (this.attributeLocations.vertexPosition !== -1) {
         GL.enableVertexAttribArray(this.attributeLocations.vertexPosition);
         GL.vertexAttribPointer(this.attributeLocations.vertexPosition,
             3, GL.FLOAT, false, byteSize, offset);
       }
       
       offset += 12;
-      if (this.attributeLocations.vertexColor != -1) {
+      if (this.attributeLocations.vertexColor !== -1) {
         GL.enableVertexAttribArray(this.attributeLocations.vertexColor);
         GL.vertexAttribPointer(this.attributeLocations.vertexColor,
             4, GL.UNSIGNED_BYTE, true, byteSize, offset);
       }
       
       offset += 4;
-      if (this.attributeLocations.vertexTexture != -1) {
+      if (this.attributeLocations.vertexTexture !== -1) {
         GL.enableVertexAttribArray(this.attributeLocations.vertexTexture);
         GL.vertexAttribPointer(this.attributeLocations.vertexTexture,
             2, GL.UNSIGNED_SHORT, true, byteSize, offset);
       }
       
       offset += 4;
-      if (this.attributeLocations.vertexFlags != -1) {
+      if (this.attributeLocations.vertexFlags !== -1) {
         GL.enableVertexAttribArray(this.attributeLocations.vertexFlags);
         GL.vertexAttribPointer(this.attributeLocations.vertexFlags,
             4, GL.UNSIGNED_BYTE, true, byteSize, offset);
       }
       
       offset += 4;
-      // es 1.0
-      if (this.attributeLocations.vertexNormal != -1) {
+      if (this.attributeLocations.vertexNormal !== -1) {
         GL.enableVertexAttribArray(this.attributeLocations.vertexNormal);
         GL.vertexAttribPointer(this.attributeLocations.vertexNormal,
-            3, GL.FLOAT, true, byteSize, offset);
+            4, GL.UNSIGNED_INT_2_10_10_10_REV, true, byteSize, offset);
       }
       
-      offset += 12;
-      // es 3.0
-      /* if (this.vertexNormal != -1) {
-        GL.enableVertexAttribArray(this.attributeLocations.vertexNormal);
-        GL.vertexAttribPointer(this.attributeLocations.vertexNormal,
-            4, GL.INT_2_10_10_10_REV, true, byteSize, offset);
-      }
-      
-      offset += 4; */
+      offset += 4;
 
       GL.uniformMatrix4fv(this.uniformLocations.projectionMatrix, false,
         Float32Array.from(GLStates.projectionMatrix.arr));
