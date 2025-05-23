@@ -1,4 +1,6 @@
-import GL from './gl.js'
+import GL from './gl.js';
+import Shape from './shape.js';
+import Vec2 from './vec2.js';
 
 class Texture {
   // private fields
@@ -59,8 +61,6 @@ class Texture {
   createData(width, height, data) {
     this.init();
 
-    
-
     GL.bindTexture(GL.TEXTURE_2D, this.#texture);
     GL.texImage2D(GL.TEXTURE_2D, 0, GL.RGBA, width, height, 0,
         GL.RGBA, GL.UNSIGNED_BYTE, data);
@@ -85,6 +85,29 @@ class Texture {
     GL.texParameteri(GL.TEXTURE_2D, GL.TEXTURE_WRAP_T, GL.CLAMP_TO_EDGE);
     GL.texParameteri(GL.TEXTURE_2D, GL.TEXTURE_MAG_FILTER, GL.NEAREST);
     GL.texParameteri(GL.TEXTURE_2D, GL.TEXTURE_MIN_FILTER, GL.NEAREST);
+  }
+
+  // 
+  asShape() {
+    let shp = new Shape();
+
+    const w = this.width;
+    const h = this.height;
+    shp.pushVerts([
+      new Vec2(0, 0),
+      new Vec2(w, 0),
+      new Vec2(w, h),
+      new Vec2(0, h)
+    ]);
+
+    shp.indices = [
+      0, 1, 2,
+      2, 3, 0
+    ];
+
+    shp.frames = [new Shape.Frame(this)];
+
+    return shp;
   }
 };
 
