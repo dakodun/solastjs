@@ -1,12 +1,19 @@
 import ResourceStore from './resourcestore.js';
 
 class ResourceManager {
+  static defaults = [
+    "image",
+    "texture",
+    "soundBuffer",
+    "font",
+  ];
+
 	constructor() {
     this.stores = new Map();
 
-    this.addStore("image");
-    this.addStore("texture");
-    this.addStore("soundBuffer");
+    for (let def of ResourceManager.defaults) {
+      this.addStore(def);
+    }
 	}
 
   addStore(name) {
@@ -15,13 +22,10 @@ class ResourceManager {
   }
 
   removeStore(name) {
-    if (name != "image" && name != "texture" &&
-        name != "soundBuffer") {
-      
+    if (!ResourceManager.defaults.find((e) => { return e === name; })) {
       return this.stores.delete(name);
-    }
-    else {
-      return false
+    } else {
+      return false;
     }
   }
 
@@ -29,6 +33,7 @@ class ResourceManager {
     return this.stores.get(name);
   }
 
+  // default helpers...
   getImageStore() {
     return this.stores.get("image");
   }
@@ -40,6 +45,11 @@ class ResourceManager {
   getSoundBufferStore() {
     return this.stores.get("soundBuffer");
   }
+
+  getFontStore() {
+    return this.stores.get("font");
+  }
+  // ...
 };
 
 export default ResourceManager;

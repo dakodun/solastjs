@@ -4,6 +4,7 @@ export { default as Camera3D } from './camera3d.js';
 
 export { default as DefaultEvent } from './events/defaultevent.js';
 export { default as EventQueue }   from          './eventqueue.js';
+export { default as Font }         from                './font.js';
 export { default as FrameBuffer }  from         './framebuffer.js';
 
 export { default as InputManager } from './inputmanager.js';
@@ -17,6 +18,7 @@ export { default as Mat3 } from './mat3.js';
 export { default as Mat4 } from './mat4.js';
 
 export { default as Polygon }         from          './polygon.js';
+export { default as RenderString }    from     './renderstring.js';
 export { default as Renderable }      from       './renderable.js';
 export { default as RenderBatch }     from      './renderbatch.js';
 export { default as RenderBatchData } from  './renderbatchdata.js';
