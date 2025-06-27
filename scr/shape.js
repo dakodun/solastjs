@@ -783,7 +783,7 @@ class Shape extends Polygon {
         (ratio.y * texRect[1].y)) * 65535;
       
       if (tex) {
-        vboVert.textureFlag = 255;
+        vboVert.textureFlag = 1;
       }
 
       vboVerts.push(vboVert);

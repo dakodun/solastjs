@@ -207,7 +207,7 @@ class App {
       layout(location = 4) in vec4 vertNormal;
 
       out mediump vec4 fragRGBA;
-      out mediump vec2 fragST;
+      out mediump vec3 fragSTL;
       out mediump float fragTextured;
       out mediump float fragLighting;
       out mediump vec3 fragNormal;
@@ -217,10 +217,10 @@ class App {
         gl_Position = vp * vec4(vertXYZ, 1.0);
         
         fragRGBA = vertRGBA;
-        fragST = vertST;
+        fragSTL = vec3(vertST, vertFlags.y);
 
         fragTextured = vertFlags.x;
-        fragLighting = vertFlags.y;
+        fragLighting = vertFlags.z;
 
         fragNormal = vertNormal.xyz;
       }`;
@@ -230,10 +230,10 @@ class App {
       
       precision mediump float;
 
-      uniform sampler2D fragBaseTex;
+      uniform mediump sampler2DArray fragBaseTex;
 
       in mediump vec4 fragRGBA;
-      in mediump vec2 fragST;
+      in mediump vec3 fragSTL;
       in mediump float fragTextured;
       in mediump float fragLighting;
       in mediump vec3 fragNormal;
@@ -241,7 +241,7 @@ class App {
       layout(location = 0) out mediump vec4 fragColor;
 
       void main() {
-        vec4 texColor = clamp(texture(fragBaseTex, fragST) +
+        vec4 texColor = clamp(texture(fragBaseTex, fragSTL) +
           (1.0 - fragTextured), 0.0, 1.0);
         fragColor = texColor * vec4(fragRGBA.r, fragRGBA.g,
           fragRGBA.b, fragRGBA.a);
@@ -293,7 +293,7 @@ class App {
       if (this.attributeLocations.vertexFlags !== -1) {
         GL.enableVertexAttribArray(this.attributeLocations.vertexFlags);
         GL.vertexAttribPointer(this.attributeLocations.vertexFlags,
-            4, GL.UNSIGNED_BYTE, true, byteSize, offset);
+            4, GL.UNSIGNED_BYTE, false, byteSize, offset);
       }
       
       offset += 4;

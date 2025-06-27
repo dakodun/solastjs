@@ -142,7 +142,7 @@ class VertexBatch {
       vboVerts.push(vboVert);
 
       if (this.lighting) {
-        vboVert.diffuseFlag = 255;
+        vboVert.diffuseFlag = 1;
       }
     }
 

@@ -74,7 +74,7 @@ class VBO {
         }
 
         if (s.textureRef !== currTex) {
-          GL.bindTexture(GL.TEXTURE_2D, s.textureRef);
+          GL.bindTexture(GL.TEXTURE_2D_ARRAY, s.textureRef);
 
           currTex = s.textureRef;
         }

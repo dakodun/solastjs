@@ -58,33 +58,34 @@ class Texture {
     }
   }
 
-  createData(width, height, data) {
+  create(data = []) {
     this.init();
 
-    GL.bindTexture(GL.TEXTURE_2D, this.#texture);
-    GL.texImage2D(GL.TEXTURE_2D, 0, GL.RGBA, width, height, 0,
-        GL.RGBA, GL.UNSIGNED_BYTE, data);
+    // is data an array? [!]
 
-    GL.texParameteri(GL.TEXTURE_2D, GL.TEXTURE_WRAP_S, GL.CLAMP_TO_EDGE);
-    GL.texParameteri(GL.TEXTURE_2D, GL.TEXTURE_WRAP_T, GL.CLAMP_TO_EDGE);
-    GL.texParameteri(GL.TEXTURE_2D, GL.TEXTURE_MAG_FILTER, GL.NEAREST);
-    GL.texParameteri(GL.TEXTURE_2D, GL.TEXTURE_MIN_FILTER, GL.NEAREST);
-  }
+    for (let datum of data) {
+      this.width  = Math.max( this.width,  datum.width);
+      this.height = Math.max(this.height, datum.height);
+    }
 
-  createImage(img) {
-    this.init();
+
+    GL.bindTexture(GL.TEXTURE_2D_ARRAY, this.#texture);
+    GL.texStorage3D(GL.TEXTURE_2D_ARRAY, 1, GL.RGBA8,
+      this.width, this.height, data.length);
     
-    this.width  =  img.width;
-    this.height = img.height;
-
-    GL.bindTexture(GL.TEXTURE_2D, this.#texture);
-    GL.texImage2D(GL.TEXTURE_2D, 0, GL.RGBA, GL.RGBA,
-        GL.UNSIGNED_BYTE, img);
-
-    GL.texParameteri(GL.TEXTURE_2D, GL.TEXTURE_WRAP_S, GL.CLAMP_TO_EDGE);
-    GL.texParameteri(GL.TEXTURE_2D, GL.TEXTURE_WRAP_T, GL.CLAMP_TO_EDGE);
-    GL.texParameteri(GL.TEXTURE_2D, GL.TEXTURE_MAG_FILTER, GL.NEAREST);
-    GL.texParameteri(GL.TEXTURE_2D, GL.TEXTURE_MIN_FILTER, GL.NEAREST);
+    for (let i = 0; i < data.length; ++i) {
+      GL.texSubImage3D(GL.TEXTURE_2D_ARRAY, 0, 0, 0, i, this.width,
+        this.height, 1, GL.RGBA, GL.UNSIGNED_BYTE, data[i]);
+    }
+    
+    GL.texParameteri(GL.TEXTURE_2D_ARRAY,
+      GL.TEXTURE_WRAP_S, GL.CLAMP_TO_EDGE);
+    GL.texParameteri(GL.TEXTURE_2D_ARRAY,
+      GL.TEXTURE_WRAP_T, GL.CLAMP_TO_EDGE);
+    GL.texParameteri(GL.TEXTURE_2D_ARRAY,
+      GL.TEXTURE_MAG_FILTER, GL.NEAREST);
+    GL.texParameteri(GL.TEXTURE_2D_ARRAY,
+      GL.TEXTURE_MIN_FILTER, GL.NEAREST);
   }
 
   // 
