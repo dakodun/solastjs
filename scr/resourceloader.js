@@ -1,4 +1,3 @@
-import Font from './font.js';
 import SoundBuffer from './soundbuffer.js';
 
 class ResourceLoader {

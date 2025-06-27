@@ -1,6 +1,5 @@
 import GL from './gl.js'
 
-// import Font from './font.js';
 import Mat3 from './mat3.js';
 import Polygon from './polygon.js';
 import Renderable from './renderable.js';
