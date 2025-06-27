@@ -32,6 +32,10 @@ class RenderBatch {
     }
 
     let data = renderable.asData(renderBase);
+    if (!(data instanceof Array)) {
+      throw new TypeError("RenderBatch (add): renderBase 'asData'" +
+      "method should return an Array of render data");
+    }
 
     for (const datum of data) {
       let rbd = datum.getCopy();
