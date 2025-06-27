@@ -17,7 +17,7 @@ class UIButton  {
     this.shape = new sol.Shape();
     this.shape.depth = -10.0;
 
-    let texStore = APP.resourceManager.getTextureStore();
+    let texStore = APP.resourceManager.getStore("texture");
     let tex = texStore.getResource(textureID);
 
     this.#modes = modes;

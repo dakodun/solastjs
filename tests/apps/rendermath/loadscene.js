@@ -43,12 +43,12 @@ class LoadScene extends sol.Scene {
 	
 	process(dt) {
     if (!APP.resourceLoader.isWorking() && !this.loaded) {
-      let imgStore = APP.resourceManager.getImageStore();
-      let texStore = APP.resourceManager.getTextureStore();
+      let imgStore = APP.resourceManager.getStore("image");
+      let texStore = APP.resourceManager.getStore("texture");
 
       for (const img of LoadScene.images) {
         let tex = texStore.addResource(img.id, new sol.Texture());
-        tex.createImage(imgStore.getResource(img.id));
+        tex.create([imgStore.getResource(img.id)]);
         imgStore.removeResource(img.id);
       }
 
@@ -69,7 +69,9 @@ class LoadScene extends sol.Scene {
   onEnter(loaded) {
     APP.renderPasses = 2;
 
-    let imgStore = APP.resourceManager.getImageStore();
+    APP.resourceManager.addStore("texture");
+    let imgStore = APP.resourceManager.addStore("image");
+    
     let loader = APP.resourceLoader;
 
     for (const img of LoadScene.images) {

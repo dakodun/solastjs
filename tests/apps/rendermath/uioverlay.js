@@ -17,7 +17,7 @@ class UIOverlay  {
   // ...
 
 	constructor() {
-    let texStore = APP.resourceManager.getTextureStore();
+    let texStore = APP.resourceManager.getStore("texture");
 
     {// shape - grab me...
     this.#grabPrompt.shp = new sol.Shape();
