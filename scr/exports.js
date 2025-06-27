@@ -1,10 +1,10 @@
-export { default as App }      from      './app.js';
-export { default as Camera2D } from './camera2d.js';
-export { default as Camera3D } from './camera3d.js';
+export { default as App }       from       './app.js';
+export { default as AtlasFont } from './atlasfont.js';
+export { default as Camera2D }  from  './camera2d.js';
+export { default as Camera3D }  from  './camera3d.js';
 
 export { default as DefaultEvent } from './events/defaultevent.js';
 export { default as EventQueue }   from          './eventqueue.js';
-export { default as Font }         from                './font.js';
 export { default as FrameBuffer }  from         './framebuffer.js';
 
 export { default as InputManager } from './inputmanager.js';

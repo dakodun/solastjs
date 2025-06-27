@@ -30,7 +30,7 @@ class ResourceLoader {
     let soundBuffer = new SoundBuffer();
     ++this.status;
 
-   fetch(src)
+    fetch(src)
       .then((response) => { return response.arrayBuffer(); })
       .then((arrBuffer) => {
         return this.ac.decodeAudioData(
@@ -46,25 +46,21 @@ class ResourceLoader {
     return soundBuffer;
   }
 
-  /* loadFont(src, family) {
-    let font = new Font();
+  async loadFontFace(src, family) {
+    let font = new FontFace(family, src);
     ++this.status;
 
-    font.family = family,
-    font.face = new FontFace(family, src);
+    try {
+      await font.load();
+      document.fonts.add(font);
 
-    font.face.load()
-      .then(() => {
-        document.fonts.add(font.face);
-        --this.status;
-      })
-      .catch((error) => {
-        console.log(error);
-        --this.status;
-      });
-    
+      --this.status;
+    } catch(e) {
+      --this.status;
+    }
+
     return font;
-  } */
+  }
 
   isWorking() {
     if (this.status === 0) {
