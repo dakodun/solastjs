@@ -1,5 +1,6 @@
 import GL from './gl.js'
 
+import AtlasFont from './atlasfont.js';
 import Renderable from './renderable.js';
 import RenderBatchData from './renderbatchdata.js'
 import Transformable2D from './transformable2d.js';
@@ -10,8 +11,9 @@ class RenderString {
   #font = null;
   #text = "";
 
-  #width = 0;
-  #height = 0;
+  #letterSpacing = 0;
+  #wordSpacing = 0;
+  #lineSpacing = 1.0;
 
   #vertices = [];
   #indices = [];
@@ -19,11 +21,8 @@ class RenderString {
   #transformable = new Transformable2D();
   #renderable = new Renderable();
 
-	constructor(font, text = "") {
-    if (font !== undefined) {
-      this.font = font;
-    }
-
+	constructor(font = null, text = "") {
+    this.font = font;
     this.text = text;
 	}
 
@@ -31,11 +30,15 @@ class RenderString {
   get text() { return this.#text; }
 
   get width() {
+    // in order to get an accurate width measurement
+    // we must have already generated our render
+    // strings vertices
+
     if (this.#vertices.length === 0) {
       this.#generateVerts();
     }
 
-    return this.#width;
+    return this.boundingBox.upper.x - this.boundingBox.lower.x;
   }
 
   get height() {
@@ -43,27 +46,47 @@ class RenderString {
       this.#generateVerts();
     }
 
-    return this.#height;
+    return this.boundingBox.upper.y - this.boundingBox.lower.y;
   }
 
   set font(font) {
+    // a change in font requires regenerating our
+    // render strings vertices
+
+    if (!(font instanceof AtlasFont) && font !== null) {
+      throw new TypeError("RenderString (font): font should be " +
+      "an AtlasFont, or null");
+    }
+
     this.#font = font;
     this.#vertices.splice(0);
   }
 
   set text(text) {
+    if (typeof text !== 'string') {
+      throw new TypeError("RenderString (text): text should be " +
+      "a String");
+    }
+
     this.#text = text;
     this.#vertices.splice(0);
   }
 
-
+  // transformable helpers
+  // error handling occurs in Transformable class
   get transformable() { return this.#transformable; }
   get position() { return this.#transformable.position; }
   get origin()   { return this.#transformable.origin;   }
   get transMat() { return this.#transformable.transMat; }
   get scale()    { return this.#transformable.scale;    }
   get rotation() { return this.#transformable.rotation; }
-  get boundingBox() { return this.#transformable.boundingBox; }
+  get boundingBox() {
+    if (this.#vertices.length === 0) {
+      this.#generateVerts();
+    }
+
+    return this.#transformable.boundingBox;
+  }
 
   set position(position) { this.#transformable.position = position; }
   set origin(origin)     { this.#transformable.origin = origin;     }
@@ -73,8 +96,10 @@ class RenderString {
   set boundingBox(boundingBox) {
     this.#transformable.boundingBox = boundingBox;
   }
+  //
 
-
+  // renderable helpers
+  // error handling occurs in Renderable class
   get renderable() { return this.#renderable; }
   get color() { return this.#renderable.color; }
   get alpha() { return this.#renderable.alpha; }
@@ -85,22 +110,28 @@ class RenderString {
   set alpha(alpha) { this.#renderable.alpha = alpha; }
   set depth(depth) { this.#renderable.depth = depth; }
   set shader(shader) { this.#renderable.shader = shader; }
+  //
 
   asData() {
-    let rbd = new RenderBatchData();
+    // generate our glyph vertices and then transform
+    // them using the properties of our transformable
+    // object
 
     this.#generateVerts();
 
+    let rbd = new RenderBatchData();
     let transMat = this.transformable.asMat3();
 
     for (let vert of this.#vertices) {
-      let vboVert = vert.getCopy();
-      let x = vboVert.x; let y = vboVert.y;
+      // create a copy of our glyph vertex as it contains
+      // texture information
 
-      vboVert.x = (transMat.arr[0] * x) +
-        (transMat.arr[3] * y) + transMat.arr[6];
-      vboVert.y = (transMat.arr[1] * x) +
-        (transMat.arr[4] * y) + transMat.arr[7];
+      let vboVert = vert.getCopy();
+
+      vboVert.x = (transMat.arr[0] * vert.x) +
+        (transMat.arr[3] * vert.y) + transMat.arr[6];
+      vboVert.y = (transMat.arr[1] * vert.x) +
+        (transMat.arr[4] * vert.y) + transMat.arr[7];
       vboVert.z = this.depth;
 
       vboVert.r = this.color.x; vboVert.g = this.color.y;
@@ -116,62 +147,130 @@ class RenderString {
   }
 
   #generateVerts() {
+    // if we don't already have any vertices generated then
+    // create quads by matching characters from our #text
+    // to the corresponding glyphs in our #font, then update
+    // width and height
+
+    // [!] text-align: align multi-line strings and strings with
+    //   a set width
+    // [!] word-wrap: a set width at which words will wrap to next
+    //   line
+    // [!] hyphenation: when wrapping words, split longer words with
+    //   a hyphen (if font has a matching glyph)
+
     if (this.#vertices.length === 0) {
       let indexCount = 0;
-      let cursor = 0;
-      let drop = 0;
+      let cursor = new Vec2(0, 0);
+      
+      let bbox = {
+        lower: new Vec2(0, 0),
+        upper: new Vec2(0, 0)
+      };
+
+      let prevGlyph = null;
 
       for (let char of this.#text) {
-        let glyph = this.#font.getGlyph(char);
+        if (char === " ") {
+          // (by not setting or unsetting prevGlyph here we kern
+          // based on last 'valid' glyph)
 
-        if (glyph !== undefined) {
-          let s = new Vec2(glyph.s.x * 65535, glyph.s.y * 65535);
-          let t = new Vec2(glyph.t.x * 65535, glyph.t.y * 65535);
-          let l = glyph.layer;
+          cursor.x += this.#font.advance + this.#wordSpacing;
+        } else if (char === "\n") {
+          // update the bounding box width before moving to a
+          // new line
+          
+          bbox.upper.x = Math.max(bbox.upper.x, cursor.x);
 
-          let w = glyph.width;
-          let h = glyph.height;
-          let b = glyph.bottom;
+          // reset cursor x position and decrease the y position,
+          // then unset previous glyph to disable kerning
 
-          this.#height = Math.max(this.#height, h);
-          drop = Math.max(drop, b);
+          cursor.x = 0;
+          cursor.y -= Math.round(this.#font.lineHeight * this.#lineSpacing);
+          prevGlyph = null;
+        } else {
+          let glyph = this.#font.getGlyph(char);
 
-          this.#vertices.push(new VBOVertex({
-            x: cursor, y: -b,
-            s: s.x, t: t.y, textureFlag: 1, textureLayer: l,
-          }));
+          if (glyph !== undefined) {
+            let s = new Vec2(glyph.s.x * 65535, glyph.s.y * 65535);
+            let t = new Vec2(glyph.t.x * 65535, glyph.t.y * 65535);
+            let l = glyph.layer;
 
-          this.#vertices.push(new VBOVertex({
-            x: cursor + w, y: -b,
-            s: s.y, t: t.y, textureFlag: 1, textureLayer: l,
-          }));
+            let w = glyph.width;
+            let h = glyph.height;
+            let b = glyph.bottom;
 
-          this.#vertices.push(new VBOVertex({
-            x: cursor + w, y: h - b,
-            s: s.y, t: t.x, textureFlag: 1, textureLayer: l,
-          }));
+            if (prevGlyph) {
+              // if this is not the first glyph on a line then
+              // account for any extra letter spacing and check
+              // for kerning with the previous glyph 
 
-          this.#vertices.push(new VBOVertex({
-            x: cursor, y: h - b,
-            s: s.x, t: t.x, textureFlag: 1, textureLayer: l,
-          }));
+              cursor.x += this.#letterSpacing;
 
-          cursor += w + 2;
+              let kern = this.#font.getKerning(prevGlyph.char + glyph.char);
+              if (kern) { cursor.x += kern; }
+            }
+            
+            // update the height of the bounding box accounting for
+            // multiple lines
+            // [!] upper will never be bigger on any line other than
+            // the first
+            // [!] lower will always be biggest on final line
+            
+            bbox.upper.y = Math.max(bbox.upper.y, glyph.top + cursor.y);
+            bbox.lower.y = Math.min(bbox.lower.y, -b + cursor.y);
 
-          this.#indices.push(indexCount    );
-          this.#indices.push(indexCount + 2);
-          this.#indices.push(indexCount + 1);
+            // calculate the vertices for the current quad then
+            // advance the cursor
 
-          this.#indices.push(indexCount + 2);
-          this.#indices.push(indexCount    );
-          this.#indices.push(indexCount + 3);
+            this.#vertices.push(new VBOVertex({
+              x: cursor.x, y: -b + cursor.y,
+              s: s.x, t: t.y, textureFlag: 1, textureLayer: l,
+            }));
 
-          indexCount += 4;
+            this.#vertices.push(new VBOVertex({
+              x: cursor.x + w, y: -b + cursor.y,
+              s: s.y, t: t.y, textureFlag: 1, textureLayer: l,
+            }));
+
+            this.#vertices.push(new VBOVertex({
+              x: cursor.x + w, y: (h - b) + cursor.y,
+              s: s.y, t: t.x, textureFlag: 1, textureLayer: l,
+            }));
+
+            this.#vertices.push(new VBOVertex({
+              x: cursor.x, y: (h - b)  + cursor.y,
+              s: s.x, t: t.x, textureFlag: 1, textureLayer: l,
+            }));
+
+            cursor.x += glyph.width;
+
+            // calculate the indices for the current quad then
+            // increment the counter
+
+            this.#indices.push(indexCount    );
+            this.#indices.push(indexCount + 2);
+            this.#indices.push(indexCount + 1);
+
+            this.#indices.push(indexCount + 2);
+            this.#indices.push(indexCount    );
+            this.#indices.push(indexCount + 3);
+
+            indexCount += 4;
+
+            // store the current glyph to allow for kerning
+            // with the next glyph (if necessary)
+
+            prevGlyph = glyph;
+          }
         }
       }
 
-      this.#width = (cursor === 0) ? 0 : cursor - 2;
-      this.#height += drop;
+      // update the bounding box width to account for the last
+      // line of text and set it
+
+      bbox.upper.x = Math.max(bbox.upper.x, cursor.x);
+      this.boundingBox = bbox;
     }
   }
 };
