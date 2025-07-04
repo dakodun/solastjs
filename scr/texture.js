@@ -61,7 +61,7 @@ class Texture {
   create(data = []) {
     this.init();
 
-    // is data an array? [!]
+    // [!] type-check data
 
     for (let datum of data) {
       this.width  = Math.max( this.width,  datum.width);
@@ -88,8 +88,10 @@ class Texture {
       GL.TEXTURE_MIN_FILTER, GL.NEAREST);
   }
 
-  // 
-  asShape() {
+  asShape(layerIn, sIn, tIn) {
+    // helper function that creates a simple shape (quad)
+    // and applies this texture as a frame
+
     let shp = new Shape();
 
     const w = this.width;
@@ -106,7 +108,12 @@ class Texture {
       2, 3, 0
     ];
 
-    shp.frames = [new Shape.Frame(this)];
+    shp.frames = [new Shape.Frame({
+      texture: this,
+      layer: layerIn,
+      s: sIn,
+      t: tIn,
+    })];
 
     return shp;
   }

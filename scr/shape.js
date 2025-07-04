@@ -18,23 +18,28 @@ class Shape extends Polygon {
 
       #s = new Vec2(0.0, 1.0);
       #t = new Vec2(1.0, 0.0);
+      #layer = 0;
 
       #limit = 0.0167;
     // ...
 
-    constructor(texture = null, s = new Vec2(0.0, 1.0),
-      t = new Vec2(1.0, 0.0), limit = 0) {
+    constructor(initializerList = {}) {
 
-      this.texture = texture;
-      this.s = s;
-      this.t = t;
-      this.limit = limit;
+      this.texture = (initializerList.texture !== undefined) ?
+        initializerList.texture : null;
+      
+      this.s = initializerList.s || new Vec2(0.0, 1.0);
+      this.t = initializerList.t || new Vec2(1.0, 0.0);
+      this.layer = initializerList.layer || 0;
+
+      this.limit = initializerList.limit || 0.0167;
     }
 
     //
       get texture() { return this.#texture; }
       get s() { return this.#s; }
       get t() { return this.#t; }
+      get layer() { return this.#layer; }
       get limit() { return this.#limit; }
 
       set texture(texture) {
@@ -64,6 +69,15 @@ class Shape extends Polygon {
         this.#t = t;
       }
 
+      set layer(layer) {
+        if (typeof layer !== 'number') {
+          throw new TypeError("Shape.Frame (layer): should " +
+            "be a Number");
+        }
+
+        this.#layer = layer;
+      }
+
       set limit(limit) {
         if (typeof limit !== 'number') {
           throw new TypeError("Shape.Frame (limit): should " +
@@ -84,6 +98,7 @@ class Shape extends Polygon {
 
       this.#s = other.#s.getCopy();
       this.#t = other.#t.getCopy();
+      this.#layer = other.#layer;
 
       this.#limit = other.#limit;
     }
@@ -106,6 +121,7 @@ class Shape extends Polygon {
 
         this.#s.equals(other.#s) &&
         this.#t.equals(other.#t) &&
+        this.#layer === other.#layer &&
 
         this.#limit === other.#limit
       );
@@ -441,12 +457,13 @@ class Shape extends Polygon {
     return false;
   }
 
-  pushFrame(texture) {
-    this.#frames.push(new Shape.Frame(texture));
-  }
-
-  pushFrameRect(texture, rect) {
-    this.#frames.push(new Shape.Frame(texture, rect[0], rect[1]));
+  pushFrame(textureIn, layerIn, sIn, tIn) {
+    this.#frames.push(new Shape.Frame({
+      texture: textureIn,
+      layer: layerIn,
+      s: sIn,
+      t: tIn,
+    }));
   }
 
   pushFrameStrip(texture, count, row = count, column = 1,
@@ -713,12 +730,9 @@ class Shape extends Polygon {
         break;
     }
 
-    let texRect = [new Vec2(0.0, 1.0), new Vec2(1.0, 0.0)];
-    let tex = null;
+    let frame = new Shape.Frame();
     if (this.currentFrame < this.#frames.length) {
-      texRect = [this.#frames[this.currentFrame].s,
-        this.#frames[this.currentFrame].t];
-      tex = this.#frames[this.currentFrame].texture.texture;
+      frame.copy(this.#frames[this.currentFrame]);
     }
 
     let transMat = this.transformable.asMat3();
@@ -776,12 +790,13 @@ class Shape extends Polygon {
       );
 
       // pack floating point values into unsigned short
-      vboVert.s = (((1 - ratio.x) * texRect[0].x) +
-        (ratio.x * texRect[1].x)) * 65535;
-      vboVert.t = (((1 - ratio.y) * texRect[0].y) +
-        (ratio.y * texRect[1].y)) * 65535;
+      vboVert.s = (((1 - ratio.x) * frame.s.x) +
+        (ratio.x * frame.t.x)) * 65535;
+      vboVert.t = (((1 - ratio.y) * frame.s.y) +
+        (ratio.y * frame.t.y)) * 65535;
+      vboVert.textureLayer = frame.layer;
       
-      if (tex) {
+      if (frame.texture && frame.texture.texture) {
         vboVert.textureFlag = 1;
       }
 
@@ -792,7 +807,7 @@ class Shape extends Polygon {
     rbd.vertices = vboVerts;
     rbd.indices = this.#indices.slice();
     rbd.renderMode = renderMode;
-    rbd.textureRef = tex;
+    rbd.textureRef = (frame.texture) ? frame.texture.texture : null;
     rbd.depth = this.depth;
 
     return [rbd];
@@ -807,114 +822,6 @@ class Shape extends Polygon {
     super.pushVerts(verts);
     this.#indices.splice(0, this.#indices.length);
   }
-
-  /* fromText(text, font, fontSize, width = 0) {
-    if (typeof text !== 'string') {
-      throw new TypeError("Shape (fromText): text should be a String");
-    } else if (!(font instanceof Font)) {
-      throw new TypeError("Shape (fromText): font should be a Font");
-    } else if (typeof fontSize !== 'number') {
-      throw new TypeError("Shape (fromText): fontSize should be a Number");
-    } else if (typeof width !== 'number') {
-      throw new TypeError("Shape (fromText): width should be a Number");
-    }
-
-    let textArr = text.split("\n");
-
-    // set up a temporary canvas used solely for text measuring...
-    let cnv = new OffscreenCanvas(1, 1);
-    let ctx = cnv.getContext("2d", { alpha: true });
-
-    let fontFamily = font.family;
-    ctx.font = fontSize + "px " + fontFamily;
-    // ...
-
-    // split text according to width (if any)...
-    let lines = {
-      arr: new Array(),
-      width: 0,
-    }
-
-    for (const txt of textArr) {
-      // calculate the width of the entire line
-      let txtMet = ctx.measureText(txt);
-      let txtWidth = txtMet.actualBoundingBoxRight +
-        txtMet.actualBoundingBoxLeft;
-
-      if (width <= 0) {
-        // no maximum width supplied (or is negative which is
-        // invalid) so just add the whole line
-        lines.arr.push(txt);
-        lines.width = Math.max(lines.width, txtWidth);
-      } else {
-        if (txtWidth <= width) {
-          // add entire line if it fits
-          lines.arr.push(txt);
-          lines.width = Math.max(lines.width, txtWidth);
-        } else {
-          let words = txt.split(' ');
-          let str = "";
-
-          for (const word of words) {
-            txtMet = ctx.measureText(str + word);
-            txtWidth = txtMet.actualBoundingBoxRight +
-              txtMet.actualBoundingBoxLeft;
-
-            if (txtWidth <= width) {
-              // add current word to current string if it fits
-              str += word + " ";
-            } else {
-              if (str === "") {
-                //  current word will never fit so just add it
-                lines.arr.push(word);
-                lines.width = Math.max(lines.width, txtWidth);
-              } else {
-                // add current string minus extra space at end
-                // and set to current word
-                lines.arr.push(str.substring(0, str.length - 1));
-                lines.width = Math.max(lines.width, txtWidth);
-                str = word + " ";
-              }
-            }
-          }
-
-          if (str !== "") {
-            // add leftover string if not empty
-            lines.arr.push(str);
-            lines.width = Math.max(lines.width, txtWidth);
-          }
-        }
-      }
-    }
-
-    // resize the canvas for rendering...
-    cnv.width = lines.width;
-    cnv.height = fontSize * lines.arr.length;
-
-    ctx.font = fontSize + "px " + fontFamily;
-    ctx.textBaseline = "bottom";
-    ctx.fillStyle = "#FFFFFF";
-    // ...
-
-    // render the text to the canvas, copy it over to a texture
-    // and then recreate this shape from it...
-    let y = 1;
-    for (let l of lines.arr) {
-      // [!] alignment?
-
-      let w = 0;
-      let h = fontSize * y;
-
-      ctx.fillText(l, w, h);
-      
-      ++y;
-    }
-
-    let tex = new Texture();
-    tex.createImage(cnv);
-    this.copy(tex.asShape());
-    // ...
-  } */
   // ...public methods
 
 
