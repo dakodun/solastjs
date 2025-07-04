@@ -9,14 +9,22 @@ class AtlasFont {
     #top    = 0;
     #right  = 0;
     #bottom = 0;
+
+    #width   = 0;
+    #height  = 0;
+    #advance = 0;
     
-    constructor(char, left, top, right, bottom) {
+    constructor(char, left, top, right, bottom, width, height, advance) {
       this.#char = char;
 
       this.#left   = left;
       this.#top    = top;
       this.#right  = right;
       this.#bottom = bottom;
+
+      this.#width = width;
+      this.#height = height;
+      this.#advance = advance;
     }
 
     get char() { return this.#char; }
@@ -25,9 +33,11 @@ class AtlasFont {
     get top()    { return this.#top;    }
     get right()  { return this.#right;  }
     get bottom() { return this.#bottom; }
+    
 
-    get width()  { return this.right + this.left; }
-    get height() { return this.top + this.bottom; }
+    get width()   { return this.#width;   }
+    get height()  { return this.#height;  }
+    get advance() { return this.#advance; }
   }
 
   static Layer = class {
@@ -169,8 +179,12 @@ class AtlasFont {
 
 
   #glyphMap = new Map();
+  #kerningMap = new Map();
 
-  layers = [];
+  #advance = -1;
+  #lineHeight = -1;
+
+  #layers = [];
   #layerWidth = 512;
   #layerHeight = 512;
   #layerTolerance = 0.1;
@@ -181,15 +195,15 @@ class AtlasFont {
     this.#layerHeight = height
 	}
 
-  get texture() {
-    // [!] cached?
-    // create a 2d texture from all of our layers
+  get advance() { return this.#advance; }
+  get lineHeight() { return this.#lineHeight; }
 
+  get texture() {
     if (this.#texture === null) {
       this.#texture = new Texture();
       
       let arr = [];
-      for (let layer of this.layers) {
+      for (let layer of this.#layers) {
         arr.push(layer.canvas);
       }
 
@@ -202,6 +216,30 @@ class AtlasFont {
   async generateGlyphs(fontFamily, fontSize, charSet) {
     if (!(charSet instanceof Array)) {
       throw new TypeError("bad charset");
+    }
+
+    let cnv = new OffscreenCanvas(1, 1);
+    let ctx = cnv.getContext("2d");
+    ctx.font = fontSize + "px " + fontFamily;
+
+    if (this.#advance < 0) {
+      // calculate the advance amount of the space
+      // character
+
+      let txtMetrics = ctx.measureText(" ");
+      let left  = txtMetrics.actualBoundingBoxLeft;
+      let right = Math.round(txtMetrics.width);
+      this.#advance = (right + left);
+    }
+
+    if (this.#lineHeight < 0) {
+      // calculate the height of the new line
+      // character
+      
+      let txtMetrics = ctx.measureText("");
+      let top    = txtMetrics.fontBoundingBoxAscent;
+      let bottom = txtMetrics.fontBoundingBoxDescent;
+      this.#lineHeight = (top + bottom);
     }
 
     for (let inChar of charSet) {
@@ -219,36 +257,28 @@ class AtlasFont {
         // then iterate all individual characters in
         // that string and create the corresponding glyph
 
-        let cnv = new OffscreenCanvas(1, 1);
-        let ctx = cnv.getContext("2d");
-        ctx.font = fontSize + "px " + fontFamily;
-
         for (let char of outChar) {
           if (this.#glyphMap.get(char) === undefined) {
             // get the metrics associated with the current
-            // character and create a glyph object from them
-            // (account for instances where visible width
-            // is zero - like with the space character - but
-            // we want to use the width metric value)
-
+            // character, create a glyph object from them
+            // and calculate kerning value with exisiting
+            // glyphs
+            
             let txtMetrics = ctx.measureText(char);
+            let left   = txtMetrics.actualBoundingBoxLeft;
+            let top    = txtMetrics.actualBoundingBoxAscent;
+            let right  = txtMetrics.actualBoundingBoxRight;
+            let bottom = txtMetrics.actualBoundingBoxDescent;
             
-            let left = txtMetrics.actualBoundingBoxLeft;
-            let right = txtMetrics.actualBoundingBoxRight;
-            let width = Math.round(txtMetrics.width);
-            if (left === right && width !== 0) {
-              right = width;
-            }
-            
-            let glyph = new AtlasFont.Glyph(
-              char,
-              left,
-              txtMetrics.actualBoundingBoxAscent,
-              right,
-              txtMetrics.actualBoundingBoxDescent
-            );
+            let glyph = new AtlasFont.Glyph( char, left, top, right,
+              bottom, (right + left), (top + bottom), txtMetrics.width);
 
             if (this.#renderGlyph(fontFamily, fontSize, glyph)) {
+              // after rendering glyph succesfully we can
+              // calculate kerning values and add it to the
+              // glyph map
+
+              this.#generateKerning(ctx, glyph);
               this.#glyphMap.set(char, glyph);
             }
           }
@@ -259,6 +289,10 @@ class AtlasFont {
 
   getGlyph(char) {
     return this.#glyphMap.get(char);
+  }
+
+  getKerning(pair) {
+    return this.#kerningMap.get(pair);
   }
 
   #renderGlyph(fontFamily, fontSize, glyph) {
@@ -275,17 +309,49 @@ class AtlasFont {
       return false;
     }
 
-    for (let layer of this.layers) {
+    for (let layer of this.#layers) {
       if (layer.renderGlyph(glyph)) {
         return true;
       }
     }
 
-    this.layers.push(new AtlasFont.Layer(this.#layerWidth,
+    this.#layers.push(new AtlasFont.Layer(this.#layerWidth,
       this.#layerHeight, fontFamily, fontSize,
-      this.#layerTolerance * fontSize, this.layers.length));
+      this.#layerTolerance * fontSize, this.#layers.length));
     
-    return this.layers.at(-1).renderGlyph(glyph);
+    return this.#layers.at(-1).renderGlyph(glyph);
+  }
+
+  #generateKerning(ctx, glyph) {
+    // [!] if needed, we can reduce map size by ignoring most
+    // popular kerning gap and use that as a default
+
+    for (const [key, value] of this.#glyphMap) {
+      // create a kerning table between this glyph and all
+      // current glyphs - in both directions ('ab' and 'ba')
+
+      let pair = glyph.char + key;
+      let metr = ctx.measureText(pair);
+      let w = metr.actualBoundingBoxRight +
+        metr.actualBoundingBoxLeft;
+      let kern = Math.round(w  - (value.width + glyph.width));
+      this.#kerningMap.set(pair, kern);
+
+      pair = key + glyph.char;
+      metr = ctx.measureText(pair);
+      w = metr.actualBoundingBoxRight +
+        metr.actualBoundingBoxLeft;
+      kern = Math.round(w  - (value.width + glyph.width));
+      this.#kerningMap.set(pair, kern);
+    }
+
+    // Bitter bellflowers bloomed between bannered burrows -
+    // don't forget to kern the newest glyph with itself!
+    let pair = glyph.char + glyph.char;
+    let metr = ctx.measureText(pair);
+    let w = metr.actualBoundingBoxRight + metr.actualBoundingBoxLeft;
+    let kern = Math.round(w  - (2 * glyph.width));
+    this.#kerningMap.set(pair, kern);
   }
 };
 
