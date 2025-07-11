@@ -1,7 +1,7 @@
-import AC, {acSetContext} from '../../../scr/ac.js';
-import GL, {glSetContext} from '../../../scr/gl.js';
-import GLStates from '../../../scr/glstates.js';
-import * as sol from '../../../scr/exports.js';
+import AC, {acSetContext} from '../../../src/ac.js';
+import GL, {glSetContext} from '../../../src/gl.js';
+import GLStates from '../../../src/glstates.js';
+import * as sol from '../../../src/exports.js';
 
 var APP = new sol.App();
 
