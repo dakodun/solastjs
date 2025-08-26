@@ -183,6 +183,7 @@ class AtlasFont {
 
   #advance = -1;
   #lineHeight = -1;
+  #hyphen = -1;
 
   #layers = [];
   #layerWidth = 512;
@@ -197,6 +198,7 @@ class AtlasFont {
 
   get advance() { return this.#advance; }
   get lineHeight() { return this.#lineHeight; }
+  get hyphen() { return this.#hyphen; }
 
   get texture() {
     if (this.#texture === null) {
@@ -240,6 +242,16 @@ class AtlasFont {
       let top    = txtMetrics.fontBoundingBoxAscent;
       let bottom = txtMetrics.fontBoundingBoxDescent;
       this.#lineHeight = (top + bottom);
+    }
+
+    if (this.#hyphen < 0) {
+      // calculate the width of the hyphen character
+      // for use in word wrapping
+
+      let txtMetrics = ctx.measureText("-");
+      let left  = txtMetrics.actualBoundingBoxLeft;
+      let right = Math.round(txtMetrics.width);
+      this.#hyphen = (right + left);
     }
 
     for (let inChar of charSet) {
