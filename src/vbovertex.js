@@ -17,10 +17,11 @@ class VBOVertex {
     this.y = initializerList.y || 0.0;
     this.z = initializerList.z || 0.0;
 
-    this.r = 255; // (4 1-byte)
-    this.g = 255;
-    this.b = 255;
-    this.a = 255;
+    // (4 1-byte)
+    this.r = initializerList.r || 255;
+    this.g = initializerList.g || 255;
+    this.b = initializerList.b || 255;
+    this.a = initializerList.a || 255;
 
     // (2 2-byte)
     this.s = initializerList.s || 0.0;
