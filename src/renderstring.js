@@ -8,53 +8,53 @@ import VBOVertex from './vbovertex.js';
 import Vec2 from './vec2.js';
 
 class RenderString {
-  #font = null;
-  #text = "";
+  _font = null;
+  _text = "";
 
-  #letterSpacing = 0;
-  #wordSpacing = 0;
-  #lineSpacing = 1.0;
-  #fontScale = 1.0;
-  #maxWidth = 0;
-  #hyphenate = false;
-  #align = "left";
+  _letterSpacing = 0;
+  _wordSpacing = 0;
+  _lineSpacing = 1.0;
+  _fontScale = 1.0;
+  _maxWidth = 0;
+  _hyphenate = false;
+  _align = "left";
 
-  #vertices = [];
-  #indices = [];
+  _vertices = [];
+  _indices = [];
   
-  #transformable = new Transformable2D();
-  #renderable = new Renderable();
+  _transformable = new Transformable2D();
+  _renderable = new Renderable();
 
 	constructor(font = null, text = "") {
     this.font = font;
     this.text = text;
 	}
 
-  get font() { return this.#font; }
-  get text() { return this.#text; }
-  get letterSpacing() { return this.#letterSpacing; }
-  get wordSpacing() { return this.#wordSpacing; }
-  get lineSpacing() { return this.#lineSpacing; }
-  get fontScale() { return this.#fontScale; }
-  get maxWidth() { return this.#maxWidth; }
-  get hyphenate() { return this.#hyphenate; }
-  get align() { return this.#align; }
+  get font() { return this._font; }
+  get text() { return this._text; }
+  get letterSpacing() { return this._letterSpacing; }
+  get wordSpacing() { return this._wordSpacing; }
+  get lineSpacing() { return this._lineSpacing; }
+  get fontScale() { return this._fontScale; }
+  get maxWidth() { return this._maxWidth; }
+  get hyphenate() { return this._hyphenate; }
+  get align() { return this._align; }
 
   get width() {
     // in order to get an accurate width measurement
     // we must have already generated our render
     // strings vertices
 
-    if (this.#vertices.length === 0) {
-      this.#generateVerts();
+    if (this._vertices.length === 0) {
+      this._generateVerts();
     }
 
     return this.boundingBox.upper.x - this.boundingBox.lower.x;
   }
 
   get height() {
-    if (this.#vertices.length === 0) {
-      this.#generateVerts();
+    if (this._vertices.length === 0) {
+      this._generateVerts();
     }
 
     return this.boundingBox.upper.y - this.boundingBox.lower.y;
@@ -69,9 +69,9 @@ class RenderString {
       "an AtlasFont, or null");
     }
 
-    this.#font = font;
-    this.#vertices.splice(0);
-    this.#indices.splice(0);
+    this._font = font;
+    this._vertices.splice(0);
+    this._indices.splice(0);
   }
 
   set text(text) {
@@ -80,9 +80,9 @@ class RenderString {
       "a String");
     }
 
-    this.#text = text;
-    this.#vertices.splice(0);
-    this.#indices.splice(0);
+    this._text = text;
+    this._vertices.splice(0);
+    this._indices.splice(0);
   }
 
   set maxWidth(maxWidth) {
@@ -91,15 +91,15 @@ class RenderString {
       "be a Number");
     }
 
-    this.#maxWidth = (maxWidth > 0) ? maxWidth : 0;
-    this.#vertices.splice(0);
-    this.#indices.splice(0);
+    this._maxWidth = (maxWidth > 0) ? maxWidth : 0;
+    this._vertices.splice(0);
+    this._indices.splice(0);
   }
 
   set hyphenate(hyphenate) {
-    this.#hyphenate = hyphenate;
-    this.#vertices.splice(0);
-    this.#indices.splice(0);
+    this._hyphenate = hyphenate;
+    this._vertices.splice(0);
+    this._indices.splice(0);
   }
 
   set align(align) {
@@ -108,50 +108,50 @@ class RenderString {
       "be a String (left, center, right, or justify)");
     }
 
-    this.#align = (align === "center" || align === "right" ||
+    this._align = (align === "center" || align === "right" ||
       align === "justify") ? align : "left";
-    this.#vertices.splice(0);
-    this.#indices.splice(0);
+    this._vertices.splice(0);
+    this._indices.splice(0);
   }
 
   // transformable helpers
   // error handling occurs in Transformable class
-  get transformable() { return this.#transformable; }
-  get position() { return this.#transformable.position; }
-  get origin()   { return this.#transformable.origin;   }
-  get transMat() { return this.#transformable.transMat; }
-  get scale()    { return this.#transformable.scale;    }
-  get rotation() { return this.#transformable.rotation; }
+  get transformable() { return this._transformable; }
+  get position() { return this._transformable.position; }
+  get origin()   { return this._transformable.origin;   }
+  get transMat() { return this._transformable.transMat; }
+  get scale()    { return this._transformable.scale;    }
+  get rotation() { return this._transformable.rotation; }
   get boundingBox() {
-    if (this.#vertices.length === 0) {
-      this.#generateVerts();
+    if (this._vertices.length === 0) {
+      this._generateVerts();
     }
 
-    return this.#transformable.boundingBox;
+    return this._transformable.boundingBox;
   }
 
-  set position(position) { this.#transformable.position = position; }
-  set origin(origin)     { this.#transformable.origin = origin;     }
-  set transMat(transMat) { this.#transformable.transMat = transMat; }
-  set scale(scale)       { this.#transformable.scale = scale;       }
-  set rotation(rotation) { this.#transformable.rotation = rotation; }
+  set position(position) { this._transformable.position = position; }
+  set origin(origin)     { this._transformable.origin = origin;     }
+  set transMat(transMat) { this._transformable.transMat = transMat; }
+  set scale(scale)       { this._transformable.scale = scale;       }
+  set rotation(rotation) { this._transformable.rotation = rotation; }
   set boundingBox(boundingBox) {
-    this.#transformable.boundingBox = boundingBox;
+    this._transformable.boundingBox = boundingBox;
   }
   //
 
   // renderable helpers
   // error handling occurs in Renderable class
-  get renderable() { return this.#renderable; }
-  get color() { return this.#renderable.color; }
-  get alpha() { return this.#renderable.alpha; }
-  get depth() { return this.#renderable.depth; }
-  get shader() { return this.#renderable.shader; }
+  get renderable() { return this._renderable; }
+  get color() { return this._renderable.color; }
+  get alpha() { return this._renderable.alpha; }
+  get depth() { return this._renderable.depth; }
+  get shader() { return this._renderable.shader; }
 
-  set color(color) { this.#renderable.color = color; }
-  set alpha(alpha) { this.#renderable.alpha = alpha; }
-  set depth(depth) { this.#renderable.depth = depth; }
-  set shader(shader) { this.#renderable.shader = shader; }
+  set color(color) { this._renderable.color = color; }
+  set alpha(alpha) { this._renderable.alpha = alpha; }
+  set depth(depth) { this._renderable.depth = depth; }
+  set shader(shader) { this._renderable.shader = shader; }
   //
 
   asData() {
@@ -159,12 +159,12 @@ class RenderString {
     // them using the properties of our transformable
     // object
 
-    this.#generateVerts();
+    this._generateVerts();
 
     let rbd = new RenderBatchData();
     let transMat = this.transformable.asMat3();
 
-    for (let vert of this.#vertices) {
+    for (let vert of this._vertices) {
       // create a copy of our glyph vertex as it contains
       // texture information
 
@@ -182,29 +182,29 @@ class RenderString {
       rbd.vertices.push(vboVert);
     }
 
-    rbd.indices = this.#indices.slice();
-    rbd.textureRef = this.#font.texture.texture;
+    rbd.indices = this._indices.slice();
+    rbd.textureRef = this._font.texture.texture;
 
     return [rbd];
   }
 
-  #generateVerts() {
+  _generateVerts() {
     // if we don't already have any vertices generated then
-    // create quads by matching characters from our #text
-    // to the corresponding glyphs in our #font, then update
+    // create quads by matching characters from our text
+    // to the corresponding glyphs in our font, then update
     // width and height
 
-    if (this.#vertices.length === 0) {
-      let lines = this.#preParse();
+    if (this._vertices.length === 0) {
+      let lines = this._preParse();
 
       let indexCount = 0;
       let height = (lines.length - 1) *
-        (this.#font.lineHeight * this.#lineSpacing);
+        (this._font.lineHeight * this._lineSpacing);
       let cursor = new Vec2(0, height);
       
       let bbox = {
         lower: new Vec2(0, 0),
-        upper: new Vec2(this.#maxWidth, height),
+        upper: new Vec2(this._maxWidth, height),
       };
       
       let prevGlyph = null;
@@ -219,14 +219,14 @@ class RenderString {
         // different text alignment (essentially, space before line
         // and space between words)
 
-        if (this.#maxWidth > 0) {
-          align.left = (this.#align === "right")
-            ? (this.#maxWidth - line.width) : (this.#align === "center")
-            ? (this.#maxWidth - line.width) * 0.5 : 0
+        if (this._maxWidth > 0) {
+          align.left = (this._align === "right")
+            ? (this._maxWidth - line.width) : (this._align === "center")
+            ? (this._maxWidth - line.width) * 0.5 : 0
           
-          align.space = (this.#align === "justify" &&
+          align.space = (this._align === "justify" &&
             line.count > 1 && line.justify)
-            ? (this.#maxWidth - line.width) / (line.count - 1) : 0
+            ? (this._maxWidth - line.width) / (line.count - 1) : 0
         }
 
         cursor.x = align.left;
@@ -236,10 +236,10 @@ class RenderString {
             // (by not setting or unsetting prevGlyph here we kern
             // based on last 'valid' glyph)
 
-            cursor.x += this.#font.advance + this.#wordSpacing;
+            cursor.x += this._font.advance + this._wordSpacing;
             cursor.x += align.space;
           } else {
-            let glyph = this.#font.getGlyph(char);
+            let glyph = this._font.getGlyph(char);
 
             if (glyph !== undefined) {
               let s = new Vec2(glyph.s.x * 65535, glyph.s.y * 65535);
@@ -255,9 +255,9 @@ class RenderString {
                 // account for any extra letter spacing and check
                 // for kerning with the previous glyph 
 
-                cursor.x += this.#letterSpacing;
+                cursor.x += this._letterSpacing;
 
-                let kern = this.#font.getKerning(prevGlyph.char + glyph.char);
+                let kern = this._font.getKerning(prevGlyph.char + glyph.char);
                 if (kern) { cursor.x += kern; }
               }
               
@@ -273,22 +273,22 @@ class RenderString {
               let curs = new Vec2(Math.round(cursor.x),
                 Math.round(cursor.y));
 
-              this.#vertices.push(new VBOVertex({
+              this._vertices.push(new VBOVertex({
                 x: curs.x, y: -b + curs.y,
                 s: s.x, t: t.y, textureFlag: 1, textureLayer: l,
               }));
 
-              this.#vertices.push(new VBOVertex({
+              this._vertices.push(new VBOVertex({
                 x: curs.x + w, y: -b + curs.y,
                 s: s.y, t: t.y, textureFlag: 1, textureLayer: l,
               }));
 
-              this.#vertices.push(new VBOVertex({
+              this._vertices.push(new VBOVertex({
                 x: curs.x + w, y: (h - b) + curs.y,
                 s: s.y, t: t.x, textureFlag: 1, textureLayer: l,
               }));
 
-              this.#vertices.push(new VBOVertex({
+              this._vertices.push(new VBOVertex({
                 x: curs.x, y: (h - b)  + curs.y,
                 s: s.x, t: t.x, textureFlag: 1, textureLayer: l,
               }));
@@ -298,13 +298,13 @@ class RenderString {
               // calculate the indices for the current quad then
               // increment the counter
 
-              this.#indices.push(indexCount    );
-              this.#indices.push(indexCount + 2);
-              this.#indices.push(indexCount + 1);
+              this._indices.push(indexCount    );
+              this._indices.push(indexCount + 2);
+              this._indices.push(indexCount + 1);
 
-              this.#indices.push(indexCount + 2);
-              this.#indices.push(indexCount    );
-              this.#indices.push(indexCount + 3);
+              this._indices.push(indexCount + 2);
+              this._indices.push(indexCount    );
+              this._indices.push(indexCount + 3);
 
               indexCount += 4;
 
@@ -325,7 +325,7 @@ class RenderString {
         // then unset previous glyph to disable kerning
 
         cursor.x = 0;
-        cursor.y -= this.#font.lineHeight * this.#lineSpacing;
+        cursor.y -= this._font.lineHeight * this._lineSpacing;
         prevGlyph = null;
       }
 
@@ -340,8 +340,8 @@ class RenderString {
     }
   }
 
-  #preParse () {
-    let input = this.#text + " ";
+  _preParse () {
+    let input = this._text + " ";
     let output = new Array();
 
     let prevGlyph = null;
@@ -360,7 +360,7 @@ class RenderString {
     };
 
     let hyphenLimit = 3;
-    let hyphenWidth = this.#font.hyphen;
+    let hyphenWidth = this._font.hyphen;
 
     for (let char of input) {
       if (char === " " || char === "\n") {
@@ -384,7 +384,7 @@ class RenderString {
           // to split the word, otherwise move entire word to a
           // new line
 
-          if (this.#hyphenate &&
+          if (this._hyphenate &&
               (pre >= hyphenLimit && post >= hyphenLimit)) {
             
             output.push({
@@ -441,7 +441,7 @@ class RenderString {
         if (char === " ") {
           line += " ";
 
-          widthGap  = this.#font.advance + this.#wordSpacing;
+          widthGap  = this._font.advance + this._wordSpacing;
           ++wordCount;
         } else {
           output.push({
@@ -459,7 +459,7 @@ class RenderString {
 
         widthCurr = 0;
       } else {
-        let glyph = this.#font.getGlyph(char);
+        let glyph = this._font.getGlyph(char);
         let widthChar = 0;
 
         if (glyph !== undefined) {
@@ -467,11 +467,11 @@ class RenderString {
           // character takes up accounting for
           // kerning and other font settings
 
-          widthChar += glyph.width * this.#fontScale;
+          widthChar += glyph.width * this._fontScale;
 
           if (prevGlyph !== null) {
-            widthChar += this.#letterSpacing;
-            let kern = this.#font.getKerning(prevGlyph.char +
+            widthChar += this._letterSpacing;
+            let kern = this._font.getKerning(prevGlyph.char +
                 glyph.char);
             
             if (kern !== undefined) {
@@ -483,22 +483,22 @@ class RenderString {
         }
 
 
-        if (this.#maxWidth > 0 && wrap.required === false) {
+        if (this._maxWidth > 0 && wrap.required === false) {
           // if a word wrap is enabled (via fixed width)
           // and we haven't yet deduced if it is necessary
           // for the current word
 
           let width = widthLine + widthGap + widthCurr + widthChar;
 
-          if (this.#hyphenate && wrap.index < 0 &&
-              width + hyphenWidth > this.#maxWidth) {
+          if (this._hyphenate && wrap.index < 0 &&
+              width + hyphenWidth > this._maxWidth) {
             // find the point at which we can hyphenate
             // (split the word but still fit a hyphen in)
 
             wrap.index = word.length;
           }
 
-          if (width > this.#maxWidth) {
+          if (width > this._maxWidth) {
             // if whole word doesn't fit it needs to
             // be wrapped
 
