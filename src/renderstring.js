@@ -218,7 +218,6 @@ class RenderString {
         // if a max width is set then we should account for
         // different text alignment (essentially, space before line
         // and space between words)
-
         if (this._maxWidth > 0) {
           align.left = (this._align === "right")
             ? (this._maxWidth - line.width) : (this._align === "center")
@@ -258,18 +257,15 @@ class RenderString {
                 cursor.x += this._letterSpacing;
 
                 let kern = this._font.getKerning(prevGlyph.char + glyph.char);
-                if (kern) { cursor.x += kern; }
+                cursor.x += (kern !== undefined) ? kern : 0;
               }
               
               // update the height of the bounding box accounting for
               // multiple lines
-
               bbox.upper.y = Math.max(bbox.upper.y, cursor.y + glyph.top);
-              // bbox.lower.y = Math.min(bbox.lower.y, -b + cursor.y);
 
               // calculate the vertices for the current quad then
               // advance the cursor
-
               let curs = new Vec2(Math.round(cursor.x),
                 Math.round(cursor.y));
 
@@ -297,7 +293,6 @@ class RenderString {
 
               // calculate the indices for the current quad then
               // increment the counter
-
               this._indices.push(indexCount    );
               this._indices.push(indexCount + 2);
               this._indices.push(indexCount + 1);
@@ -310,7 +305,6 @@ class RenderString {
 
               // store the current glyph to allow for kerning
               // with the next glyph (if necessary)
-
               prevGlyph = glyph;
             }
           }
@@ -318,12 +312,10 @@ class RenderString {
 
         // update the bounding box width before moving to a
         // new line
-        
         bbox.upper.x = Math.max(bbox.upper.x, cursor.x);
 
         // reset cursor x position and decrease the y position,
         // then unset previous glyph to disable kerning
-
         cursor.x = 0;
         cursor.y -= this._font.lineHeight * this._lineSpacing;
         prevGlyph = null;
@@ -331,7 +323,6 @@ class RenderString {
 
       // update the bounding box width to account for the last
       // line of text, round values, and then set it
-
       bbox.upper.x = Math.max(bbox.upper.x, cursor.x);
 
       this.boundingBox.upper = new Vec2(
@@ -340,192 +331,206 @@ class RenderString {
     }
   }
 
-  _preParse () {
-    let input = this._text + " ";
-    let output = new Array();
+  _preParse() {
+    let linesIn = new Array();
+    let linesOut = new Array();
 
-    let prevGlyph = null;
-    let widthCurr = 0;
-    let widthLine = 0;
-    let widthGap  = 0;
-    let word = "";
-    let line = "";
-    let wordCount = 0;
-    
-    let wrap = {
-      required: false,
-      
-      index: -1,
-      widths: new Array(),
-    };
-
-    let hyphenLimit = 3;
-    let hyphenWidth = this._font.hyphen;
-
-    for (let char of input) {
-      if (char === " " || char === "\n") {
-        if (wrap.required === true) {
-          // adjust the hyphenation indices to ensure number
-          // of characters after the hyphen is greater than
-          // the hyphenLimit
-
-          let pre = wrap.index;
-          let post = (word.length - wrap.index);
-          if (post < hyphenLimit) {
-            let diff = hyphenLimit - post;
-            
-            if (pre - diff >= hyphenLimit) {
-              pre  -= diff;
-              post += diff;
-            }
-          }
-
-          // if hyphenation is desired and suitable then attempt
-          // to split the word, otherwise move entire word to a
-          // new line
-
-          if (this._hyphenate &&
-              (pre >= hyphenLimit && post >= hyphenLimit)) {
-            
-            output.push({
-              text: line + word.substring(0, pre) + "-",
-              count: wordCount + 1,
-              width: widthLine + widthGap +
-                  wrap.widths[pre] + hyphenWidth,
-              justify: true,
-            });
-            
-            // set current word and length to the part that is
-            // after the hyphen (and on the new line)
-
-            word = word.substring(pre);
-            widthCurr = widthCurr - wrap.widths[pre];
-
-            // [!] leftover word could still be too long and
-            // could be hyphenated again
-          } else {
-            output.push({
-              text: line.trimEnd(),
-              count: wordCount,
-              width: widthLine,
-              justify: true,
-            });
-
-            prevGlyph = null;
-          }
-
-          // reset current line (we've set current word and width
-          // to account for what we've moved onto next line which
-          // will be dealt with later)
-
-          line = "";
-          widthLine = 0;
-          widthGap  = 0;
-          wordCount = 0;
-        }
-
-        // as we're moving onto a new word we need to reset the word
-        // wrap status, add the current word to the current line and
-        // then reset it, and then handle the space or newline
-        // charactrer as appropiate
-
-        wrap.required = false;
-        wrap.index = -1;
-        wrap.widths.splice(0);
-
-        line += word;
-        word = "";
-
-        widthLine += widthGap + widthCurr;
-
-        if (char === " ") {
-          line += " ";
-
-          widthGap  = this._font.advance + this._wordSpacing;
-          ++wordCount;
-        } else {
-          output.push({
-            text: line.trimEnd(),
-            count: wordCount + 1,
-            width: widthLine,
-            justify: false,
-          });
-
-          line = "";
-          widthLine = 0;
-          widthGap  = 0;
-          wordCount = 0;
-        }
-
-        widthCurr = 0;
-      } else {
-        let glyph = this._font.getGlyph(char);
-        let widthChar = 0;
-
-        if (glyph !== undefined) {
-          // calculate the width that the current
-          // character takes up accounting for
-          // kerning and other font settings
-
-          widthChar += glyph.width * this._fontScale;
-
-          if (prevGlyph !== null) {
-            widthChar += this._letterSpacing;
-            let kern = this._font.getKerning(prevGlyph.char +
-                glyph.char);
-            
-            if (kern !== undefined) {
-              widthChar += kern;
-            }
-          }
-
-          prevGlyph = glyph;
-        }
-
-
-        if (this._maxWidth > 0 && wrap.required === false) {
-          // if a word wrap is enabled (via fixed width)
-          // and we haven't yet deduced if it is necessary
-          // for the current word
-
-          let width = widthLine + widthGap + widthCurr + widthChar;
-
-          if (this._hyphenate && wrap.index < 0 &&
-              width + hyphenWidth > this._maxWidth) {
-            // find the point at which we can hyphenate
-            // (split the word but still fit a hyphen in)
-
-            wrap.index = word.length;
-          }
-
-          if (width > this._maxWidth) {
-            // if whole word doesn't fit it needs to
-            // be wrapped
-
-            wrap.required = true;
-          }
-
-          // store the width of the current word
-          wrap.widths.push(widthCurr);
-        }
-
-        widthCurr += widthChar;
-        word += char;
-      }
-    }
-
-    // add any remaining text as the final line
-    line = line.trimEnd();
-    if (line !== "") {
-      output.push({
-        text: line,
-        count: wordCount,
-        width: widthLine,
-        justify: false,
+    // split the text firstly into individual lines (at newline
+    // character) and then further into individual words (at space)
+    if (this._text !== "") {
+      let lines = this._text.split("\n");
+      lines.forEach((ele, ind, arr) => {
+        linesIn.push(ele.split(" "));
       });
     }
-    
-    return output;
+
+    let hyphenWidth = this._font.hyphen;
+    let lineCurr = {text: "", width: 0, justify: true, count: 0};
+
+    for (let line of linesIn) {
+      let prevGlyph = null;
+
+      lineCurr.width = 0;
+      let widthGap = 0;
+
+      for (let word of line) {
+        let widthWord = 0;
+        
+        // information relating to hyphenation
+        let hyphenInfo = {
+          // true if hyphenation latest hyphenation point found
+          // (that is, word part PLUS hyphen still fits on line)
+          wrap: false,
+
+          // the number of characters (valid - not undefined)
+          // before and after the hyphenation point (not including
+          // the hyphen itself)
+          before: 0,
+          after: 0,
+        }
+
+        // wordData holds information (index in word, width/metrics)
+        // about valid characters in current word - wordIndex keeps
+        // track of the current character regardless of validity
+        let wordData = new Array();
+        let wordIndex = 0;
+
+        let wrap = false;
+        let firstChar = true;
+        
+        for (let char of word) {
+          ++wordIndex;
+
+          // retrieve the matching glyph from the font and
+          // update the current word width
+          let glyph = this._font.getGlyph(char);
+          if (glyph !== undefined) {
+            widthWord += glyph.width * this._fontScale;
+
+            let kerning = 0;
+            let kerningHyphen = 0;
+
+            if (prevGlyph !== null) {
+              widthWord += this._letterSpacing;
+
+              let kern = this._font.getKerning(prevGlyph.char +
+                  glyph.char);
+              kerning = (kern !== undefined) ? kern : 0;
+
+              if (firstChar === true) {
+                widthGap += kern;
+              } else {
+                widthWord += kern;
+              }
+
+              // find the kerning value between the current character
+              // and the hyphen for a more accurate wrap
+              kern = this._font.getKerning(glyph.char + "-");
+              kerningHyphen = (kern !== undefined) ? kern : 0;
+            }
+
+            prevGlyph = glyph;
+            firstChar = false;
+
+            // if current word width breaches the limit then wrapping
+            // is required - if current word width plus ther width of
+            // a hyphen breaches (and hyphenation is desired) then
+            // hyphen wrap is required
+            // (hyphen wrap will always trigger at the same time or
+            // before regular word wrap)
+            let width = lineCurr.width + widthWord + widthGap;
+            if (this._maxWidth > 0 && wrap === false) {
+              if (width > this._maxWidth) {
+                wrap = true;
+              }
+
+              if (this._hyphenate && hyphenInfo.wrap === false &&
+                  (width + hyphenWidth + kerningHyphen) > this._maxWidth) {
+                
+                hyphenInfo.wrap = true;
+              }
+            }
+
+            // store index of current character in word and the
+            // current length of the line unless we've already
+            // found last suitable hyphenation point in which
+            // case keep track of valid glyphs after that point
+            if (hyphenInfo.wrap === false) {
+              ++hyphenInfo.before;
+            } else {
+              ++hyphenInfo.after;
+            }
+
+            wordData.push({char: char, indexInWord: wordIndex,
+              currLineWidth: width, kerningAdj: kerning});
+          }
+        }
+
+        // handle wrapping of current word if necessary using
+        // a fall back approach:
+        // - hyphenate word (if enabled/suitable) ->
+        // - move word to new line (if enabled) ->
+        // - no wrapping of word
+        if (wrap === true) {
+          if (hyphenInfo.wrap === true) {
+            let limit = 3;
+            let length = hyphenInfo.before;
+
+            if (length < limit) {
+              // we don't have enough characters before the potential
+              // hyphen so skip hyphenation for this word and go
+              // instead attempt to wrap entire word (later)
+              hyphenInfo.wrap = false;
+            } else {
+              if (hyphenInfo.after < limit) {
+                length -= limit - hyphenInfo.after;
+              }
+
+              if (length >= limit) {
+                let index = wordData[length - 1].indexInWord;
+                
+                // calculate the width of the new line by subtracting
+                // the width at the hyphen point from the current
+                // width - the remainder is the width of the new line
+                // (also remove kerning between the characters before 
+                // and after the hyphen)
+                let wWord = wordData[length - 1].currLineWidth +
+                  wordData[length - 1].kerningAdj;
+                let wLine = lineCurr.width + widthWord + widthGap;
+                
+                // add the current line using the width up to the
+                // hyphen point, including the hyphen width
+                lineCurr.text += (widthGap !== 0) ? " " : "";
+                lineCurr.text += word.substring(0, index) + "-";
+                lineCurr.width = wordData[length - 1].
+                  currLineWidth + hyphenWidth;
+                ++lineCurr.count;
+                linesOut.push(lineCurr);
+
+                // set the new line to the remainder of the hyphenated
+                // word, and set the width to the value calculated
+                // previously
+                lineCurr = {text: word.substring(index),
+                  width: wLine - wWord, justify: true, count: 1};
+              } else {
+                hyphenInfo.wrap = false;
+              }
+            }
+          }
+
+          // either we couldn't or shouldn't insert a hyphen when
+          // attempting to wrap so instead try wrap entire word to
+          // a new line
+          if (hyphenInfo.wrap === false) {
+            if (lineCurr.text === "") {
+              wrap = false;
+            } else {
+              linesOut.push(lineCurr);
+              lineCurr = {text: word, width: widthWord,
+                justify: true, count: 1};
+            }
+          }
+        }
+
+        // if word wrap is disabled or we didn't want to wrap due
+        // to current word being the first word on the current line
+        if (wrap === false) {
+          lineCurr.text += (widthGap !== 0) ? " " : "";
+          lineCurr.text += word;
+          lineCurr.width += widthGap + widthWord;
+          ++lineCurr.count
+        }
+
+        widthGap = this._font.advance + this._wordSpacing;
+      }
+
+      lineCurr.justify = false;
+      linesOut.push(lineCurr);
+
+      lineCurr = {text: "", width: 0, justify: true, count: 0};
+    }
+
+    return linesOut;
   }
 };
 
