@@ -466,28 +466,32 @@ class Shape extends Polygon {
     }));
   }
 
-  pushFrameStrip(texture, count, row = count, column = 1,
+  pushFrameStrip(textureIn, layerIn, count, row = count, column = 1,
     start = 0, offset = new Vec2()) {
 
-    let width = texture.width / row;
-    let height = texture.height / column;
+    let width = textureIn.width / row;
+    let height = textureIn.height / column;
 
-    let increment = new Vec2((width - offset.x) / texture.width,
-      (height - offset.y) / texture.height);
+    let increment = new Vec2((width - offset.x) / textureIn.width,
+      (height - offset.y) / textureIn.height);
 
-    let spacing = new Vec2(offset.x / texture.width,
-      offset.y / texture.height);
+    let spacing = new Vec2(offset.x / textureIn.width,
+      offset.y / textureIn.height);
 
     for (let i = start; i < count + start; ++i) {
+      // calculate the s and t coordinates for each frame by
+      // splitting the texture into the specified number of
+      // rows and columns
+
       let s = i % row;
       let t = Math.trunc(i / row);
 
-      let min = new Vec2((s * increment.x) + (s * spacing.x),
-          ((t + 1) * increment.y) + (t * spacing.y));
-			let max = new Vec2(((s + 1) * increment.x) + (s * spacing.x),
-          (t * increment.y) + (t * spacing.y));
+      let sOut = new Vec2((s * increment.x) + (s * spacing.x),
+        ((s + 1) * increment.x) + (s * spacing.x));
+			let tOut = new Vec2(((t + 1) * increment.y) + (t * spacing.y),
+        (t * increment.y) + (t * spacing.y));
 
-      this.#frames.push(new Shape.Frame(texture, min, max));
+      this.pushFrame(textureIn, layerIn, sOut, tOut);
     }
   }
 
@@ -791,8 +795,8 @@ class Shape extends Polygon {
 
       // pack floating point values into unsigned short
       vboVert.s = (((1 - ratio.x) * frame.s.x) +
-        (ratio.x * frame.t.x)) * 65535;
-      vboVert.t = (((1 - ratio.y) * frame.s.y) +
+        (ratio.x * frame.s.y)) * 65535;
+      vboVert.t = (((1 - ratio.y) * frame.t.x) +
         (ratio.y * frame.t.y)) * 65535;
       vboVert.textureLayer = frame.layer;
       

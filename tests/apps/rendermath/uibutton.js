@@ -29,7 +29,7 @@ class UIButton  {
     this.shape.pushVert(new sol.Vec2(w, h));
     this.shape.pushVert(new sol.Vec2(0, h));
     
-    this.shape.pushFrameStrip(tex, 3 * this.#modes, 3, this.#modes);
+    this.shape.pushFrameStrip(tex, 0, 3 * this.#modes, 3, this.#modes);
 	}
 
   // getters/setters
