@@ -25,9 +25,14 @@ class RenderString {
   _transformable = new Transformable2D();
   _renderable = new Renderable();
 
-	constructor(font = null, text = "") {
-    this.font = font;
-    this.text = text;
+	constructor(font = undefined, text = undefined) {
+    if (font !== undefined) {
+      this.font = font;
+    }
+    
+    if (text !== undefined) {
+      this.text = text;
+    }
 	}
 
   get font() { return this._font; }
