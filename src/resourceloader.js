@@ -7,7 +7,7 @@ class ResourceLoader {
     this.ac = new OfflineAudioContext(1, 8000, 8000);
 	}
 
-  loadImage(src, width, height) {
+  async loadImage(src, width, height) {
     let img = new Image();
     ++this.status;
 
@@ -15,12 +15,13 @@ class ResourceLoader {
     if ( width !== undefined) {  img.width =  width; }
     if (height !== undefined) { img.height = height; }
 
-    img.decode()
-      .then(() => { --this.status; })
-      .catch((error) => {
-        console.log(error);
-        --this.status;
-      });
+    try {
+      await img.decode();
+
+      --this.status;
+    } catch(e) {
+      --this.status;
+    }
 
     return img;
   }
