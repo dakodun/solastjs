@@ -183,6 +183,7 @@ class AtlasFont {
 
   #advance = -1;
   #lineHeight = -1;
+  #drop = -1;
   #hyphen = -1;
 
   #layers = [];
@@ -198,6 +199,7 @@ class AtlasFont {
 
   get advance() { return this.#advance; }
   get lineHeight() { return this.#lineHeight; }
+  get drop() { return this.#drop; }
   get hyphen() { return this.#hyphen; }
 
   get texture() {
@@ -242,6 +244,8 @@ class AtlasFont {
       let top    = txtMetrics.fontBoundingBoxAscent;
       let bottom = txtMetrics.fontBoundingBoxDescent;
       this.#lineHeight = (top + bottom);
+
+      this.#drop = txtMetrics.fontBoundingBoxDescent;
     }
 
     if (this.#hyphen < 0) {
