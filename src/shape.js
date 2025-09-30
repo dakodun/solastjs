@@ -127,6 +127,7 @@ class Shape extends Polygon {
       );
     }
   };
+  
 
   // public fields...
     animated = false;
@@ -715,6 +716,16 @@ class Shape extends Polygon {
         }
 
         break;
+      case enums.Rendering.LINES :
+        if (this.#indices.length === 0) {
+          this.#generateOutline("lines");
+        }
+
+        // render outline as triangles
+        verts = this.outline;
+        renderMode = GL.TRIANGLES;
+
+        break;
       case enums.Rendering.LINE_LOOP :
         if (this.#indices.length === 0) {
           this.#generateOutline();
@@ -747,21 +758,53 @@ class Shape extends Polygon {
       1 / (this.boundingBox.upper.y - this.boundingBox.lower.y)
     );
     
-    // [!] for colors and outline we need to double the
-    // colors
+    let colors = this.#colors.slice();
+
+    if (this.renderMode === enums.Rendering.LINES||
+      this.renderMode === enums.Rendering.LINE_LOOP) {
+
+      // if rendermode is an outline then color values need to
+      // be adjusted like so (as a 2 vertex line is now a 4
+      // vertex rectangle):
+      //   [0, 1, 2, 3] -> [0, 1, 1, 0, 2, 3, 3, 2]
+      // (an odd numbered colors array needs to be padded with
+      // the base color beforehand)
+
+      if (colors.length % 2 === 1) {
+        colors.push(this.color.getCopy());
+      }
+
+      colors = colors.flatMap((ele, ind, arr) => {
+        if (ind % 2 === 1) {
+          return [arr[ind - 1], ele, ele, arr[ind - 1]];
+        }
+
+        return [];
+      });
+    }
 
     // pad the color array to match the number of vertices
     let diff = verts.length - this.#colors.length;
-    let colors = this.#colors.slice();
     if (diff > 0) {
       colors = colors.concat(
         new Array(diff).fill(this.color.getCopy())
+      );
+    }
+    
+    // [!] allow per-vertex transparency
+    // diff = verts.length - this.#colors.length;
+    let alphas = [];
+    diff = verts.length;
+    if (diff > 0) {
+      alphas = alphas.concat(
+        new Array(diff).fill(this.alpha)
       );
     }
 
     for (let i = 0; i < verts.length; ++i) {
       const v = verts[i];
       const c = colors[i];
+      const a = alphas[i];
 
       let vboVert = new VBOVertex();
 
@@ -786,7 +829,7 @@ class Shape extends Polygon {
       vboVert.normal = vboVert.normal | ((normVec.x * 1023) <<  0);
 
       vboVert.r = c.x; vboVert.g = c.y;
-      vboVert.b = c.z; vboVert.a = this.alpha;
+      vboVert.b = c.z; vboVert.a = a;
 
       let ratio = new Vec2(
         (v.x - this.boundingBox.lower.x) * invMinMax.x,
@@ -830,7 +873,7 @@ class Shape extends Polygon {
 
 
   // private methods...
-  #generateOutline() {
+  #generateOutline(mode) {
     let halfWidth = this.lineWidth * 0.5;
     
     let rects   = new Array();
@@ -838,17 +881,27 @@ class Shape extends Polygon {
 
     let indices = new Array();
 
-    for (let i = 0; i < verts.length; ++i) {
+    // if render mode is "lines" then we need to check
+    // them in pairs (0 + 1, 2 + 3, 4 + 5, etc) rather than
+    // sequentially (0 + 1, 1 + 2, 2 + 3, etc)
+
+    let length = (mode === "lines") ? verts.length - (verts.length % 2) :
+      verts.length;
+    let inc = (mode === "lines") ? 2 : 1;
+
+    for (let i = 0; i < length; i += inc) {
       // calculate the rectangles that surround
       // the polygon's lines
 
       const a = verts[i];
-      const b = verts[(i + 1) % verts.length];
+      const b = (mode === "lines") ? verts[(i + 1)] : 
+        verts[(i + 1) % verts.length];
 
       if (!a.equals(b, 0.01)) {
         // if vertices are not coincident then get the
         // _perpendicular_ unit vector from this point
         // to the next (A -> B)
+
         let ab = new Vec2(a.y - b.y, b.x - a.x);
         let norm = ab.getNormalized();
 
@@ -865,51 +918,51 @@ class Shape extends Polygon {
     }
 
     for (let i = 0; i < rects.length; i += 4) {
-      // every rectangle will have one side that intersects
-      // and on side that has a gap unless they are collinear
+      if (mode !== "lines") {
+        // every rectangle will have one side that intersects
+        // and one side that has a gap unless they are collinear
 
-      let j = (i + 4) % rects.length;
+        let j = (i + 4) % rects.length;
 
-      // [!] find which lines in the rectangle we are
-      // checking for intersection and which we are connecting
+        // [!] differentiate which lines in the rectangle we are
+        // checking for intersection and which we are connecting
+        // beforehand
 
-      // deal with the intersection...
-      let intersect = Polygon.SegSeg(
-        [rects[i], rects[i + 1]],
-        [rects[j], rects[j +1]]
-      );
+        // deal with the intersection
 
-      if (intersect.intersects) {
-        rects[i + 1] = intersect.point.getCopy();
-        rects[j    ] = intersect.point.getCopy();
+        let intersect = Polygon.SegSeg(
+          [rects[i], rects[i + 1]],
+          [rects[j], rects[j +1]]
+        );
+
+        if (intersect.intersects) {
+          rects[i + 1] = intersect.point.getCopy();
+          rects[j    ] = intersect.point.getCopy();
+        }
+
+        // deal with the gap
+
+        // square miter: just connect them together with
+        // another line segment and half it
+        let lne = new Vec2(
+          (rects[j + 3].x + rects[i + 2].x) * 0.5,
+          (rects[j + 3].y + rects[i + 2].y) * 0.5
+        )
+
+        // [!] point miter: find the point of intersection
+        // of both lines extended
+
+        // [!] round miter: add triangles to form an arc
+        // depending on resolution (and length of gap)
+
+        rects[i + 2] = lne.getCopy();
+        rects[j + 3] = lne.getCopy();
       }
-      // ...
 
-      // deal with the gap...
-
-      // square miter: just connect them together with
-      // another line segment and half it
-      let lne = new Vec2(
-        (rects[j + 3].x + rects[i + 2].x) * 0.5,
-        (rects[j + 3].y + rects[i + 2].y) * 0.5
-      )
-
-      // [!] point miter: find the point of intersection
-      // of both lines extended
-
-      // [!] round miter: add triangles to form an arc
-      // depending on resolution (and length of gap)
-
-      rects[i + 2] = lne.getCopy();
-      rects[j + 3] = lne.getCopy();
-      // ...
-
-      let offs = i;
       indices.push(
-            offs, offs + 3, offs + 1,
-        offs + 1, offs + 3, offs + 2
+            i, i + 3, i + 1,
+        i + 1, i + 3, i + 2
       );
-      // ...
     }
 
     this.outline = rects;
