@@ -37,6 +37,14 @@ class Transformable2D {
   get rotation() { return this.#rotation; }
   get boundingBox() { return this.#boundingBox; }
 
+  get width() {
+    return this.#boundingBox.upper.x - this.#boundingBox.lower.x;
+  }
+
+  get height() {
+    return this.#boundingBox.upper.y - this.#boundingBox.lower.y;
+  }
+
   set position(position) {
     if (!(position instanceof Vec2)) {
       throw new TypeError("Transformable2D (position): should " +

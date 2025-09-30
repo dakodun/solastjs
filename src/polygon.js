@@ -62,6 +62,9 @@ class Polygon {
   get rotation() { return this.#transformable.rotation; }
   get boundingBox() { return this.#transformable.boundingBox; }
 
+  get width()  { return this.#transformable.width;  }
+  get height() { return this.#transformable.height; }
+
   set position(position) { this.#transformable.position = position; }
   set origin(origin)     { this.#transformable.origin = origin;     }
   set transMat(transMat) { this.#transformable.transMat = transMat; }
