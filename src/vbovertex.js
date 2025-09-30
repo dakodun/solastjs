@@ -1,15 +1,24 @@
 class VBOVertex {
   static byteSize = 28;
 
-  #x = 0.0;
-  #y = 0.0;
-  #z = 0.0;
+  _x = 0.0;
+  _y = 0.0;
+  _z = 0.0;
 
-  #s = 0.0;
-  #t = 0.0;
+  _r = 255;
+  _g = 255;
+  _b = 255;
+  _a = 255;
 
-  #textureFlag = 0;
-  #textureLayer = 0;
+  _s = 0.0;
+  _t = 0.0;
+
+  _textureFlag  = 0;
+  _textureLayer = 0;
+  _diffuseFlag  = 0;
+  _flag4        = 0;
+
+  _normal = 0.0;
 
 	constructor(initializerList = {}) {
     // (3 4-byte)
@@ -28,30 +37,43 @@ class VBOVertex {
     this.t = initializerList.t || 0.0;
 
     // (4 1-byte)
-    this.textureFlag = initializerList.textureFlag || 0;
+    this.textureFlag  = initializerList.textureFlag  || 0;
     this.textureLayer = initializerList.textureLayer || 0;
-    this.diffuseFlag = 0;
-    this.flag4 = 0;
+    this.diffuseFlag  = initializerList.diffuseFlag  || 0;
+    this.flag4        = initializerList.flag4        || 0;
 
-    this.normal = 0; // (1 4-byte)
+    this.normal = initializerList.normal || 0.0; // (1 4-byte)
 	}
 
-  get x() { return this.#x; }
-  get y() { return this.#y; }
-  get z() { return this.#z; }
+  // getters
 
-  get s() { return this.#s; }
-  get t() { return this.#t; }
+  get x() { return this._x; }
+  get y() { return this._y; }
+  get z() { return this._z; }
 
-  get textureFlag()  { return this.#textureFlag;  }
-  get textureLayer() { return this.#textureLayer; }
+  get r() { return this._r; }
+  get g() { return this._g; }
+  get b() { return this._b; }
+  get a() { return this._a; }
+
+  get s() { return this._s; }
+  get t() { return this._t; }
+
+  get textureFlag()  { return this._textureFlag;  }
+  get textureLayer() { return this._textureLayer; }
+  get diffuseFlag()  { return this._diffuseFlag;  }
+  get flag4()        { return this._flag4;        }
+
+  get normal() { return this._normal; }
+
+  // setters
 
   set x(x) {
     if (typeof x !== 'number') {
       throw new TypeError("VBOVertex (x): should be a Number");
     }
 
-    this.#x = x;
+    this._x = x;
   }
 
   set y(y) {
@@ -59,7 +81,7 @@ class VBOVertex {
       throw new TypeError("VBOVertex (y): should be a Number");
     }
 
-    this.#y = y;
+    this._y = y;
   }
 
   set z(z) {
@@ -67,7 +89,39 @@ class VBOVertex {
       throw new TypeError("VBOVertex (z): should be a Number");
     }
 
-    this.#z = z;
+    this._z = z;
+  }
+
+  set r(r) {
+    if (typeof r !== 'number') {
+      throw new TypeError("VBOVertex (r): should be a Number");
+    }
+
+    this._r = r;
+  }
+
+  set g(g) {
+    if (typeof g !== 'number') {
+      throw new TypeError("VBOVertex (g): should be a Number");
+    }
+
+    this._g = g;
+  }
+
+  set b(b) {
+    if (typeof b !== 'number') {
+      throw new TypeError("VBOVertex (b): should be a Number");
+    }
+
+    this._b = b;
+  }
+
+  set a(a) {
+    if (typeof a !== 'number') {
+      throw new TypeError("VBOVertex (a): should be a Number");
+    }
+
+    this._a = a;
   }
 
   set s(s) {
@@ -75,7 +129,7 @@ class VBOVertex {
       throw new TypeError("VBOVertex (s): should be a Number");
     }
 
-    this.#s = s;
+    this._s = s;
   }
 
   set t(t) {
@@ -83,7 +137,7 @@ class VBOVertex {
       throw new TypeError("VBOVertex (t): should be a Number");
     }
 
-    this.#t = t;
+    this._t = t;
   }
 
   set textureFlag(textureFlag) {
@@ -91,7 +145,7 @@ class VBOVertex {
       throw new TypeError("VBOVertex (textureFlag): should be a Number");
     }
 
-    this.#textureFlag = textureFlag;
+    this._textureFlag = textureFlag;
   }
 
   set textureLayer(textureLayer) {
@@ -99,8 +153,33 @@ class VBOVertex {
       throw new TypeError("VBOVertex (textureLayer): should be a Number");
     }
 
-    this.#textureLayer = textureLayer;
+    this._textureLayer = textureLayer;
   }
+
+  set diffuseFlag(diffuseFlag) {
+    if (typeof diffuseFlag !== 'number') {
+      throw new TypeError("VBOVertex (diffuseFlag): should be a Number");
+    }
+
+    this._diffuseFlag = diffuseFlag;
+  }
+
+  set flag4(flag4) {
+    if (typeof flag4 !== 'number') {
+      throw new TypeError("VBOVertex (flag4): should be a Number");
+    }
+
+    this._flag4 = flag4;
+  }
+
+  set normal(normal) {
+    if (typeof normal !== 'number') {
+      throw new TypeError("VBOVertex (normal): should be a Number");
+    }
+
+    this._normal = normal;
+  }
+
 
 	copy(other) {
     if (!(other instanceof VBOVertex)) {
@@ -108,24 +187,24 @@ class VBOVertex {
         "be a VBOVertex");
     }
 
-    this.x = other.x;
-    this.y = other.y;
-    this.z = other.z;
+    this._x = other._x;
+    this._y = other._y;
+    this._z = other._z;
 
-    this.r = other.r;
-    this.g = other.g;
-    this.b = other.b;
-    this.a = other.a;
+    this._r = other._r;
+    this._g = other._g;
+    this._b = other._b;
+    this._a = other._a;
 
-    this.s = other.s;
-    this.t = other.t;
+    this._s = other._s;
+    this._t = other._t;
 
-    this.textureFlag = other.textureFlag;
-    this.textureLayer = other.textureLayer;
-    this.diffuseFlag = other.diffuseFlag;
-    this.flag4 = other.flag4;
+    this._textureFlag = other._textureFlag;
+    this._textureLayer = other._textureLayer;
+    this._diffuseFlag = other._diffuseFlag;
+    this._flag4 = other._flag4;
 
-    this.normal = other.normal;
+    this._normal = other._normal;
   }
 
   getCopy() {
@@ -138,28 +217,28 @@ class VBOVertex {
   toBuffer(buffer, index) {
     let offset = VBOVertex.byteSize * index;
 
-    buffer.setFloat32(offset    , this.x, true);
-    buffer.setFloat32(offset + 4, this.y, true);
-    buffer.setFloat32(offset + 8, this.z, true);
+    buffer.setFloat32(offset    , this._x, true);
+    buffer.setFloat32(offset + 4, this._y, true);
+    buffer.setFloat32(offset + 8, this._z, true);
     offset += 12;
     
-    buffer.setUint8(offset    , this.r);
-    buffer.setUint8(offset + 1, this.g);
-    buffer.setUint8(offset + 2, this.b);
-    buffer.setUint8(offset + 3, this.a);
+    buffer.setUint8(offset    , this._r);
+    buffer.setUint8(offset + 1, this._g);
+    buffer.setUint8(offset + 2, this._b);
+    buffer.setUint8(offset + 3, this._a);
     offset += 4;
 
-    buffer.setUint16(offset    , this.s, true);
-    buffer.setUint16(offset + 2, this.t, true);
+    buffer.setUint16(offset    , this._s, true);
+    buffer.setUint16(offset + 2, this._t, true);
     offset += 4;
 
-    buffer.setUint8(offset    ,  this.textureFlag);
-    buffer.setUint8(offset + 1, this.textureLayer);
-    buffer.setUint8(offset + 2,  this.diffuseFlag);
-    buffer.setUint8(offset + 3,        this.flag4);
+    buffer.setUint8(offset    ,  this._textureFlag);
+    buffer.setUint8(offset + 1, this._textureLayer);
+    buffer.setUint8(offset + 2,  this._diffuseFlag);
+    buffer.setUint8(offset + 3,        this._flag4);
     offset += 4;
 
-    buffer.setUint32(offset, this.normal, true);
+    buffer.setUint32(offset, this._normal, true);
     offset += 4;
   }
 };
