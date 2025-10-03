@@ -50,6 +50,11 @@ class App {
     GL.viewport(0, 0, this.canvas.width, this.canvas.height);
     this.#createDefaultShader();
 
+    // flip texture source data to bring it in line
+    // with framebuffer texture rendering (so texture
+    // coordinates are consistent)
+    GL.pixelStorei(GL.UNPACK_FLIP_Y_WEBGL, true);
+
     this.inputManager.register(this);
 
     if (screen.orientation) {

@@ -13,6 +13,9 @@ class AtlasFont {
     #width   = 0;
     #height  = 0;
     #advance = 0;
+
+    _s = new Vec2(0.0, 1.0);
+    _t = new Vec2(0.0, 1.0);
     
     constructor(char, left, top, right, bottom, width, height, advance) {
       this.#char = char;
@@ -38,6 +41,9 @@ class AtlasFont {
     get width()   { return this.#width;   }
     get height()  { return this.#height;  }
     get advance() { return this.#advance; }
+
+    get s() { return this._s; }
+    get t() { return this._t; }
   }
 
   static Layer = class {
@@ -125,15 +131,22 @@ class AtlasFont {
           offset + glyph.top
         );
 
-        glyph.s = new Vec2(
+        // calculate the texture coordinates of the new glyph in
+        // the sheet, but invert the t coordinate as our glyphs
+        // are rendered top to bottom (whereas [0, 0] is bottom-left)
+
+        let s = new Vec2(
           (width * this.#invWidth) + this.#halfTex.x,
           ((width + glyph.width) * this.#invWidth) - this.#halfTex.x
         );
 
-        glyph.t = new Vec2(
+        let t = new Vec2(
           (offset * this.#invHeight) + this.#halfTex.y,
           ((offset + glyph.height) * this.#invHeight) - this.#halfTex.y
         );
+
+        glyph._s = s
+        glyph._t = new Vec2(1 - t.x, 1 - t.y);
 
         glyph.layer = this.#id;
 
@@ -150,15 +163,18 @@ class AtlasFont {
         this.#context.fillText(glyph.char, glyph.left,
           this.#offset + glyph.top);
         
-        glyph.s = new Vec2(
+        let s = new Vec2(
           this.#halfTex.x,
           (glyph.width * this.#invWidth) - this.#halfTex.x
         );
 
-        glyph.t = new Vec2(
+        let t = new Vec2(
           (this.#offset * this.#invHeight) + this.#halfTex.y,
           ((this.#offset + glyph.height) * this.#invHeight) - this.#halfTex.y
         );
+
+        glyph._s = s
+        glyph._t = new Vec2(1 - t.x, 1 - t.y);
 
         glyph.layer = this.#id;
 

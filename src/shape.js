@@ -17,7 +17,7 @@ class Shape extends Polygon {
       #texture = null;
 
       #s = new Vec2(0.0, 1.0);
-      #t = new Vec2(1.0, 0.0);
+      #t = new Vec2(0.0, 1.0);
       #layer = 0;
 
       #limit = 0.0167;
@@ -29,7 +29,7 @@ class Shape extends Polygon {
         initializerList.texture : null;
       
       this.s = initializerList.s || new Vec2(0.0, 1.0);
-      this.t = initializerList.t || new Vec2(1.0, 0.0);
+      this.t = initializerList.t || new Vec2(0.0, 1.0);
       this.layer = initializerList.layer || 0;
 
       this.limit = initializerList.limit || 0.0167;
@@ -489,8 +489,8 @@ class Shape extends Polygon {
 
       let sOut = new Vec2((s * increment.x) + (s * spacing.x),
         ((s + 1) * increment.x) + (s * spacing.x));
-			let tOut = new Vec2(((t + 1) * increment.y) + (t * spacing.y),
-        (t * increment.y) + (t * spacing.y));
+			let tOut = new Vec2((t * increment.y) + (t * spacing.y),
+        ((t + 1) * increment.y) + (t * spacing.y));
 
       this.pushFrame(textureIn, layerIn, sOut, tOut);
     }
