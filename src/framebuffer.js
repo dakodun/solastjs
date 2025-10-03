@@ -1,36 +1,47 @@
 import GL from './gl.js'
 
 class FrameBuffer {
+  static _idCount = BigInt(1);
+    
+  _frameBuffer = null;
+
+  _id = BigInt(0);
+  
 	constructor() {
-		this.frameBuffer = null;
+		
 	}
 
+  get frameBuffer() { return this._frameBuffer; }
+  get id() { return this._id; }
+
   init() {
-    if (this.frameBuffer == null) {
-      this.frameBuffer = GL.createFramebuffer();
+    if (this._frameBuffer === null) {
+      this._frameBuffer = GL.createFramebuffer();
+      this._id = FrameBuffer._idCount++;
     }
   }
 
   delete() {
-    if (this.frameBuffer != null) {
-      GL.deleteFramebuffer(this.frameBuffer);
-      this.frameBuffer = null;
+    if (this._frameBuffer !== null) {
+      GL.deleteFramebuffer(this._frameBuffer);
+      this._frameBuffer = null;
+      this._id = BigInt(0);
     }
   }
 
-  attachTexture(texture, attachment) {
+  attachTexture(texture, attachment, layerIn) {
     this.init();
 
-    GL.bindFramebuffer(GL.FRAMEBUFFER, this.frameBuffer);
-    GL.framebufferTexture2D(GL.FRAMEBUFFER, attachment, GL.TEXTURE_2D,
-      texture.texture, 0);
+    GL.bindFramebuffer(GL.FRAMEBUFFER, this._frameBuffer);
+    GL.framebufferTextureLayer(GL.FRAMEBUFFER, attachment,
+      texture.texture, 0, layerIn);
     GL.bindFramebuffer(GL.FRAMEBUFFER, null);
   }
 
   attachRenderBuffer(renderBuffer, attachment) {
     this.init();
 
-    GL.bindFramebuffer(GL.FRAMEBUFFER, this.frameBuffer);
+    GL.bindFramebuffer(GL.FRAMEBUFFER, this._frameBuffer);
     GL.framebufferRenderbuffer(GL.FRAMEBUFFER, attachment, GL.RENDERBUFFER,
         renderBuffer.renderBuffer);
     GL.bindFramebuffer(GL.FRAMEBUFFER, null);
