@@ -8,6 +8,7 @@ export { default as EventQueue }   from          './eventqueue.js';
 export { default as FrameBuffer }  from         './framebuffer.js';
 
 export { default as InputManager } from './inputmanager.js';
+export { default as ImageArray   } from   './imagearray.js';
 
 export { default as LayoutContainer } from './layoutcontainer.js';
 export { default as LayoutDivision }  from  './layoutdivision.js';
