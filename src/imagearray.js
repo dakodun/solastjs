@@ -252,6 +252,61 @@ class ImageArray {
     this._data = new Uint8ClampedArray(result);
   }
 
+  replace(dataIn, widthIn, xIn = 0, yIn = 0) {
+    // [!] handle non-rectangular input data
+
+    // replace a portion this ImageArray's _data in place
+    // with the data specified, offset by (xIn, yIn)
+
+    if (!(dataIn instanceof Array) &&
+      !(dataIn instanceof Uint8ClampedArray)) {
+
+      throw new TypeError("ImageArray (replace): dataIn " +
+      "should be an Array or a Uint8ClampedArray");
+    }
+
+    if (typeof widthIn !== 'number') {
+      throw new TypeError("ImageArray (replace): widthIn " +
+      "should be a Number");
+    } else if (typeof xIn !== 'number') {
+      throw new TypeError("ImageArray (replace): xIn should " +
+      "be a Number");
+    } else if (typeof yIn !== 'number') {
+      throw new TypeError("ImageArray (replace): yIn should " +
+      "be a Number");
+    }
+
+    // sanitise the x and y coordinate inputs, paying special
+    // attention to the x coordinate as it will wrap around if
+    // it is off the end of the row (whereas the y coordinate
+    // will be naturally handled by the while loop condition)
+
+    let x = Math.min(Math.max(xIn, 0), this._width - 1);
+    let y = Math.max(yIn, 0);
+
+    // determine how much of a row we need to replace (either
+    // the width of the replacement data, or the remaining
+    // width of the ImageArray's _data, whichever is shorter)
+    // and maintain 2 separate indices (for each data array)
+
+    let rowEnd = Math.min((this._width - x) * 4, widthIn * 4);
+    let index = ((y * this._width) + x) * 4;
+    let indexIn = 0;
+    
+    while (index < this._data.length && indexIn < dataIn.length) {
+      // go row by row, replacing the appropiate data, until we
+      // either run out of replacement data or run out of space
+      // in the ImageArray
+
+      for (let i = 0; i < rowEnd; ++i) {
+        this._data[index + i] = dataIn[indexIn + i];
+      }
+
+      index += this._width * 4;
+      indexIn += widthIn * 4;
+    }
+  }
+
   // [!] method to shift an image
   //     - either wrap contents or replace with specified colour
 };
