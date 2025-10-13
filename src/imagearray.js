@@ -15,9 +15,9 @@ class ImageArray {
 
   }
 
-  get data() { return _data; }
-  get width()  { return width;  }
-  get height() { return height; }
+  get data() { return this._data; }
+  get width()  { return this._width;  }
+  get height() { return this._height; }
 
   fromImage(image) {
     if (!(image instanceof Image)) {
