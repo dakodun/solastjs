@@ -14,7 +14,6 @@ class RenderString {
   _letterSpacing = 0;
   _wordSpacing = 0;
   _lineSpacing = 1.0;
-  _fontScale = 1.0;
   _maxWidth = 0;
   _hyphenate = false;
   _align = "left";
@@ -40,7 +39,6 @@ class RenderString {
   get letterSpacing() { return this._letterSpacing; }
   get wordSpacing() { return this._wordSpacing; }
   get lineSpacing() { return this._lineSpacing; }
-  get fontScale() { return this._fontScale; }
   get maxWidth() { return this._maxWidth; }
   get hyphenate() { return this._hyphenate; }
   get align() { return this._align; }
@@ -363,8 +361,8 @@ class RenderString {
       // line of text, round values, and then set it
       bbox.upper.x = Math.max(bbox.upper.x, cursor.x);
 
-      this.boundingBox.upper = new Vec2(
-        Math.round(bbox.upper.x), Math.round(bbox.upper.y));
+      this.boundingBox.upper = new Vec2(Math.round(bbox.upper.x),
+        Math.round(bbox.upper.y));
       this.boundingBox.lower = new Vec2(0, 0);
     }
   }
@@ -423,7 +421,7 @@ class RenderString {
           // update the current word width
           let glyph = this._font.getGlyph(char);
           if (glyph !== undefined) {
-            widthWord += glyph.width * this._fontScale;
+            widthWord += glyph.width;
 
             let kerning = 0;
             let kerningHyphen = 0;
