@@ -90,6 +90,39 @@ class RenderString {
     this._indices.splice(0);
   }
 
+  set letterSpacing(letterSpacing) { 
+    if (typeof letterSpacing !== 'number') {
+      throw new TypeError("RenderString (letterSpacing): letterSpacing " +
+      "should be a Number");
+    }
+
+    this._letterSpacing = letterSpacing;
+    this._vertices.splice(0);
+    this._indices.splice(0);
+  }
+
+  set wordSpacing(wordSpacing) {
+    if (typeof wordSpacing !== 'number') {
+      throw new TypeError("RenderString (wordSpacing): wordSpacing " +
+      "should be a Number");
+    }
+
+    this._wordSpacing = wordSpacing;
+    this._vertices.splice(0);
+    this._indices.splice(0);
+  }
+
+  set lineSpacing(lineSpacing) {
+    if (typeof lineSpacing !== 'number') {
+      throw new TypeError("RenderString (lineSpacing): lineSpacing " +
+      "should be a Number");
+    }
+
+    this._lineSpacing = lineSpacing;
+    this._vertices.splice(0);
+    this._indices.splice(0);
+  }
+
   set maxWidth(maxWidth) {
     if (typeof maxWidth !== 'number') {
       throw new TypeError("RenderString (maxWidth): maxWidth should " + 
@@ -241,6 +274,7 @@ class RenderString {
             // based on last 'valid' glyph)
 
             cursor.x += this._font.advance + this._wordSpacing;
+            cursor.x += this._letterSpacing;
             cursor.x += align.space;
           } else {
             let glyph = this._font.getGlyph(char);
@@ -258,7 +292,6 @@ class RenderString {
                 // if this is not the first glyph on a line then
                 // account for any extra letter spacing and check
                 // for kerning with the previous glyph 
-
                 cursor.x += this._letterSpacing;
 
                 let kern = this._font.getKerning(prevGlyph.char + glyph.char);
@@ -396,16 +429,20 @@ class RenderString {
             let kerningHyphen = 0;
 
             if (prevGlyph !== null) {
-              widthWord += this._letterSpacing;
-
-              let kern = this._font.getKerning(prevGlyph.char +
-                  glyph.char);
+              // calculate kerning values between this glyph and
+              // the previous one but don't apply it directly in
+              // case we end up wrapping the word to a new line
+              // (line spacing is essentially just an increase
+              // or decrease in kerning, so lump it together)
+              let kern = this._font.getKerning(
+                prevGlyph.char + glyph.char);
               kerning = (kern !== undefined) ? kern : 0;
+              kerning += this._letterSpacing;
 
               if (firstChar === true) {
-                widthGap += kern;
+                widthGap += kerning;
               } else {
-                widthWord += kern;
+                widthWord += kerning;
               }
 
               // find the kerning value between the current character
@@ -418,7 +455,7 @@ class RenderString {
             firstChar = false;
 
             // if current word width breaches the limit then wrapping
-            // is required - if current word width plus ther width of
+            // is required - if current word width plus the width of
             // a hyphen breaches (and hyphenation is desired) then
             // hyphen wrap is required
             // (hyphen wrap will always trigger at the same time or
@@ -487,8 +524,8 @@ class RenderString {
                 // hyphen point, including the hyphen width
                 lineCurr.text += (widthGap !== 0) ? " " : "";
                 lineCurr.text += word.substring(0, index) + "-";
-                lineCurr.width = wordData[length - 1].
-                  currLineWidth + hyphenWidth;
+                lineCurr.width =
+                  wordData[length - 1].currLineWidth + hyphenWidth;
                 ++lineCurr.count;
                 linesOut.push(lineCurr);
 
@@ -526,7 +563,8 @@ class RenderString {
           ++lineCurr.count
         }
 
-        widthGap = this._font.advance + this._wordSpacing;
+        widthGap = this._font.advance + this._wordSpacing +
+          this._letterSpacing;
       }
 
       lineCurr.justify = false;
