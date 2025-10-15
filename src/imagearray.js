@@ -20,9 +20,13 @@ class ImageArray {
   get height() { return this._height; }
 
   fromImage(image) {
-    if (!(image instanceof Image)) {
+    if (!(image instanceof Image) &&
+      !(image instanceof HTMLCanvasElement) &&
+      !(image instanceof OffscreenCanvas)) {
+
       throw new TypeError("ImageArray (fromImage): image should " +
-      "be an Image (HTMLImageElement)");
+      "be an Image (HTMLImageElement) or a Canvas (HTMLCanvasElement " +
+      "or OffscreenCanvas)");
     }
 
     // create a canvas and context the size of our image and
