@@ -12,95 +12,83 @@ import VBOVertex from './vbovertex.js';
 import * as enums from "./exportenums.js";
 
 class Shape extends Polygon {
+  //> nested class //
   static Frame = class {
-    // ...
-      #texture = null;
+    // a frame is essentially just a reference to a texture
+    // and a set of corresponding coordinates
 
-      #s = new Vec2(0.0, 1.0);
-      #t = new Vec2(0.0, 1.0);
-      #layer = 0;
+    //> internal properties //
+    _texture = null;
 
-      #limit = 0.0167;
-    // ...
+    _s = new Vec2(0.0, 1.0);
+    _t = new Vec2(0.0, 1.0);
+    _layer = 0;
 
+    //> constructor //
     constructor(initializerList = {}) {
-
       this.texture = (initializerList.texture !== undefined) ?
         initializerList.texture : null;
       
       this.s = initializerList.s || new Vec2(0.0, 1.0);
       this.t = initializerList.t || new Vec2(0.0, 1.0);
       this.layer = initializerList.layer || 0;
-
-      this.limit = initializerList.limit || 0.0167;
     }
 
-    //
-      get texture() { return this.#texture; }
-      get s() { return this.#s; }
-      get t() { return this.#t; }
-      get layer() { return this.#layer; }
-      get limit() { return this.#limit; }
+    //> getters //
+    get texture() { return this._texture; }
+    get s() { return this._s; }
+    get t() { return this._t; }
+    get layer() { return this._layer; }
 
-      set texture(texture) {
-        if (texture !== null && !(texture instanceof Texture)) {
-          throw new TypeError("Shape.Frame (texture): should " +
-            "be a Texture (or null)");
-        }
-
-        this.#texture = texture;
+    //> setters //
+    set texture(texture) {
+      if (texture !== null && !(texture instanceof Texture)) {
+        throw new TypeError("Shape.Frame (texture): should " +
+          "be a Texture (or null)");
       }
 
-      set s(s) {
-        if (!(s instanceof Vec2)) {
-          throw new TypeError("Shape.Frame (s): should " +
-            "be a Vec2");
-        }
+      this._texture = texture;
+    }
 
-        this.#s = s;
+    set s(s) {
+      if (!(s instanceof Vec2)) {
+        throw new TypeError("Shape.Frame (s): should " +
+          "be a Vec2");
       }
 
-      set t(t) {
-        if (!(t instanceof Vec2)) {
-          throw new TypeError("Shape.Frame (texture): should " +
-            "be a Vec2");
-        }
+      this._s = s;
+    }
 
-        this.#t = t;
+    set t(t) {
+      if (!(t instanceof Vec2)) {
+        throw new TypeError("Shape.Frame (texture): should " +
+          "be a Vec2");
       }
 
-      set layer(layer) {
-        if (typeof layer !== 'number') {
-          throw new TypeError("Shape.Frame (layer): should " +
-            "be a Number");
-        }
+      this._t = t;
+    }
 
-        this.#layer = layer;
+    set layer(layer) {
+      if (typeof layer !== 'number') {
+        throw new TypeError("Shape.Frame (layer): should " +
+          "be a Number");
       }
 
-      set limit(limit) {
-        if (typeof limit !== 'number') {
-          throw new TypeError("Shape.Frame (limit): should " +
-            "be a Number");
-        }
+      this._layer = layer;
+    }
 
-        this.#limit = limit;
-      }
-    // ...
-
+    //> public methods //
     copy(other) {
       if (!(other instanceof Shape.Frame)) {
         throw new TypeError("Shape.Frame (copy): other should " +
           "be a Shape.Frame");
       }
 
-      this.#texture = other.#texture;
+      this._texture = other._texture;
 
-      this.#s = other.#s.getCopy();
-      this.#t = other.#t.getCopy();
-      this.#layer = other.#layer;
-
-      this.#limit = other.#limit;
+      this._s = other._s.getCopy();
+      this._t = other._t.getCopy();
+      this._layer = other._layer;
     }
 
     getCopy() {
@@ -117,45 +105,244 @@ class Shape extends Polygon {
       }
       
       return (
-        this.#texture === other.#texture &&
+        this._texture === other._texture &&
 
-        this.#s.equals(other.#s) &&
-        this.#t.equals(other.#t) &&
-        this.#layer === other.#layer &&
-
-        this.#limit === other.#limit
+        this._s.equals(other._s) &&
+        this._t.equals(other._t) &&
+        this._layer === other._layer
       );
     }
   };
   
 
-  // public fields...
-    animated = false;
-  // ...public fields
-
-  // private fields...
-    #indices = new Array();
-    #colors = new Array();
-
-    #frames = new Array();
-    #currentFrame = 0;
+  //> nested class //
+  static Animation = class {
+    // an animation object holds information dictating how frames
+    // (as stored in a shape's _frames property) are displayed
+    // (that is, in what order and for how long)
     
-    #startFrame   = 0;
-    #endFrame     = 0;
-    #direction    = 1;
-    #loopCount    = 0;
-    #loopMax      = 0;
-    #timer        = 0;
+    //> internal properties //
+    _index = 0;
 
-    #renderable = new Renderable();
-  // ...private fields
+    _frames = new Array();
+    _dirInit = 1;
+    _loopMax = -1;
+    _loopDir = 1;
 
+    _loopCount = -1;
+    _dirCurr = 1;
 
+    //> constructor //
+    constructor() {
+      
+    }
+
+    //> getters //
+    get currentIndex() {
+      return (this._index < this._frames.length) ?
+        this._frames[this._index]._index : -1;
+    }
+
+    get currentTime() {
+      return (this._index < this._frames.length) ?
+        this._frames[this._index]._time : -1;
+    }
+
+    //> public methods //
+    copy(other) {
+      if (!(other instanceof Shape.Animation)) {
+        throw new TypeError("Shape.Animation (copy): other should " +
+          "be a Shape.Animation");
+      }
+
+      this._index = other._index;
+
+      this._frames.splice(0, this._frames.length);
+      for (let f of other._frames) {
+        this._frames.push({_index: f._index, _time: f._time});
+      }
+
+      this._dirInit = other._dirInit;
+      this._loopMax = other._loopMax;
+      this._loopDir = other._loopDir;
+
+      this._loopCount = other._loopCount;
+      this._dirCurr = other._dirCurr;
+    }
+
+    getCopy() {
+      let copy = new Shape.Animation();
+      copy.copy(this);
+
+      return copy;
+    }
+
+    equals(other) {
+      if (!(other instanceof Shape.Animation)) {
+        throw new TypeError("Shape.Animation (equals): other should " +
+          "be a Shape.Animation");
+      }
+      
+      return (
+        this._index === other._index &&
+
+        this._frames.length === other._frames.length &&
+        this._frames.every((e, i) => {
+          return e === other._frames[i];
+        }) &&
+
+        this._dirInit === other._dirInit &&
+        this._loopMax === other._loopMax &&
+        this._loopDir === other._loopDir &&
+
+        this._loopCount === other._loopCount &&
+        this._dirCurr === other._dirCurr
+      );
+    }
+
+    fromRange(frameCount = 0, timingsIn = [], startIn = 0, endIn = frameCount,
+      directionIn = "forward", loopsIn = -1) {
+
+      // create the animation from an inclusive range from start
+      // to end, first creating an array of indices and then passing
+      // it to the fromArray method to do the actual creation
+      
+      let indices = new Array();
+
+      // sanitise the start and end indices to be within the range
+      // 0 > n > frameCount - 1
+
+      let len = frameCount;
+      let max = Math.max(len - 1, 0);
+      let start = Math.max(Math.min(max, startIn), 0);
+      let end = Math.max(Math.min(max, endIn), 0);
+
+      // create the index array with indices from start to end
+      // (inclusive), moving in the requested direction and wrapping
+      // around (-1 to (frameCount - 1)) and (frameCount to 0)
+
+      let dir = (directionIn.match(/reverse/i) !== null) ? -1 : 1;
+      let curr = start;
+      indices.push(curr);
+
+      while (curr !== end) {
+        curr = ((curr + dir) + len) % len;
+        indices.push(curr);
+      }
+
+      this.fromArray(timingsIn, indices, directionIn, loopsIn);
+    }
+
+    fromArray(timingsIn = [], indices = [],
+      directionIn = "forward", loopsIn = -1) {
+
+      // create the animation from an array of frame indices
+      // which correspond to frames as they are store in the
+      // parent shape's frame array
+
+      let anim = new Shape.Animation();
+
+      anim._loopMax = loopsIn;
+      anim._loopCount = loopsIn;
+
+      // use the input direction string to decide both initial
+      // animation direction as well as how to loop animation
+      // (either continue in same direction or reverse direction)
+
+      switch (directionIn) {
+        case "forward-bounce" :
+          anim._loopDir = -1;
+          break;
+        case "reverse" :
+          anim._dirInit = -1;
+          
+          anim._dirCurr = -1;
+          break;
+        case "reverse-bounce" :
+          anim._dirInit = -1;
+          anim._loopDir = -1;
+
+          anim._dirCurr = -1;
+          break;
+        default :
+          break;
+      }
+
+      // reverse the timings so we can pull from the end
+      // until we run out of values (at which point we
+      // just use the previous value)
+
+      let timings = timingsIn.toReversed();
+      let time = 0.0167;
+
+      // populate the frames array with pairs of frame indices
+      // (as they exist in shape frames array) and frame times 
+      
+      for (let ind of indices) {
+        time = (timings.length > 0) ? timings.pop() : time;
+        anim._frames.push({_index: ind, _time: time});
+      }
+
+      this.copy(anim);
+    }
+
+    reset() {
+      // reset the animation state back to its initial values
+
+      this._index = 0;
+
+      this._loopCount = this._loopMax;
+      this._dirCurr = this._dirInit;
+    }
+
+    advance() {
+      // increment the current index until we reach the end
+      // and then handle looping logic
+
+      // return false if animation has finished, otherwise
+      // return true
+
+      if ((this._index === this._frames.length - 1 && this._dirCurr > 0) ||
+        (this._index === 0 && this._dirCurr < 0)) {
+
+        if (this._loopCount === 0) {
+          return false;
+        }
+
+        this._loopCount = Math.max(this._loopCount - 1, -1);
+        this._dirCurr *= this._loopDir;
+      }
+
+      this._index = (this._index + this._dirCurr) % this._frames.length;
+
+      return true;
+    }
+  };
+  
+
+  // a shape is a polygon that can be rendered to the context
+
+  //> public properties //
+  animating = false;
+
+  //> internal properties //
+  _indices = new Array();
+  _colors = new Array();
+
+  _frames = new Array();
+  _currentFrame = 0;
+  _animation = new Shape.Animation();
+  _timer = 0;
+
+  _renderable = new Renderable();
+
+  //> constructor //
 	constructor(verts = undefined) {
     // call super constructor with no argument
     // to prevent calling derived setter for
     // verts without fully initialising derived
-    // class (this.#indices)
+    // class (this._indices)
+
     super();
 
     if (verts !== undefined) {
@@ -163,28 +350,24 @@ class Shape extends Polygon {
     }
   }
 
-
-  // getters/setters...
+  //> getters/setters (polygon) //
   get verts() { return super.verts; }
 
   set verts(verts) {
     super.verts = verts;
-    this.#indices.splice(0, this.#indices.length);
+    this._indices.splice(0, this._indices.length);
   }
 
-  get indices() { return this.#indices; }
-  get colors() { return this.#colors; }
+  //> getters //
+  get indices() { return this._indices; }
+  get colors() { return this._colors; }
+  get frames() { return this._frames; }
+  get currentFrame() { return this._currentFrame; }
+  get animation() { return this._animation; }
+  get timer() { return this._timer; }
+  get renderable() { return this._renderable; }
 
-  get frames() { return this.#frames; }
-  get currentFrame() { return this.#currentFrame; }
-  
-  get startFrame() { return this.#startFrame; }
-  get endFrame()   { return this.#endFrame;   }
-  get direction()  { return this.#direction;  }
-  get loopCount()  { return this.#loopCount;  }
-  get loopMax()    { return this.#loopMax;    }
-  get timer()      { return this.#timer;      }
-
+  //> setters //
   set indices(indices) {
     if (!(indices instanceof Array)) {
       throw new TypeError("Shape (indices): indices should " +
@@ -198,7 +381,7 @@ class Shape extends Polygon {
       }
     }
 
-    this.#indices = indices;
+    this._indices = indices;
   }
 
   set colors(colors) {
@@ -214,7 +397,7 @@ class Shape extends Polygon {
       }
     }
 
-    this.#colors = colors;
+    this._colors = colors;
   }
 
   set frames(frames) {
@@ -230,116 +413,75 @@ class Shape extends Polygon {
       }
     }
 
-    this.#frames = frames;
+    this._frames = frames;
   }
 
   set currentFrame(currentFrame) {
     if (typeof currentFrame !== 'number') {
       throw new TypeError("Shape (currentFrame): should be a Number");
     } else if (currentFrame < 0 ||
-      currentFrame > this.#frames.length) {
+      currentFrame > this._frames.length) {
 
       throw new RangeError("Shape (currentFrame): should be an " +
       "integer between 0 and total number of frames (inclusively)");
     }
 
-    this.#timer = 0.0;
-    this.#currentFrame = currentFrame;
-  }
-
-  set startFrame(startFrame) {
-    if (typeof startFrame !== 'number') {
-      throw new TypeError("Shape (startFrame): should " +
-        "be a Number");
-    }
-
-    this.#startFrame = startFrame;
-  }
-
-  set endFrame(endFrame) {
-    if (typeof endFrame !== 'number') {
-      throw new TypeError("Shape (endFrame): should " +
-        "be a Number");
-    }
-
-    this.#endFrame = endFrame;
+    this._currentFrame = currentFrame;
   }
   
-  set direction(direction) {
-    if (typeof direction !== 'number') {
-      throw new TypeError("Shape (direction): should " +
-        "be a Number");
+  set animation(animation) {
+    if (!(animation instanceof Shape.Animation)) {
+      throw new TypeError("Shape (animation): should " +
+        "be a Shape.Animation");
     }
 
-    this.#direction = direction;
+    this._animation = animation;
   }
 
-  set loopCount(loopCount) {
-    if (typeof loopCount !== 'number') {
-      throw new TypeError("Shape (loopCount): should " +
-        "be a Number");
-    }
-
-    this.#loopCount = loopCount;
-  }
-
-  set loopMax(loopMax) {
-    if (typeof loopMax !== 'number') {
-      throw new TypeError("Shape (loopMax): should " +
-        "be a Number");
-    }
-
-    this.#loopMax = loopMax;
-  }
-  
   set timer(timer) {
     if (typeof timer !== 'number') {
       throw new TypeError("Shape (timer): should " +
         "be a Number");
     }
 
-    this.#timer = timer;
+    this._timer = timer;
   }
 
-  // helpers for working with renderable - error
-  // handling occurs in Renderable class
-  get renderable() { return this.#renderable; }
+  //> getters (renderable) //
+  get color() { return this._renderable.color; }
+  get alpha() { return this._renderable.alpha; }
+  get depth() { return this._renderable.depth; }
+  get renderMode() { return this._renderable.renderMode; }
+  get shader() { return this._renderable.shader; }
+  get outline() { return this._renderable.outline; }
+  get lineWidth() { return this._renderable.lineWidth; }
 
-  get color() { return this.#renderable.color; }
-  get alpha() { return this.#renderable.alpha; }
-  get depth() { return this.#renderable.depth; }
-  get renderMode() { return this.#renderable.renderMode; }
-  get shader() { return this.#renderable.shader; }
-  get outline() { return this.#renderable.outline; }
-  get lineWidth() { return this.#renderable.lineWidth; }
-
-  set color(color) { this.#renderable.color = color; }
-  set alpha(alpha) { this.#renderable.alpha = alpha; }
-  set depth(depth) { this.#renderable.depth = depth; }
+  //> setters (renderable) //
+  set color(color) { this._renderable.color = color; }
+  set alpha(alpha) { this._renderable.alpha = alpha; }
+  set depth(depth) { this._renderable.depth = depth; }
 
   set renderMode(renderMode) {
-    if (renderMode !== this.#renderable.renderMode) {
-      this.#indices.splice(0, this.#indices.length);
+    if (renderMode !== this._renderable.renderMode) {
+      this._indices.splice(0, this._indices.length);
     }
 
-    this.#renderable.renderMode = renderMode;
+    this._renderable.renderMode = renderMode;
   }
 
   set shader(shader) {
-    this.#renderable.shader = shader;
+    this._renderable.shader = shader;
   }
 
   set outline(outline) {
-    this.#renderable.outline = outline;
+    this._renderable.outline = outline;
   }
 
   set lineWidth(lineWidth) {
-    this.#renderable.lineWidth = lineWidth;
+    this._renderable.lineWidth = lineWidth;
   }
-  // ...getters/setters
   
-
-  // public methods...
+  //> public methods //
   copy(other) {
     if (!(other instanceof Shape)) {
       throw new TypeError("Shape (copy): other should be " +
@@ -348,29 +490,24 @@ class Shape extends Polygon {
 
     super.copy(other);
 
-    this.#indices = other.#indices.slice();
+    this.animating = other.animating;
+    this._indices = other._indices.slice();
 
-    this.#colors.splice(0, this.#colors.length);
-    for (let c of other.#colors) {
-      this.#colors.push(c.getCopy());
+    this._colors.splice(0, this._colors.length);
+    for (let c of other._colors) {
+      this._colors.push(c.getCopy());
     }
 
-    this.#frames.splice(0, this.#frames.length);
-    for (let f of other.#frames) {
-      this.#frames.push(f.getCopy());
+    this._frames.splice(0, this._frames.length);
+    for (let f of other._frames) {
+      this._frames.push(f.getCopy());
     }
 
-    this.#currentFrame = other.#currentFrame;
-    this.animated = other.animated;
-    
-    this.#startFrame = other.#startFrame;
-    this.#endFrame   =   other.#endFrame;
-    this.#direction  =  other.#direction;
-    this.#loopCount  =  other.#loopCount;
-    this.#loopMax    =    other.#loopMax;
-    this.#timer      =      other.#timer;
+    this._animation = other._animation.getCopy();
+    this._currentFrame = other._currentFrame;
+    this._timer = other._timer;
 
-    this.#renderable = other.#renderable.getCopy();
+    this._renderable = other._renderable.getCopy();
   }
 
   getCopy() {
@@ -386,80 +523,63 @@ class Shape extends Polygon {
         "a Shape");
     }
 
+    // for the sake of equality we don't care about the current
+    // state of the animation (current frame and timer) only the
+    // initial state (eg, loop count, direction, etc)
+
     return (
       super.equals(other) &&
 
-      this.#indices.length === other.#indices.length &&
-      this.#indices.every((e, i) => {
-        return e === other.#indices[i];
+      this._indices.length === other._indices.length &&
+      this._indices.every((e, i) => {
+        return e === other._indices[i];
       }) &&
 
-      this.#colors.length === other.#colors.length &&
-      this.#colors.every((e, i) => {
-        return e.equals(other.#colors[i]);
+      this._colors.length === other._colors.length &&
+      this._colors.every((e, i) => {
+        return e.equals(other._colors[i]);
       }) &&
 
-      this.#frames.length === other.#frames.length &&
-      this.#frames.every((e, i) => {
-        return e.equals(other.#frames[i]);
+      this._frames.length === other._frames.length &&
+      this._frames.every((e, i) => {
+        return e.equals(other._frames[i]);
       }) &&
 
-      // this.#currentFrame === this.#currentFrame &&
-      this.animated === other.animated &&
-      
-      this.#startFrame === other.#startFrame &&
-      this.#endFrame   ===   other.#endFrame &&
-      this.#direction  ===  other.#direction &&
-      this.#loopCount  ===  other.#loopCount &&
-      this.#loopMax    ===    other.#loopMax &&
-      // this.#timer      ===      other.#timer &&
+      this._animation.equals(other._animation) &&
 
-      this.#renderable.equals(other.#renderable)
+      this._renderable.equals(other._renderable)
     );
   }
 
   process(dt) {
-    if (this.animated && this.#frames.length > 0) {
-      this.#timer += dt;
+    // if shape is currently animating then check if current
+    // frame time has elapsed and switch to the next as
+    // specified by the shape's assigned animation, or
+    // indicate animation has finished if no next frame
 
-      let currFrame = this.currentFrame;
-      let limit = this.#frames[currFrame].limit;
+    if (this.animating === true) {
+      let limit = this._animation.currentTime;
 
-      while (this.#timer >= limit) {
-        this.#timer -= limit;
+      while (this._timer >= limit) {
+        this._timer -= limit;
 
-        if (currFrame === this.#endFrame) {
-          if (this.#loopCount != 0) {
-            if (this.#loopCount > 0) {
-              --this.#loopCount;
-            }
+        if (this._animation.advance() === true) {
+          this.currentFrame = this._animation.currentIndex;
 
-            currFrame = this.#startFrame - this.#direction;
-          } else {
-            this.animated = false;
-            break;
-          }
+          limit = this._animation.currentTime;
+        } else {
+          this.animating = false;
+          this._timer = 0;
+          limit = 1;
         }
-        
-        currFrame = (currFrame + this.#direction) % this.#frames.length;
-        if (currFrame < 0) {
-          currFrame = this.#frames.length - 1;
-        }
-        
-        limit = this.#frames[currFrame].limit;
       }
 
-      if (this.currentFrame !== currFrame) {
-        this.currentFrame = currFrame;
-        return true;
-      }
+      this._timer += dt;
     }
-
-    return false;
   }
 
   pushFrame(textureIn, layerIn, sIn, tIn) {
-    this.#frames.push(new Shape.Frame({
+    this._frames.push(new Shape.Frame({
       texture: textureIn,
       layer: layerIn,
       s: sIn,
@@ -496,97 +616,50 @@ class Shape extends Polygon {
     }
   }
 
-  setAnimation(speeds, start, end, direction, loops) {
-    if (this.#frames.length !== 0) {
-      this.#startFrame = Math.min(this.#frames.length - 1, start);
-      this.#endFrame = Math.min(this.#frames.length - 1, end);
-    } else {
-      this.#startFrame = 0;
-      this.#endFrame = 0;
-    }
+  setAnimation(timingsIn = [], startIn = 0, endIn = undefined,
+    directionIn = "forward", loopsIn = -1) {
 
-    if (this.#startFrame !== this.#endFrame && direction !== 0) {
-      this.animated = true;
-      this.#direction = direction;
+    // create an animation using the range startIn >= n >= endIn
+    // and start the animation if valid
 
-      let frameCount = 0;
+    let anim = new Shape.Animation();
+    let end = (endIn === undefined) ? this._frames.length - 1 : endIn;
 
-      { // calculate the number of frames between start and end
-        // frame accounting for animation direction and looping
-        // past the start or end of the frames array
+    anim.fromRange(this._frames.length, timingsIn,
+      startIn, end, directionIn, loopsIn);
+    
+    this._animation = anim;
+    this.resetAnimation();
+  }
 
-        let s = this.#startFrame;
-        let e = this.#endFrame;
-        
-        if (direction < 0) {
-          let t = s;
-          s = e;
-          e = t;
-        }
+  setAnimationArray(timingsIn = [], indices = [],
+    directionIn = "forward", loopsIn = -1) {
 
-        if (s < e) {
-          frameCount = (e + 1) - s;
-        } else {
-          frameCount = (this.#frames.length - s) +(e + 1);
-        }
-      }
+    let anim = new Shape.Animation();
 
-      
-      { // if there is insufficient speed values for every frame of the
-        // animation then pad the values with either default
-        // (1/60 of a second) if there are no values at all,
-        // or with the last speed value
+    anim.fromArray(timingsIn, indices, directionIn, loopsIn);
 
-        let speedPad = 0.0167;
-
-        if (speeds.length !== 0) {
-          speedPad = speeds[speeds.length - 1];
-        }
-        
-        if (speeds.length < frameCount) {
-          let len = speeds.length;
-          speeds.length = frameCount;
-          for (let i = len; i < speeds.length; ++i) {
-            speeds[i] = speedPad;
-          }
-        }
-      }
-
-      // assign the speed values to each frame of the animation in order
-      for (let i = this.#startFrame, j = 0; ; i += this.#direction, ++j) {
-        i = i % this.#frames.length;
-        
-        this.#frames[i].limit = speeds[j];
-        
-        if (i === this.#endFrame) {
-          break;
-        } else if (i === 0 && this.#direction < 0) {
-          i = this.#frames.length;
-        }
-      }
-
-      this.#loopCount = -1;
-      if (loops !== undefined) {
-        this.#loopCount = loops;
-      }
-
-      this.#loopMax = this.#loopCount;
-      this.#timer = 0.0;
-      this.currentFrame = this.#startFrame;
-    } else {
-      this.animated = false;
-    }
+    this._animation = anim;
+    this.resetAnimation();
   }
 
   resetAnimation() {
-    this.#loopCount = this.#loopMax;
+    // reset the current animation back to its initial state
+    // and update shape's animation status accordingly
 
-    this.#timer = 0.0;
-    this.currentFrame = this.#startFrame;
+    this._animation.reset();
+
+    this._timer = 0;
+
+    this.animating = (this._animation._frames.length > 0) ? true : false;
+    this.currentFrame = (this._animation._frames.length > 0)
+      ? this._animation._frames[0]._index : 0;
   }
 
-  // a naive ear clipping algorithm
   triangulate() {
+    // [!] can be drastically improved
+    // a naive ear clipping algorithm
+
     if (this.verts.length > 2) {
       if (!this.isCCW()) {
         this.reverseWinding();
@@ -675,7 +748,7 @@ class Shape extends Polygon {
         indices.push(i, i2, i3);
       }
 
-      this.#indices = indices.slice();
+      this._indices = indices.slice();
     }
   }
 
@@ -685,17 +758,17 @@ class Shape extends Polygon {
 
     switch (renderMode) {
       case GL.POINTS :
-        if (this.#indices.length === 0) {
+        if (this._indices.length === 0) {
           for (let i = 0; i < this.verts.length; ++i) {
-            this.#indices.push(i);
+            this._indices.push(i);
           }
         }
 
         break;
       case GL.LINES :
-        if (this.#indices.length === 0 && this.verts.length > 1) {
+        if (this._indices.length === 0 && this.verts.length > 1) {
           for (let i = 0; i < this.verts.length; ++i) {
-            this.#indices.push(i);
+            this._indices.push(i);
           }
         }
 
@@ -703,22 +776,22 @@ class Shape extends Polygon {
       case GL.LINE_LOOP :
         renderMode = GL.LINES; // manually loop lines
 
-        if (this.#indices.length === 0 && this.verts.length > 1) {
+        if (this._indices.length === 0 && this.verts.length > 1) {
           for (let i = 0; i < this.verts.length; ++i) {
-            this.#indices.push(i);
+            this._indices.push(i);
 
             if (i + 1 < this.verts.length) {
-              this.#indices.push(i + 1);
+              this._indices.push(i + 1);
             } else {
-              this.#indices.push(0);
+              this._indices.push(0);
             }
           }
         }
 
         break;
       case enums.Rendering.LINES :
-        if (this.#indices.length === 0) {
-          this.#generateOutline("lines");
+        if (this._indices.length === 0) {
+          this._generateOutline("lines");
         }
 
         // render outline as triangles
@@ -727,8 +800,8 @@ class Shape extends Polygon {
 
         break;
       case enums.Rendering.LINE_LOOP :
-        if (this.#indices.length === 0) {
-          this.#generateOutline();
+        if (this._indices.length === 0) {
+          this._generateOutline();
         }
 
         // render outline as triangles
@@ -738,7 +811,7 @@ class Shape extends Polygon {
         break;
       case GL.TRIANGLES :
       default :
-        if (this.#indices.length === 0) {
+        if (this._indices.length === 0) {
           this.triangulate();
         }
 
@@ -746,8 +819,8 @@ class Shape extends Polygon {
     }
 
     let frame = new Shape.Frame();
-    if (this.currentFrame < this.#frames.length) {
-      frame.copy(this.#frames[this.currentFrame]);
+    if (this.currentFrame < this._frames.length) {
+      frame.copy(this._frames[this.currentFrame]);
     }
 
     let transMat = this.transformable.asMat3();
@@ -758,7 +831,7 @@ class Shape extends Polygon {
       1 / (this.boundingBox.upper.y - this.boundingBox.lower.y)
     );
     
-    let colors = this.#colors.slice();
+    let colors = this._colors.slice();
 
     if (this.renderMode === enums.Rendering.LINES||
       this.renderMode === enums.Rendering.LINE_LOOP) {
@@ -784,7 +857,7 @@ class Shape extends Polygon {
     }
 
     // pad the color array to match the number of vertices
-    let diff = verts.length - this.#colors.length;
+    let diff = verts.length - this._colors.length;
     if (diff > 0) {
       colors = colors.concat(
         new Array(diff).fill(this.color.getCopy())
@@ -792,7 +865,7 @@ class Shape extends Polygon {
     }
     
     // [!] allow per-vertex transparency
-    // diff = verts.length - this.#colors.length;
+    // diff = verts.length - this._colors.length;
     let alphas = [];
     diff = verts.length;
     if (diff > 0) {
@@ -852,7 +925,7 @@ class Shape extends Polygon {
 
     let rbd = new RenderBatchData();
     rbd.vertices = vboVerts;
-    rbd.indices = this.#indices.slice();
+    rbd.indices = this._indices.slice();
     rbd.renderMode = renderMode;
     rbd.textureRef = (frame.texture) ? frame.texture.texture : null;
     rbd.depth = this.depth;
@@ -862,18 +935,16 @@ class Shape extends Polygon {
 
   pushVert(vert) {
     super.pushVert(vert);
-    this.#indices.splice(0, this.#indices.length);
+    this._indices.splice(0, this._indices.length);
   }
 
   pushVerts(verts) {
     super.pushVerts(verts);
-    this.#indices.splice(0, this.#indices.length);
+    this._indices.splice(0, this._indices.length);
   }
-  // ...public methods
 
-
-  // private methods...
-  #generateOutline(mode) {
+  //> internal methods //
+  _generateOutline(mode) {
     let halfWidth = this.lineWidth * 0.5;
     
     let rects   = new Array();
@@ -966,9 +1037,8 @@ class Shape extends Polygon {
     }
 
     this.outline = rects;
-    this.#indices = indices;
+    this._indices = indices;
   }
-  // ...private methods
 };
 
 export default Shape;
