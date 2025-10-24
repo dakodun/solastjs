@@ -31,7 +31,7 @@ build() {
   # (using containerfile)
   
   set -x
-  podman pull docker.io/library/node:22.9-bookworm-slim
+  podman pull docker.io/library/node:25.0-bookworm-slim
   podman build --file node.containerfile --tag localhost/sol-node-img .
 
   podman pull docker.io/library/nginx:1.27-alpine
