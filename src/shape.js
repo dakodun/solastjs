@@ -26,12 +26,14 @@ class Shape extends Polygon {
 
     //> constructor //
     constructor(initializerList = {}) {
-      this.texture = (initializerList.texture !== undefined) ?
-        initializerList.texture : null;
-      
-      this.s = initializerList.s || new Vec2(0.0, 1.0);
-      this.t = initializerList.t || new Vec2(0.0, 1.0);
-      this.layer = initializerList.layer || 0;
+      if (initializerList) {
+        this.texture = (initializerList.texture !== undefined) ?
+          initializerList.texture : null;
+        
+        this.s = initializerList.s || new Vec2(0.0, 1.0);
+        this.t = initializerList.t || new Vec2(0.0, 1.0);
+        this.layer = initializerList.layer || 0;
+      }
     }
 
     //> getters //
@@ -113,7 +115,7 @@ class Shape extends Polygon {
       );
     }
   };
-  
+
 
   //> nested class //
   static Animation = class {
@@ -182,21 +184,22 @@ class Shape extends Polygon {
         throw new TypeError("Shape.Animation (equals): other should " +
           "be a Shape.Animation");
       }
+
+      // only check if the animation's initial state
+      // matches other
       
       return (
-        this._index === other._index &&
-
         this._frames.length === other._frames.length &&
         this._frames.every((e, i) => {
-          return e === other._frames[i];
+          return (
+            e._index === other._frames[i]._index &&
+            e._time  === other._frames[i]._time
+          );
         }) &&
 
         this._dirInit === other._dirInit &&
         this._loopMax === other._loopMax &&
-        this._loopDir === other._loopDir &&
-
-        this._loopCount === other._loopCount &&
-        this._dirCurr === other._dirCurr
+        this._loopDir === other._loopDir
       );
     }
 
