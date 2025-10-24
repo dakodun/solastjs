@@ -1,9 +1,9 @@
 import { describe, test, expect } from 'vitest';
 
-import Transformable2D from '../../scr/transformable2d.js';
+import Transformable2D from '../../src/transformable2d.js';
 
-import Mat3 from '../../scr/mat3.js';
-import Vec2 from '../../scr/vec2.js';
+import Mat3 from '../../src/mat3.js';
+import Vec2 from '../../src/vec2.js';
 
 describe("getters/setters", () => {
   describe("this.position, this.origin, and this.scale", () => {

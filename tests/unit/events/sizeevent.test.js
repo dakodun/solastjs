@@ -1,9 +1,9 @@
 import { describe, test, expect } from 'vitest';
 
-import SizeEvent from '../../../scr/events/sizeevent.js';
+import SizeEvent from '../../../src/events/sizeevent.js';
 
-import Vec2 from '../../../scr/vec2.js';
-import * as enums from '../../../scr/exportenums.js';
+import Vec2 from '../../../src/vec2.js';
+import * as enums from '../../../src/exportenums.js';
 
 describe("construction", () => {
   test("new SizeEvent(prev, new, ...) should assign the first " +

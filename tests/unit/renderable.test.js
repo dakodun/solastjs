@@ -1,11 +1,11 @@
 import { describe, test, expect } from 'vitest';
 
-import Renderable from '../../scr/renderable.js';
+import Renderable from '../../src/renderable.js';
 
-import GL, { glSetContext } from '../../scr/gl.js'
-import Shader from '../../scr/shader.js';
-import Vec2 from '../../scr/vec2.js';
-import Vec3 from '../../scr/vec3.js';
+import GL, { glSetContext } from '../../src/gl.js'
+import Shader from '../../src/shader.js';
+import Vec2 from '../../src/vec2.js';
+import Vec3 from '../../src/vec3.js';
 
 describe("construction", () => {
   test("renderMode value when GL is defined or not", () => {

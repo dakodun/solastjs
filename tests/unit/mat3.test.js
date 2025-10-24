@@ -1,9 +1,9 @@
 import { describe, test, expect } from 'vitest';
 
-import Mat3 from '../../scr/mat3.js';
+import Mat3 from '../../src/mat3.js';
 
-import Vec2 from '../../scr/vec2.js';
-import Vec3 from '../../scr/vec3.js';
+import Vec2 from '../../src/vec2.js';
+import Vec3 from '../../src/vec3.js';
 
 describe("construction", () => {
   test("new Mat3(arr, ...) should populate 'arr' field with " +

@@ -1,6 +1,6 @@
 import { describe, test, expect } from 'vitest';
 
-import Vec4 from '../../scr/vec4.js';
+import Vec4 from '../../src/vec4.js';
 
 describe("construction", () => {
   test("new Vec4(x, y, z, w, ...)", () => {

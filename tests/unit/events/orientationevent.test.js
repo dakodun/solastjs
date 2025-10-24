@@ -1,8 +1,8 @@
 import { describe, test, expect } from 'vitest';
 
-import OrientationEvent from '../../../scr/events/orientationevent.js';
+import OrientationEvent from '../../../src/events/orientationevent.js';
 
-import * as enums from '../../../scr/exportenums.js';
+import * as enums from '../../../src/exportenums.js';
 
 describe("copying", () => {
   test("this.copy(other) should make a deep copy of 'other'", () => {

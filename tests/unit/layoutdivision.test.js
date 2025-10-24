@@ -1,11 +1,11 @@
 import { describe, test, expect } from 'vitest';
 
-import LayoutDivision from '../../scr/layoutdivision.js';
+import LayoutDivision from '../../src/layoutdivision.js';
 
-import LayoutContainer from '../../scr/layoutcontainer.js';
-import Vec2 from '../../scr/vec2.js';
+import LayoutContainer from '../../src/layoutcontainer.js';
+import Vec2 from '../../src/vec2.js';
 
-import * as enums from "../../scr/exportenums.js";
+import * as enums from "../../src/exportenums.js";
 
 // LayoutDivision.Cell
 describe("construction", () => {
