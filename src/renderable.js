@@ -1,4 +1,5 @@
 import GL from './gl.js'
+import Sol from './sol.js'
 
 import Shader from './shader.js';
 import Vec3 from './vec3.js';
@@ -12,110 +13,95 @@ class Renderable {
     method
   */
 
-  // private fields
-    #color = new Vec3(255, 255, 255);
-    #alpha =  255;
-    #depth = -1.0;
+  //> internal properties //
+  _color = new Vec3(255, 255, 255);
+  _alpha =  255;
+  _depth = -1.0;
 
-    #renderMode = (GL) ? GL.TRIANGLES : 0;
+  _renderMode = (GL) ? GL.TRIANGLES : 0;
 
-    #shader = null;
+  _shader = null;
 
-    // for rendering lines with a set width
-    // - internally rendered as triangles
-    #outline = new Array();
-    #lineWidth = 1;
-  // ...
+  // for rendering lines with a set width
+  // - internally rendered as triangles
+  _outline = new Array();
+  _lineWidth = 1;
 
+  //> constructor //
   constructor() {
 
   }
 
-  // getters/setters
-  get color() { return this.#color; }
-  get alpha() { return this.#alpha; }
-  get depth() { return this.#depth; }
-  get renderMode() { return this.#renderMode; }
-  get shader() { return this.#shader; }
-  get outline() { return this.#outline; }
-  get lineWidth() { return this.#lineWidth; }
+  //> getters //
+  get color() { return this._color; }
+  get alpha() { return this._alpha; }
+  get depth() { return this._depth; }
+  get renderMode() { return this._renderMode; }
+  get shader() { return this._shader; }
+  get outline() { return this._outline; }
+  get lineWidth() { return this._lineWidth; }
 
+  //> setters //
   set color(color) {
-    if (!(color instanceof Vec3)) {
-      throw new TypeError("Renderable (color): should " +
-        "be a Vec3");
-    }
+    Sol.CheckTypes(this, "set color",
+    [{color}, [Vec3]]);
 
-    this.#color = color;
+    this._color = color;
   }
 
   set alpha(alpha) {
-    if (typeof alpha !== 'number') {
-      throw new TypeError("Renderable (alpha): should " +
-        "be a Number");
-    }
+    Sol.CheckTypes(this, "set alpha",
+    [{alpha}, [Number]]);
 
-    this.#alpha = alpha;
+    this._alpha = alpha;
   }
 
   set depth(depth) {
-    if (typeof depth !== 'number') {
-      throw new TypeError("Renderable (depth): should " +
-        "be a Number");
-    }
+    Sol.CheckTypes(this, "set depth",
+    [{depth}, [Number]]);
 
-    this.#depth = depth;
+    this._depth = depth;
   }
 
   set renderMode(renderMode) {
-    if (typeof renderMode !== 'number') {
-      throw new TypeError("Renderable (renderMode): should " +
-        "be a Number");
-    }
+    Sol.CheckTypes(this, "set renderMode",
+    [{renderMode}, [Number]]);
 
-    this.#renderMode = renderMode;
+    this._renderMode = renderMode;
   }
 
   set shader(shader) {
-    if (shader !== null && !(shader instanceof Shader)) {
-      throw new TypeError("Renderable (shader): should " +
-        "be a Shader (or null)");
-    }
+    Sol.CheckTypes(this, "set renderMode",
+    [{shader}, [Shader]]);
 
-    this.#shader = shader;
+    this._shader = shader;
   }
 
   set outline(outline) {
-    if (!(outline instanceof Array)) {
-      throw new TypeError("Renderable (outline): outline should " +
-        "be an Array of Vec2");
-    }
+    Sol.CheckTypes(this, "set outline",
+    [{outline}, [Array]]);
     
-    this.#outline = outline;
+    this._outline = outline;
   }
 
   set lineWidth(lineWidth) {
-    if (typeof lineWidth !== 'number') {
-      throw new TypeError("Renderable (lineWidth): should " +
-        "be a Number");
-    }
+    Sol.CheckTypes(this, "set lineWidth",
+    [{lineWidth}, [Number]]);
 
-    this.#lineWidth = lineWidth;
+    this._lineWidth = lineWidth;
   }
-  // ...
 
+  //> public methods //
   copy(other) {
-    if (!(other instanceof Renderable)) {
-      throw new TypeError("Renderable (copy): other should be " +
-        "a Renderable");
-    }
+    Sol.CheckTypes(this, "copy",
+    [{other}, [Renderable]]);
 
-    this.#color = other.#color.getCopy();
-		this.#alpha = other.#alpha;
-    this.#depth = other.#depth;
+    this._color = other._color.getCopy();
+		this._alpha = other._alpha;
+    this._depth = other._depth;
 
-    this.#renderMode = other.#renderMode;
-    this.#shader = other.#shader;
+    this._renderMode = other._renderMode;
+    this._shader = other._shader;
   }
 
   getCopy() {
@@ -126,17 +112,15 @@ class Renderable {
   }
 
   equals(other) {
-    if (!(other instanceof Renderable)) {
-      throw new TypeError("Renderable (equals): other should be " +
-        "a Renderable");
-    }
+    Sol.CheckTypes(this, "equals",
+    [{other}, [Renderable]]);
     
     return (
-      this.#color.equals(other.#color) &&
-      this.#alpha === other.#alpha &&
-      this.#depth === other.#depth &&
-      this.#renderMode === other.#renderMode &&
-      this.#shader === other.#shader
+      this._color.equals(other._color) &&
+      this._alpha === other._alpha &&
+      this._depth === other._depth &&
+      this._renderMode === other._renderMode &&
+      this._shader === other._shader
     );
   }
 

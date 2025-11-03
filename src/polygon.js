@@ -1,13 +1,15 @@
+import Sol from './sol.js';
+
 import Transformable2D from './transformable2d.js';
 import Vec2 from './vec2.js';
 
 class Polygon {
-  // private fields
-    #transformable = new Transformable2D();
+  //> internal properties //
+  _transformable = new Transformable2D();
 
-    #verts = new Array();
-  // ...
+  _verts = new Array();
 
+  //> constructor //
   constructor(verts = undefined) {
     // checking for undefined here lets us call this
     // constructor from a derived class (namely shape)
@@ -18,14 +20,12 @@ class Polygon {
     }
   }
 
-  // getters/setters
-  get verts() { return this.#verts; }
+  //> getters/setters //
+  get verts() { return this._verts; }
 
   set verts(verts) {
-    if (!(verts instanceof Array)) {
-      throw new TypeError("Polygon (verts): verts should " +
-        "be an Array of Vec2");
-    }
+    Sol.CheckTypes(this, "set verts",
+    [{verts}, [Array]]);
 
     let bbox = {
       lower: new Vec2(Number.POSITIVE_INFINITY,
@@ -36,8 +36,8 @@ class Polygon {
 
     for (const vert of verts) {
       if (!(vert instanceof Vec2)) {
-        throw new TypeError("Polygon (verts): vert should " +
-          "be a Vec2");
+        throw new TypeError("Polygon (set verts): verts should " +
+          "be an Array of Vec2");
       }
 
       bbox.lower.x = Math.min(vert.x, bbox.lower.x);
@@ -48,45 +48,43 @@ class Polygon {
     }
     
     this.boundingBox = bbox;
-    this.#verts = verts;
+    this._verts = verts;
   }
 
-  // helpers for working with transformable - error
-  // handling occurs in Transformable2D class
-  get transformable() { return this.#transformable; }
+  //> getters (transformable) //
+  get transformable() { return this._transformable; }
   
-  get position() { return this.#transformable.position; }
-  get origin()   { return this.#transformable.origin;   }
-  get transMat() { return this.#transformable.transMat; }
-  get scale()    { return this.#transformable.scale;    }
-  get rotation() { return this.#transformable.rotation; }
-  get boundingBox() { return this.#transformable.boundingBox; }
+  get position() { return this._transformable.position; }
+  get origin()   { return this._transformable.origin;   }
+  get transMat() { return this._transformable.transMat; }
+  get scale()    { return this._transformable.scale;    }
+  get rotation() { return this._transformable.rotation; }
+  get boundingBox() { return this._transformable.boundingBox; }
 
-  get width()  { return this.#transformable.width;  }
-  get height() { return this.#transformable.height; }
+  get width()  { return this._transformable.width;  }
+  get height() { return this._transformable.height; }
 
-  set position(position) { this.#transformable.position = position; }
-  set origin(origin)     { this.#transformable.origin = origin;     }
-  set transMat(transMat) { this.#transformable.transMat = transMat; }
-  set scale(scale)       { this.#transformable.scale = scale;       }
-  set rotation(rotation) { this.#transformable.rotation = rotation; }
+  //> setters (transformable) //
+  set position(position) { this._transformable.position = position; }
+  set origin(origin)     { this._transformable.origin = origin;     }
+  set transMat(transMat) { this._transformable.transMat = transMat; }
+  set scale(scale)       { this._transformable.scale = scale;       }
+  set rotation(rotation) { this._transformable.rotation = rotation; }
 
   set boundingBox(boundingBox) {
-    this.#transformable.boundingBox = boundingBox;
+    this._transformable.boundingBox = boundingBox;
   }
-  // ...
 
+  //> public methods //
   copy(other) {
-    if (!(other instanceof Polygon)) {
-      throw new TypeError("Polygon (copy): other should be " +
-        "a Polygon");
-    }
+    Sol.CheckTypes("Polygon", "copy",
+    [{other}, [Polygon]]);
 
-    this.#transformable = other.#transformable.getCopy();
+    this._transformable = other._transformable.getCopy();
 
-    this.#verts.splice(0, this.#verts.length);
-    for (let v of other.#verts) {
-      this.#verts.push(v.getCopy());
+    this._verts.splice(0, this._verts.length);
+    for (let v of other._verts) {
+      this._verts.push(v.getCopy());
     }
   }
 
@@ -98,28 +96,24 @@ class Polygon {
   }
 
   equals(other) {
-    if (!(other instanceof Polygon)) {
-      throw new TypeError("Polygon (equals): other should be " +
-        "a Polygon");
-    }
+    Sol.CheckTypes("Polygon", "equals",
+    [{other}, [Polygon]]);
     
     return (
-      this.#verts.length === other.#verts.length &&
-      this.#verts.every((e, i) => {
-         return e.equals(other.#verts[i]);
+      this._verts.length === other._verts.length &&
+      this._verts.every((e, i) => {
+         return e.equals(other._verts[i]);
       }) &&
 
-      this.#transformable.equals(other.#transformable)
+      this._transformable.equals(other._transformable)
     );
   }
 
   pushVert(vert) {
-    if (!(vert instanceof Vec2)) {
-      throw new TypeError("Polygon (pushVert): vert should " +
-        "be a Vec2");
-    }
+    Sol.CheckTypes("Polygon", "pushVert",
+    [{vert}, [Vec2]]);
     
-    this.#verts.push(vert.getCopy());
+    this._verts.push(vert.getCopy());
     
     this.boundingBox.lower.x =
       Math.min(vert.x, this.boundingBox.lower.x);
@@ -133,10 +127,8 @@ class Polygon {
   }
 
   pushVerts(verts) {
-    if (!(verts instanceof Array)) {
-      throw new TypeError("Polygon (pushVerts): verts should " +
-        "be an Array of Vec2");
-    }
+    Sol.CheckTypes("Polygon", "pushVerts",
+    [{verts}, [Array]]);
     
     for (const vert of verts) {
       this.pushVert(vert);
@@ -147,12 +139,12 @@ class Polygon {
     // if area is positive then polygon is clockwise
     let area = 0.0;
 
-    for (let i = 0; i < this.#verts.length; ++i) {
+    for (let i = 0; i < this._verts.length; ++i) {
       // next vertex; wrap around
-      let ii = (i + 1) % this.#verts.length;
+      let ii = (i + 1) % this._verts.length;
 
-      area += (this.#verts[ii].x - this.#verts[i].x) *
-        (this.#verts[ii].y + this.#verts[i].y);
+      area += (this._verts[ii].x - this._verts[i].x) *
+        (this._verts[ii].y + this._verts[i].y);
     }
     
     return (area >= 0) ? 1 : -1;
@@ -173,7 +165,7 @@ class Polygon {
   }
 
   makeCircle(diameter, resolution = 18) {
-    this.#verts.splice(0, this.#verts.length);
+    this._verts.splice(0, this._verts.length);
 
     this.boundingBox = {
       lower: new Vec2(Number.POSITIVE_INFINITY,
@@ -197,7 +189,7 @@ class Polygon {
   }
 
   makePolyLine(verts, halfWidth) {
-    this.#verts.splice(0, this.#verts.length);
+    this._verts.splice(0, this._verts.length);
 
     this.boundingBox = {
       lower: new Vec2(Number.POSITIVE_INFINITY,
@@ -242,7 +234,7 @@ class Polygon {
         
         let rectA = rectangles[i];
         let rectB = rectangles[i + 1];
-        let result = this.#findOutline(rectA[0],
+        let result = this._findOutline(rectA[0],
           rectA[1], rectB[0], rectB[1]);
 
         for (let r of result) {
@@ -251,7 +243,7 @@ class Polygon {
 
         let rectC = rectangles[j];
         let rectD = rectangles[j - 1];
-        result = this.#findOutline(rectC[2],
+        result = this._findOutline(rectC[2],
           rectC[3], rectD[2], rectD[3]);
         
         for (let r of result) {
@@ -272,13 +264,14 @@ class Polygon {
     }
   }
 
-  // checks if the point is inside this polygon
   isPointInside(point) {
+    // checks if the point is inside this polygon
+
     let windingNum = 0;
 
-    for (let i = 0; i < this.#verts.length; ++i) { 
-      let curr = this.#verts[i];
-      let next = this.#verts[(i + 1) % this.#verts.length];
+    for (let i = 0; i < this._verts.length; ++i) { 
+      let curr = this._verts[i];
+      let next = this._verts[(i + 1) % this._verts.length];
 
       const cn = new Vec2( next.x - curr.x,  next.y - curr.y);
       const cp = new Vec2(point.x - curr.x, point.y - curr.y);
@@ -298,7 +291,8 @@ class Polygon {
     return (windingNum !== 0) ? true : false;
   }
 
-  #findOutline = (ptA, ptB, ptC, ptD) => {
+  //> internal methods //
+  _findOutline = (ptA, ptB, ptC, ptD) => {
     // find the point that sits on the outline
     if (!ptB.equals(ptC)) {
       // linear equation for first line
@@ -337,6 +331,7 @@ class Polygon {
     }
   }
 
+  //> static methods //
   static SegSeg(frstSeg, scndSeg) {
     // an alias function for segment-segment intersection
     return Polygon.SegmentSegmentIntersect(frstSeg, scndSeg);
