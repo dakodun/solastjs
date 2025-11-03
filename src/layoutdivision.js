@@ -5,7 +5,7 @@ import Vec2 from './vec2.js';
 import * as enums from "./exportenums.js";
 
 class LayoutDivision {
-  static Cell = class {
+  static Cell = class Cell {
     /* 
       a cell is part of a division and can be thought of as a much
       simpler  container,  with  its  positioning  and  dimensions

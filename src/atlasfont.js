@@ -2,7 +2,7 @@ import Texture from './texture.js';
 import Vec2 from './vec2.js';
 
 class AtlasFont {
-  static Glyph = class {
+  static Glyph = class Glyph {
     #char = "";
 
     #left   = 0;
@@ -46,7 +46,7 @@ class AtlasFont {
     get t() { return this._t; }
   }
 
-  static Layer = class {
+  static Layer = class Layer {
     #width = 0;
     #height = 0;
     #invWidth = 0;

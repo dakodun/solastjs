@@ -1,5 +1,5 @@
 class List {
-  static Node = class {
+  static Node = class Node {
     // private fields
       #prev = null;
       #next = null;
