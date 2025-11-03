@@ -4,6 +4,9 @@ class Sol {
   // class that holds static properties and methods that are useful
   // internally within sol library design and implementation
 
+  static minFrameTime = 0.006944; // 1/144 - the shortest time a
+  // frame can be displayed for
+
   static CheckTypes(classNameIn, methodName, ...checks) {
     // [!] if type is array then allow comparison of contents
 
@@ -87,7 +90,7 @@ class Sol {
           message = (message === " (") ? "" : message.trimEnd();
           throw new TypeError(`${className} (${methodName}): ` +
           `'${values[0][0]}' ` + ((message !== "") ?
-          `should be ${message}${post}` : "is wrong type!"));
+          `should be of the type '${message}${post}'` : "is wrong type!"));
         }
       }
     }
