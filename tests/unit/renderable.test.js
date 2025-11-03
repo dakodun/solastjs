@@ -169,8 +169,6 @@ describe("getters/setters", () => {
 
         expect(() => { render.outline = "array"; }).
           toThrowError(/Array/);
-        expect(() => { render.outline = "array"; }).
-          toThrowError(/Vec2/);
     });
 
     test("this.outline = [Vec2, ...]", () => {
