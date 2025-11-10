@@ -63,9 +63,7 @@ jobs:
       
       # copy new files over old files
       - name: copy files
-        run: |
-          ls
-          cp -ru ./solastjstar ./
+        run: cp -ru ./solastjstar/* ./
       
       # remove leftover files
       - name: remove files
