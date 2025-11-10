@@ -61,13 +61,17 @@ jobs:
       - name: extract files
         run: tar -xvf solastjs.tar --one-top-level=solastjstar
       
+      # clear it
+      - name: clear current
+        run: rm -rf ./src ./tests
+      
       # copy new files over old files
       - name: copy files
         run: cp -r --update=all ./solastjstar/* ./
       
       # remove leftover files
       - name: remove files
-        run: rm -r solastjs.tar ./solastjstar
+        run: rm -rf solastjs.tar ./solastjstar
 
       # commit/push new files to main
       - name: commit new files
