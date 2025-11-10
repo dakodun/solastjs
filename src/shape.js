@@ -1,4 +1,5 @@
 import GL from './gl.js'
+import Sol from './sol.js';
 
 import Mat3 from './mat3.js';
 import Polygon from './polygon.js';
@@ -13,7 +14,7 @@ import * as enums from "./exportenums.js";
 
 class Shape extends Polygon {
   //> nested class //
-  static Frame = class {
+  static Frame = class Frame {
     // a frame is essentially just a reference to a texture
     // and a set of corresponding coordinates
 
@@ -44,47 +45,37 @@ class Shape extends Polygon {
 
     //> setters //
     set texture(texture) {
-      if (texture !== null && !(texture instanceof Texture)) {
-        throw new TypeError("Shape.Frame (texture): should " +
-          "be a Texture (or null)");
-      }
+      Sol.CheckTypes("Shape.Frame", "set texture",
+      [{texture}, [Texture, null]]);
 
       this._texture = texture;
     }
 
     set s(s) {
-      if (!(s instanceof Vec2)) {
-        throw new TypeError("Shape.Frame (s): should " +
-          "be a Vec2");
-      }
+      Sol.CheckTypes("Shape.Frame", "set s",
+      [{s}, [Vec2]]);
 
       this._s = s;
     }
 
     set t(t) {
-      if (!(t instanceof Vec2)) {
-        throw new TypeError("Shape.Frame (texture): should " +
-          "be a Vec2");
-      }
+      Sol.CheckTypes("Shape.Frame", "set t",
+      [{t}, [Vec2]]);
 
       this._t = t;
     }
 
     set layer(layer) {
-      if (typeof layer !== 'number') {
-        throw new TypeError("Shape.Frame (layer): should " +
-          "be a Number");
-      }
+      Sol.CheckTypes("Shape.Frame", "set layer",
+      [{layer}, [Number]]);
 
       this._layer = layer;
     }
 
     //> public methods //
     copy(other) {
-      if (!(other instanceof Shape.Frame)) {
-        throw new TypeError("Shape.Frame (copy): other should " +
-          "be a Shape.Frame");
-      }
+      Sol.CheckTypes("Shape.Frame", "copy",
+      [{other}, [Shape.Frame]]);
 
       this._texture = other._texture;
 
@@ -101,10 +92,8 @@ class Shape extends Polygon {
     }
 
     equals(other) {
-      if (!(other instanceof Shape.Frame)) {
-        throw new TypeError("Shape.Frame (equals): other should " +
-          "be a Shape.Frame");
-      }
+      Sol.CheckTypes("Shape.Frame", "equals",
+      [{other}, [Shape.Frame]]);
       
       return (
         this._texture === other._texture &&
@@ -118,7 +107,7 @@ class Shape extends Polygon {
 
 
   //> nested class //
-  static Animation = class {
+  static Animation = class Animation {
     // an animation object holds information dictating how frames
     // (as stored in a shape's _frames property) are displayed
     // (that is, in what order and for how long)
@@ -152,10 +141,8 @@ class Shape extends Polygon {
 
     //> public methods //
     copy(other) {
-      if (!(other instanceof Shape.Animation)) {
-        throw new TypeError("Shape.Animation (copy): other should " +
-          "be a Shape.Animation");
-      }
+      Sol.CheckTypes("Shape.Animation", "copy",
+      [{other}, [Shape.Animation]]);
 
       this._index = other._index;
 
@@ -180,10 +167,8 @@ class Shape extends Polygon {
     }
 
     equals(other) {
-      if (!(other instanceof Shape.Animation)) {
-        throw new TypeError("Shape.Animation (equals): other should " +
-          "be a Shape.Animation");
-      }
+      Sol.CheckTypes("Shape.Animation", "equals",
+      [{other}, [Shape.Animation]]);
 
       // only check if the animation's initial state
       // matches other
@@ -203,45 +188,56 @@ class Shape extends Polygon {
       );
     }
 
-    fromRange(frameCount = 0, timingsIn = [], startIn = 0, endIn = frameCount,
+    fromRange(frameCount, timingsIn = [], startIn = 0, endIn = frameCount,
       directionIn = "forward", loopsIn = -1) {
 
       // create the animation from an inclusive range from start
       // to end, first creating an array of indices and then passing
       // it to the fromArray method to do the actual creation
+
+      Sol.CheckTypes("Shape.Animation", "fromRange",
+      [{frameCount}, [Number]], [{timingsIn}, [Array]],
+      [{startIn}, [Number]], [{endIn}, [Number]],
+      [{directionIn}, [String]], [{loopsIn}, [Number]]);
       
       let indices = new Array();
 
-      // sanitise the start and end indices to be within the range
-      // 0 > n > frameCount - 1
+      if (frameCount > 0) {
+        // sanitise the start and end indices to be within the range
+        // 0 > n > frameCount - 1
 
-      let len = frameCount;
-      let max = Math.max(len - 1, 0);
-      let start = Math.max(Math.min(max, startIn), 0);
-      let end = Math.max(Math.min(max, endIn), 0);
+        let len = frameCount;
+        let max = Math.max(len - 1, 0);
+        let start = Math.max(Math.min(max, startIn), 0);
+        let end = Math.max(Math.min(max, endIn), 0);
 
-      // create the index array with indices from start to end
-      // (inclusive), moving in the requested direction and wrapping
-      // around (-1 to (frameCount - 1)) and (frameCount to 0)
+        // create the index array with indices from start to end
+        // (inclusive), moving in the requested direction and wrapping
+        // around (-1 to (frameCount - 1)) and (frameCount to 0)
 
-      let dir = (directionIn.match(/reverse/i) !== null) ? -1 : 1;
-      let curr = start;
-      indices.push(curr);
-
-      while (curr !== end) {
-        curr = ((curr + dir) + len) % len;
+        let dir = (directionIn.match(/reverse/i) !== null) ? -1 : 1;
+        let curr = start;
         indices.push(curr);
-      }
 
-      this.fromArray(timingsIn, indices, directionIn, loopsIn);
+        while (curr !== end) {
+          curr = ((curr + dir) + len) % len;
+          indices.push(curr);
+        }
+
+        this.fromArray(indices, timingsIn, directionIn, loopsIn);
+      }
     }
 
-    fromArray(timingsIn = [], indices = [],
-      directionIn = "forward", loopsIn = -1) {
+    fromArray(indices, timingsIn = [], directionIn = "forward",
+      loopsIn = -1) {
 
       // create the animation from an array of frame indices
       // which correspond to frames as they are store in the
       // parent shape's frame array
+
+      Sol.CheckTypes("Shape.Animation", "fromArray",
+      [{timingsIn}, [Array]], [{indices}, [Array]],
+      [{directionIn}, [String]], [{loopsIn}, [Number]]);
 
       let anim = new Shape.Animation();
 
@@ -276,14 +272,19 @@ class Shape extends Polygon {
       // just use the previous value)
 
       let timings = timingsIn.toReversed();
-      let time = 0.0167;
+      let time = Sol.minFrameTime;
 
       // populate the frames array with pairs of frame indices
       // (as they exist in shape frames array) and frame times 
       
       for (let ind of indices) {
-        time = (timings.length > 0) ? timings.pop() : time;
-        anim._frames.push({_index: ind, _time: time});
+        time = (timings.length > 0) ?
+          Math.max(timings.pop(), Sol.minFrameTime) : time;
+        
+        anim._frames.push({
+          _index: Math.max(ind, 0),
+          _time: time
+        });
       }
 
       this.copy(anim);
@@ -316,7 +317,8 @@ class Shape extends Polygon {
         this._dirCurr *= this._loopDir;
       }
 
-      this._index = (this._index + this._dirCurr) % this._frames.length;
+      this._index = ((this._index + this._dirCurr) +
+        this._frames.length) % this._frames.length;
 
       return true;
     }
@@ -372,15 +374,13 @@ class Shape extends Polygon {
 
   //> setters //
   set indices(indices) {
-    if (!(indices instanceof Array)) {
-      throw new TypeError("Shape (indices): indices should " +
-        "be an Array of Number");
-    }
+    Sol.CheckTypes(this, "set indices",
+    [{indices}, [Array]]);
 
     for (const index of indices) {
       if (typeof index !== 'number') {
-        throw new TypeError("Shape (indices): index should " +
-          "be a Number");
+        throw new TypeError("Shape (set indices): indices should " +
+        "be an Array of Number");
       }
     }
 
@@ -388,15 +388,13 @@ class Shape extends Polygon {
   }
 
   set colors(colors) {
-    if (!(colors instanceof Array)) {
-      throw new TypeError("Shape (colors): colors should " +
-        "be an Array of Vec3");
-    }
+    Sol.CheckTypes(this, "set colors",
+    [{colors}, [Array]]);
 
     for (const color of colors) {
       if (!(color instanceof Vec3)) {
-        throw new TypeError("Shape (colors): color should " +
-          "be a Vec3");
+        throw new TypeError("Shape (set colors): colors should " +
+        "be an Array of Vec3");
       }
     }
 
@@ -404,15 +402,13 @@ class Shape extends Polygon {
   }
 
   set frames(frames) {
-    if (!(frames instanceof Array)) {
-      throw new TypeError("Shape (frames): frames should " +
-        "be an Array of Shape.Frame");
-    }
+    Sol.CheckTypes(this, "set frames",
+    [{frames}, [Array]]);
 
     for (const frame of frames) {
       if (!(frame instanceof Shape.Frame)) {
-        throw new TypeError("Shape (frames): frame should " +
-          "be a Shape.Frame");
+        throw new TypeError("Shape (set frames): frames should " +
+        "be an Array of Shape.Frame");
       }
     }
 
@@ -420,32 +416,22 @@ class Shape extends Polygon {
   }
 
   set currentFrame(currentFrame) {
-    if (typeof currentFrame !== 'number') {
-      throw new TypeError("Shape (currentFrame): should be a Number");
-    } else if (currentFrame < 0 ||
-      currentFrame > this._frames.length) {
-
-      throw new RangeError("Shape (currentFrame): should be an " +
-      "integer between 0 and total number of frames (inclusively)");
-    }
+    Sol.CheckTypes(this, "set currentFrame",
+    [{currentFrame}, [Number]]);
 
     this._currentFrame = currentFrame;
   }
   
   set animation(animation) {
-    if (!(animation instanceof Shape.Animation)) {
-      throw new TypeError("Shape (animation): should " +
-        "be a Shape.Animation");
-    }
+    Sol.CheckTypes(this, "set animation",
+    [{animation}, [Shape.Animation]]);
 
     this._animation = animation;
   }
 
   set timer(timer) {
-    if (typeof timer !== 'number') {
-      throw new TypeError("Shape (timer): should " +
-        "be a Number");
-    }
+    Sol.CheckTypes(this, "set timer",
+    [{timer}, [Number]]);
 
     this._timer = timer;
   }
@@ -486,10 +472,8 @@ class Shape extends Polygon {
   
   //> public methods //
   copy(other) {
-    if (!(other instanceof Shape)) {
-      throw new TypeError("Shape (copy): other should be " +
-        "a Shape");
-    }
+    Sol.CheckTypes(this, "copy",
+    [{other}, [Shape]]);
 
     super.copy(other);
 
@@ -521,10 +505,8 @@ class Shape extends Polygon {
   }
 
   equals(other) {
-    if (!(other instanceof Shape)) {
-      throw new TypeError("Shape (equals): other should be " +
-        "a Shape");
-    }
+    Sol.CheckTypes(this, "equals",
+    [{other}, [Shape]]);
 
     // for the sake of equality we don't care about the current
     // state of the animation (current frame and timer) only the
@@ -560,10 +542,12 @@ class Shape extends Polygon {
     // specified by the shape's assigned animation, or
     // indicate animation has finished if no next frame
 
+    Sol.CheckTypes(this, "process", [{dt}, [Number]]);
+
     if (this.animating === true) {
       let limit = this._animation.currentTime;
 
-      while (this._timer >= limit) {
+      while (this._timer >= limit && limit > 0) {
         this._timer -= limit;
 
         if (this._animation.advance() === true) {
@@ -572,8 +556,7 @@ class Shape extends Polygon {
           limit = this._animation.currentTime;
         } else {
           this.animating = false;
-          this._timer = 0;
-          limit = 1;
+          break;
         }
       }
 
@@ -590,25 +573,54 @@ class Shape extends Polygon {
     }));
   }
 
-  pushFrameStrip(textureIn, layerIn, count, row = count, column = 1,
-    start = 0, offset = new Vec2()) {
+  pushFrameStrip(textureIn, layerIn, countIn, columnsIn = countIn,
+    rowsIn = 1, startIn = 0, offset = new Vec2()) {
 
-    let width = textureIn.width / row;
-    let height = textureIn.height / column;
+    // add multiple frames by dividing a single texture into
+    // rectangles (columns and rows), separated by an optional
+    // offset
+    
+    // (layerIn type is checked in Shape.Frame constructor)
 
-    let increment = new Vec2((width - offset.x) / textureIn.width,
-      (height - offset.y) / textureIn.height);
+    Sol.CheckTypes(this, "pushFrameStrip", [{textureIn}, [Texture]],
+    [{countIn}, [Number]], [{columnsIn}, [Number]], [{rowsIn}, [Number]],
+    [{startIn}, [Number]], [{offset}, [Vec2]]);
+
+    // sanitise the input to be within acceptable ranges
+    
+    let cols = Math.min(Math.max(columnsIn, 1), textureIn.width);
+    let rows = Math.min(Math.max(rowsIn, 1), textureIn.height);
+
+    let start = Math.max(startIn, 0);
+    let count = Math.min(Math.max(countIn, 1) + start, cols * rows);
+
+    // calculate the dimensions of a frame in terms of
+    // texture coordinates, as well as the gaps between
+    // frames (if applicable)
+
+    let totalOffset = new Vec2(
+      offset.x * (cols - 1),
+      offset.y * (rows - 1)
+    );
+
+    let frameDimensions = new Vec2(
+      (textureIn.width - totalOffset.x) / cols,
+      (textureIn.height - totalOffset.y) / rows
+    );
+
+    let increment = new Vec2(frameDimensions.x / textureIn.width,
+      frameDimensions.y / textureIn.height);
 
     let spacing = new Vec2(offset.x / textureIn.width,
       offset.y / textureIn.height);
 
-    for (let i = start; i < count + start; ++i) {
+    for (let i = start; i < count; ++i) {
       // calculate the s and t coordinates for each frame by
       // splitting the texture into the specified number of
       // rows and columns
 
-      let s = i % row;
-      let t = Math.trunc(i / row);
+      let s = i % cols;
+      let t = Math.trunc(i / cols);
 
       let sOut = new Vec2((s * increment.x) + (s * spacing.x),
         ((s + 1) * increment.x) + (s * spacing.x));
@@ -619,14 +631,16 @@ class Shape extends Polygon {
     }
   }
 
-  setAnimation(timingsIn = [], startIn = 0, endIn = undefined,
+  setAnimation(timingsIn = [], startIn = 0, endIn = -1,
     directionIn = "forward", loopsIn = -1) {
 
     // create an animation using the range startIn >= n >= endIn
     // and start the animation if valid
 
+    Sol.CheckTypes(this, "setAnimation", [{endIn}, [Number]]);
+
     let anim = new Shape.Animation();
-    let end = (endIn === undefined) ? this._frames.length - 1 : endIn;
+    let end = (endIn < 0) ? this._frames.length - 1 : endIn;
 
     anim.fromRange(this._frames.length, timingsIn,
       startIn, end, directionIn, loopsIn);
@@ -635,12 +649,12 @@ class Shape extends Polygon {
     this.resetAnimation();
   }
 
-  setAnimationArray(timingsIn = [], indices = [],
-    directionIn = "forward", loopsIn = -1) {
+  setAnimationArray(indices, timingsIn = [], directionIn = "forward",
+    loopsIn = -1) {
 
     let anim = new Shape.Animation();
 
-    anim.fromArray(timingsIn, indices, directionIn, loopsIn);
+    anim.fromArray(indices, timingsIn, directionIn, loopsIn);
 
     this._animation = anim;
     this.resetAnimation();
@@ -694,7 +708,7 @@ class Shape extends Polygon {
         // we don't need the exact angle; a negative determinant
         // indicates a convex angle (a determinant of 0 means vertices
         // are in parallel i.e., in a line so we treat them as convex
-        // for the purposes of rendering
+        // for the purposes of rendering)
         
         const v2v  = new Vec2( v.x - v2.x,  v.y - v2.y);
         const v2v3 = new Vec2(v3.x - v2.x, v3.y - v2.y);
