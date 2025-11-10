@@ -7,7 +7,6 @@ class UI {
   // private fields
     #renderDebug = false;
 
-    
     // for switching between ortho and perspective projections
     #ortho = true;
 
