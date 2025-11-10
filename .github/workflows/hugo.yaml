@@ -75,6 +75,6 @@ jobs:
           git config --global user.name 'auto'
           git config --global user.email 'auto@chikin.net'
           git add --all
-          git diff-index --quiet HEAD || git commit -m \
-          "generated from 'main'" || git push   
+          git diff-index --quiet --cached HEAD -- || git commit -m \
+          "generated from 'main'" && git push
         
