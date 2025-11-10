@@ -67,7 +67,9 @@ jobs:
       
       # remove leftover files
       - name: remove files
-        run: rm -r solastjs.tar ./solastjstar 
+        run: |
+          ls
+          rm -r solastjs.tar ./solastjstar
       
       # commit/push new files to main
       - name: commit new files
