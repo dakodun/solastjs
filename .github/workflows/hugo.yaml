@@ -68,7 +68,12 @@ jobs:
       # remove leftover files
       - name: remove files
         run: rm -r solastjs.tar ./solastjstar
-      
+    
+  commit:
+    if: ${{ ! git diff-index --quiet HEAD }}
+    runs-on: ubuntu-latest
+    needs: download
+    steps:
       # commit/push new files to main
       - name: commit new files
         run: |
