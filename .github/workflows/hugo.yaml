@@ -63,13 +63,13 @@ jobs:
       
       # copy new files over old files
       - name: copy files
-        run: cp -ru ./solastjstar ./
+        run: |
+          ls
+          cp -ru ./solastjstar ./
       
       # remove leftover files
       - name: remove files
-        run: |
-          ls
-          rm -r solastjs.tar ./solastjstar
+        run: rm -r solastjs.tar ./solastjstar
       
       # commit/push new files to main
       - name: commit new files
