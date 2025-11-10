@@ -70,7 +70,6 @@ jobs:
         run: rm -r solastjs.tar ./solastjstar
     
   commit:
-    if: ${{ ! git diff-index --quiet HEAD }}
     runs-on: ubuntu-latest
     needs: download
     steps:
@@ -80,6 +79,7 @@ jobs:
           git config --global user.name 'auto'
           git config --global user.email 'auto@chikin.net'
           git add --all
-          git commit -m "generated from 'main'"
-          git push
+          git diff-index --quiet HEAD || git commit -m \
+          "generated from 'main'" || git push
+          
         
