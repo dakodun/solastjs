@@ -10,45 +10,58 @@
 
   <body>
     <div id="site-wrapper">
-			<div id="content">
-        <div id="nav-home"><a href="../../../index.html">Documentation Home</a></div>
-       <div id="nav-left"><a href="index.html">Previous</a></div>
-       <div id="nav-center"><a href="index.html">Index</a></div>
-       <div id="nav-right"><a href="002.html">Next</a></div>
-    
-       <div id="content-body">
-					<div id='body-main'>
-						<h1>File Structure and Index Page</h1>
-            
-            <p>
-                There's no one correct way to lay out your project files as long as
-              the 'engine' files maintain their own internal folder structure and
-              you point at the correct location within your own code. The following
-              structure is only an example of how I would do it for my own projects
-              and thus these examples.
-            </p>
+      <div id="header">
+        <div id="nav">
+          <div id="home">
+            <a href="../../../index.html">Documentation Home</a>
+          </div>
 
-            <div class='code'>
-							<div class='codeHeader'>File Tree</div>
-							<pre class='codeBody'><code>project
+          <div id="left">
+            <a href="index.html">Previous</a>
+          </div>
+
+          <div id="center">
+            <a href="index.html">Index</a>
+          </div>
+
+          <div id="right">
+            <a href="002.html">Next</a>
+          </div>
+        </div>
+      </div>
+
+			<div id="content">
+        <h1>File Structure and Index Page</h1>
+        
+        <p>
+            There's no one correct way to lay out your project files as long as
+          the 'engine' files maintain their own internal folder structure and
+          you point at the correct location within your own code. The following
+          structure is only an example of how I would do it for my own projects
+          and thus these examples.
+        </p>
+
+        <div class='code'>
+          <div class='codeHeader'>File Tree</div>
+          <pre class='codeBody'><code>project
 |-- script
 |   |-- engine
 |       |-- [engine files]
 |-- index.html
 |-- style.css</code></pre>
-						</div>
+        </div>
 
-            <p>
-                For our index.html file there are only two things to consider with
-              respect to SolastJS: first, when loading our script the type is
-              'module' (we'll look into 'main.js' later). The second consideration
-              is the canvas element and its id (in this example 'canvas'). This is
-              how our script will find the canvas on the page (which we'll see later).
-            </p>
+        <p>
+            For our index.html file there are only two things to consider with
+          respect to SolastJS: first, when loading our script the type is
+          'module' (we'll look into 'main.js' later). The second consideration
+          is the canvas element and its id (in this example 'canvas'). This is
+          how our script will find the canvas on the page (which we'll see later).
+        </p>
 
-            <div class='code'>
-							<div class='codeHeader'>index.html</div>
-							<pre class='codeBody'><code>&lt;!DOCTYPE html>
+        <div class='code'>
+          <div class='codeHeader'>index.html</div>
+          <pre class='codeBody'><code>&lt;!DOCTYPE html>
 &lt;html>
 &lt;head>
 &lt;meta charset="utf-8" />
@@ -63,17 +76,17 @@
   &lt;/div>
 &lt;/body>
 &lt;/html></code></pre>
-						</div>
+        </div>
 
-            <p>
-                Here is the CSS stylesheet to go along with the example; place it
-              in the 'project' folder alongside the index.html (there is nothing
-              noteworthy in here).
-            </p>
+        <p>
+            Here is the CSS stylesheet to go along with the example; place it
+          in the 'project' folder alongside the index.html (there is nothing
+          noteworthy in here).
+        </p>
 
-            <div class='code'>
-							<div class='codeHeader'>style.css</div>
-							<pre class='codeBody'><code>html, body {
+        <div class='code'>
+          <div class='codeHeader'>style.css</div>
+          <pre class='codeBody'><code>html, body {
 	height: 100%;
   margin: 0;
 }
@@ -86,9 +99,16 @@
 #container {
   height: 100%;
 }</code></pre>
-						</div>
-          </div>
-        </div>
+				</div>
+      </div>
+
+      <div id="footer">
+        Site and content created by Iain Crawford (<a href="https://github.com/dakodun"
+        target="_blank">dakodun</a>).
+        <br>
+        View SolastJS on <a href="https://github.com/dakodun/solastjs"
+        target="_blank">GitHub</a> or on <a href="https://chikin.net/site/solastjs/"
+        target="_blank">chikin.net</a>
       </div>
     </div>
   </body>
