@@ -1,0 +1,48 @@
+<!doctype html><html lang=en-GB><head><title id=title>SolastJS Documentation - File Structure and Index Page</title><link rel=stylesheet type=text/css href=/docs/css/style.min.ad59af5e8eb4a718a8cca7c3a0785e9c4e81115e61ef0ef14754142c3d2e57d9.css integrity="sha256-rVmvXo60pxiozKfDoHhenE6BEV5h7w7xR1QULD0uV9k="><link rel=stylesheet type=text/css href=/docs/css/syntax.min.94a350d905bc4f5f85e01598097d676d83c8c65e40b9f61e9aaecffca21c2e38.css integrity="sha256-lKNQ2QW8T1+F4BWYCX1nbYPIxl5AufYemq7P/KIcLjg="><script src=/docs/js/highlight.min.593a5b06d4d29e835051bbb9e252cbe552ececb8e37362a491e0b58c23795d88.js integrity="sha256-WTpbBtTSnoNQUbu54lLL5VLs7Ljjc2KkkeC1jCN5XYg="></script><script>hljs.highlightAll()</script><meta charset=utf-8><meta name=viewport content="width=device-width,initial-scale=1"><meta name=generator content="Hugo 0.152.2"></head><body><div id=site-wrapper><div id=header><nav id=nav><div id=home><a href=/>Documentation Home</a></div><div id=left><a href=/docs/gettingstarted/>...Prev</a></div><div id=center><a href=/docs/gettingstarted/>Index</a></div><div id=right><a href=/docs/gettingstarted/initialisation/>Next...</a></div></nav></div><div id=content><h1 id=file-structure-and-index-page>File Structure and Index Page</h1><p>There&rsquo;s no one correct way to lay out your project files; as long as
+the &rsquo;engine&rsquo; files maintain their own internal folder structure and
+you point to the correct location within your own code. The following
+structure is only an example of how I would do it for my own projects
+and thus these examples.</p><pre><code>project
+|-- script
+|   |-- engine
+|       |-- [engine files]
+|-- index.html
+|-- style.css</code></pre><p>For our index.html file there are only two things to consider with
+respect to SolastJS: firstly, when loading our script the type is
+&lsquo;module&rsquo; (we&rsquo;ll look into &lsquo;main.js&rsquo; later). The second consideration
+is the canvas element and its id (in this example &lsquo;canvas&rsquo;). This is
+how our script will find the canvas on the page (which we&rsquo;ll also see
+later).</p><pre><code class=language-html>&lt;!DOCTYPE html&gt;
+
+&lt;html&gt;
+  &lt;head&gt;
+    &lt;meta charset=&#34;utf-8&#34; /&gt;
+    &lt;meta name=&#34;viewport&#34; content=&#34;width=device-width, initial-scale=1&#34; /&gt;
+
+    &lt;link rel=&#34;stylesheet&#34; type=&#34;text/css&#34; href=&#34;style.css&#34; /&gt;
+    &lt;script type=&#34;module&#34; src=&#34;script/main.js&#34;&gt;&lt;/script&gt;
+  &lt;/head&gt;
+
+  &lt;body&gt;
+    &lt;div id=&#34;container&#34;&gt;
+      &lt;canvas id=&#34;canvas&#34;&gt;&lt;/canvas&gt;
+    &lt;/div&gt;
+  &lt;/body&gt;
+&lt;/html&gt;</code></pre><p>Here is the CSS stylesheet to go along with the example; place it
+in the &lsquo;project&rsquo; folder alongside the index.html (there is nothing
+noteworthy in here).</p><pre><code class=language-css>html, body {
+  height: 100%;
+  margin: 0;
+}
+
+#canvas {
+  display: block;
+  height: 100%;
+}
+
+#container {
+  height: 100%;
+}</code></pre></div><div id=footer>Site and content created by Iain Crawford (<a href=https://github.com/dakodun target=_blank>dakodun</a>)<br>w/ <a href=https://gohugo.io/ target=_blank rel=external>Hugo</a>,
+<a href=https://github.com/features/actions target=_blank rel=external>GitHub Actions</a>, &
+<a href=https://highlightjs.org/ target=_blank rel=external>highlight.js</a>.<br>View SolastJS on <a href=https://github.com/dakodun/solastjs target=_blank rel=external>GitHub</a> or on
+<a href=https://chikin.net/site/solastjs/ target=_blank>chikin.net</a></div></div></body></html>
