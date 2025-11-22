@@ -1,0 +1,15 @@
+{{ define "header" }}
+  <div id="header">
+    <nav id="nav">
+      {{ partial "nav" . }}
+    </nav>
+  </div>
+{{ end }}
+
+{{ define "content" }}
+  {{ .Content }}
+{{ end }}
+
+{{ define "footer" }}
+  {{ partial "footer" . }}
+{{ end }}

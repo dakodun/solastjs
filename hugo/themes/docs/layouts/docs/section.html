@@ -1,0 +1,31 @@
+{{ define "header" }}
+  <div id="header">
+    <nav id="nav">
+      {{ partial "nav" . }}
+    </nav>
+  </div>
+{{ end }}
+
+{{ define "content" }}
+  {{ .Content }}
+  
+  <ul>
+  {{ range .Pages.ByWeight }}
+    <li>
+      <a href="{{ .RelPermalink }}">
+        {{ .Title }}
+      </a>
+
+      <ul><li>
+        <p>
+          {{ .Summary }}
+        </p>
+      </li></ul>
+    </li>
+  {{ end }}
+  </ul>
+{{ end }}
+
+{{ define "footer" }}
+  {{ partial "footer" . }}
+{{ end }}

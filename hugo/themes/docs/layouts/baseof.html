@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+	<head>
+	<title id="title">SolastJS Documentation - {{ .Title }}</title>
+
+  <!-- CSS -->
+  {{ $style := (resources.Get "css/style.css") }}
+
+  <!-- minify/sri fingerprint stylesheet in production -->
+  {{ if not hugo.IsServer }}
+    {{ $style = $style | minify | fingerprint }}
+  {{ end }}
+
+  <link rel="stylesheet" type="text/css"
+  href="{{ $style.RelPermalink }}"
+  integrity="{{ $style.Data.Integrity }}"/>
+  <!-- CSS -->
+
+  {{ with resources.Get "css/syntax.css" }}
+    {{ $res := . }}
+    {{ if not hugo.IsServer }}
+      {{ $res = $res | minify | fingerprint }}
+    {{ end }}
+
+    <link rel="stylesheet" type="text/css"
+    href="{{ $res.RelPermalink }}"
+    integrity="{{ $res.Data.Integrity }}"/>
+  {{ end }}
+  
+  {{ with resources.Get "js/highlight.js" }}
+    {{ $res := . }}
+    {{ if not hugo.IsServer }}
+      {{ $res = $res | minify | fingerprint }}
+    {{ end }}
+
+    <script src="{{ $res.RelPermalink }}"
+    integrity="{{ $res.Data.Integrity }}">
+    </script>
+
+    <script>hljs.highlightAll();</script>
+  {{ end }}
+	
+	<meta charset="utf-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1" />
+  {{ hugo.Generator }}
+</head>
+
+<body>
+  <div id="site-wrapper">
+    {{ block "header" . }}
+
+    {{ end }}
+
+    <div id="content">
+    {{ block "content" . }}
+
+    {{ end }}
+    </div>
+
+    {{ block "footer" . }}
+      {{ partial "footer" . }}
+    {{ end }}
+  </div>
+</body>
+</html>

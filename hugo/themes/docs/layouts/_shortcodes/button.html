@@ -1,0 +1,6 @@
+{{ $link := .Get 0 }}
+{{ $content := .Inner }}
+
+<div style="display: flex; justify-content: center;">
+  <a href="{{ $link }}" class="button-link">{{ strings.TrimSpace $content }}</a>
+</div>

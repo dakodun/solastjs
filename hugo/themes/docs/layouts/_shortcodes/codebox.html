@@ -1,0 +1,9 @@
+{{ $lang := .Get 0 }}
+{{ $content := .Inner }}
+
+{{ with $lang }}
+<pre><code class="language-{{ . }}">{{ strings.TrimSpace $content }}</code></pre>
+{{ else }}
+<pre><code>{{ strings.TrimSpace $content }}</code></pre>
+{{ end }}
+

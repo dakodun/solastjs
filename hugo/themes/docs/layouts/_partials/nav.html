@@ -1,0 +1,55 @@
+{{ $prev := "" }}
+{{ $indx := "" }}
+{{ $next := "" }}
+
+{{ if eq .Type "docs" }}
+  {{ if .IsSection }}
+    <!-- a section only needs to know which page comes
+    first (if any) -->
+
+    {{ if not (eq (.Pages | len) 0) }}
+      {{ $next = index .Pages.ByWeight 0 }}
+    {{ end }}
+  {{ else if .IsPage }}
+    <!-- a page needs a previous (or index if none)
+    and next (if any) as well as the index page
+    (section parent) -->
+
+    {{ if .Parent }}
+      {{ $indx = .Parent }}
+
+      {{ $pages := "" }}
+      {{ $pages = .Parent.Pages.ByWeight.Reverse }}
+        {{ $prev = or ($pages.Prev .) .Parent }}
+        {{ $next = or ($pages.Next .) "" }}
+    {{ end }}
+  {{ end }}
+{{ end }}
+
+<div id="home">
+  <a href='{{ relURL "" }}'>Documentation Home</a>
+</div>
+
+<div id="left">
+  {{ if not (eq $prev "") }}
+    <a href="{{ $prev.RelPermalink }}"> ...Prev</a>
+  {{ else }}
+    ...Prev
+  {{ end }}
+</div>
+
+<div id="center">
+  {{ if not (eq $indx "") }}
+    <a href="{{ $indx.RelPermalink }}">Index</a>
+  {{ else }}
+    Index
+  {{ end }}
+</div>
+
+<div id="right">
+  {{ if not (eq $next "") }}
+    <a href="{{ $next.RelPermalink }}">Next...</a>
+  {{ else }}
+    Next...
+  {{ end }}
+</div>

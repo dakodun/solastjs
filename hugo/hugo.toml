@@ -1,0 +1,10 @@
+baseURL = "https://chikin.net/"
+languageCode = "en-gb"
+title = "SolastJS Documentation"
+theme = "docs"
+disableKinds = ["sitemap", "RSS", "taxonomy"]
+
+[markup]
+  [markup.goldmark]
+    [markup.goldmark.renderer]
+      unsafe = true
