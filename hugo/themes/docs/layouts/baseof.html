@@ -4,7 +4,7 @@
 	<title id="title">SolastJS Documentation - {{ .Title }}</title>
 
   <!-- CSS -->
-  {{ $style := (resources.Get "css/style.css") }}
+  {{ $style := (resources.Get "docs/css/style.css") }}
 
   <!-- minify/sri fingerprint stylesheet in production -->
   {{ if not hugo.IsServer }}
@@ -16,7 +16,7 @@
   integrity="{{ $style.Data.Integrity }}"/>
   <!-- CSS -->
 
-  {{ with resources.Get "css/syntax.css" }}
+  {{ with resources.Get "docs/css/syntax.css" }}
     {{ $res := . }}
     {{ if not hugo.IsServer }}
       {{ $res = $res | minify | fingerprint }}
@@ -27,7 +27,7 @@
     integrity="{{ $res.Data.Integrity }}"/>
   {{ end }}
   
-  {{ with resources.Get "js/highlight.js" }}
+  {{ with resources.Get "docs/js/highlight.js" }}
     {{ $res := . }}
     {{ if not hugo.IsServer }}
       {{ $res = $res | minify | fingerprint }}
@@ -51,14 +51,12 @@
 
     {{ end }}
 
-    <div id="content">
     {{ block "content" . }}
 
     {{ end }}
-    </div>
 
     {{ block "footer" . }}
-      {{ partial "footer" . }}
+
     {{ end }}
   </div>
 </body>

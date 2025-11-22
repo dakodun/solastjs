@@ -7,23 +7,25 @@
 {{ end }}
 
 {{ define "content" }}
-  {{ .Content }}
-  
-  <ul>
-  {{ range .Pages.ByWeight }}
-    <li>
-      <a href="{{ .RelPermalink }}">
-        {{ .Title }}
-      </a>
+  <div id="content">
+    {{ .Content }}
+    
+    <ul>
+    {{ range .Pages.ByWeight }}
+      <li>
+        <a href="{{ .RelPermalink }}">
+          {{ .Title }}
+        </a>
 
-      <ul><li>
-        <p>
-          {{ .Summary }}
-        </p>
-      </li></ul>
-    </li>
-  {{ end }}
-  </ul>
+        <ul><li>
+          <p>
+            {{ .Summary }}
+          </p>
+        </li></ul>
+      </li>
+    {{ end }}
+    </ul>
+  </div>
 {{ end }}
 
 {{ define "footer" }}

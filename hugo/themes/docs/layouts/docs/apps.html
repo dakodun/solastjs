@@ -6,28 +6,30 @@
 {{ end }}
 
 {{ define "content" }}
-  {{ .Content }}
+  <div id="content">
+    {{ .Content }}
 
-  <div class="app-list">
-    <ul>
-    {{ $apps := .Resources.Match "*.md" }}
-    
-    {{ range (sort $apps "Weight" "asc") }}
-      <li>
-        {{ $link := index (findRE `[ \w-]+\.` .Path) 0 }}
-        {{ $link = strings.TrimRight "." $link }}
+    <div class="app-list">
+      <ul>
+      {{ $apps := .Resources.Match "*.md" }}
+      
+      {{ range (sort $apps "Weight" "asc") }}
+        <li>
+          {{ $link := index (findRE `[ \w-]+\.` .Path) 0 }}
+          {{ $link = strings.TrimRight "." $link }}
 
-        <a href="{{ $link }}" target="_blank" class="button-link">{{ .Title }}</a>
+          <a href="{{ $link }}" target="_blank" class="button-link">{{ .Title }}</a>
 
-        <span class="soft">(previously 'Silly Pyramid, The')</span>
+          <span class="soft">(previously 'Silly Pyramid, The')</span>
 
-        {{ .Content }}
-      </li>
-    {{ end }}
-    </ul>
+          {{ .Content }}
+        </li>
+      {{ end }}
+      </ul>
+    </div>
   </div>
 {{ end }}
 
 {{ define "footer" }}
-  <div></div>
+  {{ partial "footer" . }}
 {{ end }}

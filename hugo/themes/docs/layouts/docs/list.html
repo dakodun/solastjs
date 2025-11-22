@@ -1,13 +1,14 @@
 {{ define "header" }}
-  
+  <div style="display: flex; justify-content: center; font-size: 1.1rem;
+  margin-top: 4px;">
+    <a href='{{ relURL "" }}'>Documentation Home</a>
+  </div>
 {{ end }}
 
 {{ define "content" }}
   <div id="content">
     {{ .Content }}
 
-    
-    {{ with (index .Pages 0) }}
     <ul>
       {{ range .Pages.ByWeight }}
       {{ if (and (eq .Type "docs") (eq .Layout "section")) }}
@@ -15,17 +16,10 @@
           <a href="{{ .RelPermalink }}">
             {{ .Title }}
           </a>
-          
-          <ul><li>
-            <p>
-              {{ .Summary }}
-            </p>
-          </li></ul>
         </li>
       {{ end }}
       {{ end }}
     </ul>
-    {{ end }}
   </div>
 {{ end }}
 
