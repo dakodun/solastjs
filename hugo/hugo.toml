@@ -1,4 +1,4 @@
-baseURL = "https://chikin.net/"
+baseURL = "https://chikin.net/solastjs/"
 languageCode = "en-gb"
 title = "SolastJS Documentation"
 theme = "docs"
