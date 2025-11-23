@@ -36,9 +36,9 @@
   --theme-shadow-alt: var(--light-shadow-alt);
 
   /* ... */
-  --site-wrapper-wide: 860px;
-  --site-wrapper-narrow: 100%;
-  --site-wrapper-width: var(--site-wrapper-wide);
+  --list-indent-wide: 860px;
+  --list-indent-narrow: 0px;
+  --list-indent: var(--list-indent-narrow);
 }
 
 @media (prefers-color-scheme: dark) {
@@ -56,15 +56,23 @@
   }
 }
 
-@media only screen and (max-width: 860px) {
-  :root {
-    --site-wrapper-width: var(--site-wrapper-narrow);
+@media only screen and (max-width: 460px) {
+  #content ul ul ul li {
+    margin-left: 0.0rem;
+  }
+
+  #content ul ul ul ul li {
+    margin-left: -0.25rem;
   }
 }
 
-@media only screen and (min-width: 861px) {
-  :root {
-    --site-wrapper-width: var(--site-wrapper-wide);
+@media only screen and (min-width: 461px) {
+  #content ul ul ul li {
+    margin-left: 2.0rem;
+  }
+
+  #content ul ul ul ul li {
+    margin-left: 1.0rem;
   }
 }
 
@@ -98,7 +106,9 @@ body {
 }
 
 #site-wrapper {
-  width: var(--site-wrapper-width);
+  width: 100%;
+  max-width: 860px;
+
   min-height: calc(100vh - 48px);
 
   margin: 24px auto 24px;
@@ -337,12 +347,16 @@ a:hover {
 }
 
 #content ul ul li {
-  padding-left: 1.0rem;
+  padding-left: 0.0rem;
   font-size: 1.0rem;
 }
 
 #content ul ul ul li {
-  margin-left: 3.0rem;
+  padding-left: 0.25rem;
+  font-size: 1.0rem;
+}
+
+#content ul ul ul ul li {
   padding-left: 0.25rem;
   font-size: 1.0rem;
 }
@@ -369,7 +383,6 @@ a:hover {
     
     color: var(--theme-color-soft);
     font-size: 0.975rem;
-    line-height: 2;
   }
 
   #content div.app-list ul ul {
@@ -439,6 +452,7 @@ a:hover {
 
     font-style: normal;
     text-decoration: none;
+    text-wrap: nowrap;
 
     color: var(--dark-color);
 
