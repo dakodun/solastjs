@@ -278,8 +278,8 @@ class RenderString {
             let glyph = this._font.getGlyph(char);
 
             if (glyph !== undefined) {
-              let s = new Vec2(glyph.s.x * 65535, glyph.s.y * 65535);
-              let t = new Vec2(glyph.t.x * 65535, glyph.t.y * 65535);
+              let s = new Vec2(glyph.s.x, glyph.s.y);
+              let t = new Vec2(glyph.t.x, glyph.t.y);
               let l = glyph.layer;
 
               let w = glyph.width;

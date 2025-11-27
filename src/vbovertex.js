@@ -1,5 +1,5 @@
 class VBOVertex {
-  static byteSize = 28;
+  static byteSize = 32;
 
   _x = 0.0;
   _y = 0.0;
@@ -32,7 +32,7 @@ class VBOVertex {
     this.b = initializerList.b || 255;
     this.a = initializerList.a || 255;
 
-    // (2 2-byte)
+    // (2 4-byte)
     this.s = initializerList.s || 0.0;
     this.t = initializerList.t || 0.0;
 
@@ -228,9 +228,9 @@ class VBOVertex {
     buffer.setUint8(offset + 3, this._a);
     offset += 4;
 
-    buffer.setUint16(offset    , this._s, true);
-    buffer.setUint16(offset + 2, this._t, true);
-    offset += 4;
+    buffer.setFloat32(offset    , this._s, true);
+    buffer.setFloat32(offset + 4, this._t, true);
+    offset += 8;
 
     buffer.setUint8(offset    ,  this._textureFlag);
     buffer.setUint8(offset + 1, this._textureLayer);
