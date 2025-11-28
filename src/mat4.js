@@ -1,59 +1,59 @@
+import Sol from './sol.js';
+
 import Vec3 from './vec3.js';
 import Vec4 from './vec4.js';
 
 class Mat4 {
-  // private fields
-    #arr = [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1];
-  // ...
+  // a 4-dimensional matrix in column-major order
+  //
+  // .--COL-MAJOR---.
+  // | 0   4   8  12|
+  // | 1   5   9  13|
+  // | 2   6  10  14|
+  // | 3   7  11  15|
+  // '--------------'
+  
+  //> internal properties //
+  _arr = [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1];
 
+  //> constructor //
 	constructor(arr = [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1]) {
-    /*
-    .--COL-MAJOR---.
-    | 0   4   8  12|
-    | 1   5   9  13|
-    | 2   6  10  14|
-    | 3   7  11  15|
-    '--------------'
-    */
-
     this.arr = arr;
 	}
 
-  // getters/setters
-  get arr() { return this.#arr; }
+  //> getters/setters //
+  get arr() { return this._arr; }
   
   set arr(arr) {
-    if (!(arr instanceof Array)) {
-      throw new TypeError("Mat4 (arr): should be an Array");
-    } else if (arr.length !== 16) {
-      throw new RangeError("Mat4 (arr): should be an Array with " +
-        "16 elements");
+    Sol.CheckTypes(this, "set arr", [{arr}, [Array]]);
+
+    if (arr.length !== 16) {
+      throw new RangeError("Mat4 (set arr): should be an Array " +
+      "with 16 elements");
     }
 
-    this.#arr = arr;
+    this._arr = arr;
   }
-  // ...
 
+  //> public methods //
 	copy(other) {
-    if (!(other instanceof Mat4)) {
-      throw new TypeError("Mat4 (copy): other should be a Mat4");
-    }
+    Sol.CheckTypes(this, "copy", [{other}, [Mat4]]);
     
     this.arr = other.arr.slice();
   }
 
   getCopy() {
-    let copy = new Mat4(); copy.copy(this);
+    let copy = new Mat4();
+    copy.copy(this);
+
     return copy;
   }
 
   equals(other) {
-    if (!(other instanceof Mat4)) {
-      throw new TypeError("Mat4 (equals): other should be a Mat4");
-    }
+    Sol.CheckTypes(this, "equals", [{other}, [Mat4]]);
 
-    for (let i = 0; i < this.#arr.length; ++i) {
-      if (this.#arr[i] !== other.#arr[i]) {
+    for (let i = 0; i < this._arr.length; ++i) {
+      if (this._arr[i] !== other._arr[i]) {
         return false;
       }
     }
@@ -148,9 +148,7 @@ class Mat4 {
   }
 
   multMat4(other) {
-    if (!(other instanceof Mat4)) {
-      throw new TypeError("Mat4 (multMat4): other should be a Mat4");
-    }
+    Sol.CheckTypes(this, "multMat4", [{other}, [Mat4]]);
 
     let result = new Mat4();
 
@@ -178,9 +176,7 @@ class Mat4 {
     '--------------'   '---'
     */
     
-    if (!(multVec instanceof Vec4)) {
-      throw new TypeError("Mat4 (getMultVec4): multVec should be a Vec4");
-    }
+    Sol.CheckTypes(this, "getMultVec4", [{multVec}, [Vec4]]);
 
     let arrIn = multVec.asArray();
     let arrOut = new Array();
@@ -208,9 +204,7 @@ class Mat4 {
     '--------------'
     */
     
-    if (!(transVec instanceof Vec3)) {
-      throw new TypeError("Mat4 (translate): transVec should be a Vec3");
-    }
+    Sol.CheckTypes(this, "translate", [{transVec}, [Vec3]]);
 
     let transMat = new Mat4();
     transMat.arr[12] = transVec.x;
@@ -229,12 +223,8 @@ class Mat4 {
     '-----------------------------------------------------------'
     */
 
-    if (typeof angle != 'number') {
-      throw new TypeError("Mat4 (rotateAxis): angle should be a Number");
-    }
-    else if (!(axis instanceof Vec3)) {
-      throw new TypeError("Mat4 (rotateAxis): axis should be a Vec3");
-    }
+    Sol.CheckTypes(this, "rotateAxis",
+    [{angle}, [Number], {axis}, [Vec3]]);
 
     let rotAA = new Mat4();
     
@@ -277,9 +267,7 @@ class Mat4 {
     '---------------------------------------------------------'
     */
     
-    if (!(angles instanceof Vec3)) {
-      throw new TypeError("Mat4 (rotateEuler): angles should be a Vec3");
-    }
+    Sol.CheckTypes(this, "rotateEuler", [{angles}, [Vec3]]);
 
     let rotZYX = new Mat4();
 
@@ -316,9 +304,7 @@ class Mat4 {
     '---------------'
     */
     
-    if (!(scaleVec instanceof Vec3)) {
-      throw new TypeError("Mat4 (scale): scaleVec should be a Vec3");
-    }
+    Sol.CheckTypes(this, "scale", [{scaleVec}, [Vec3]]);
     
     let scaleMat = new Mat4();
 
