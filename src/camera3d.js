@@ -39,6 +39,19 @@ class Camera3D {
   get position() { return this._position; }
   get rotation() { return this._rotation; }
 
+  set view(view) {
+    Sol.CheckTypes(this, "set view",
+    [{view}, [Mat4]]);
+
+    this._view = view;
+
+    let decom = this._view.decompose();
+    this._position = decom[0].getNegated();
+    this._rotation = decom[2].getNegated();
+
+    this.update = false;
+  }
+
   set position(position) {
     Sol.CheckTypes(this, "set position",
     [{position}, [Vec3]]);
@@ -69,6 +82,18 @@ class Camera3D {
     copy.copy(this);
 
     return copy;
+  }
+
+  equals(other) {
+    Sol.CheckTypes(this, "equals",
+    [{other}, [Camera3D]]);
+    
+    return (
+      this._view.equals(other._transformable) &&
+
+      this._position.equals(other._position) &&
+      this._rotation.equals(other._rotation)
+    );
   }
 
   setPosition(position) {
@@ -169,6 +194,8 @@ class Camera3D {
 
     this._position = decom[0].getNegated();
     this._rotation = decom[2].getNegated();
+
+    this.update = false;
   }
 
   //> internal methods //
