@@ -70,8 +70,12 @@ class Camera3D {
 
   //> public methods //
 	copy(other) {
-    this._view = other._view.getCopy();
+    Sol.CheckTypes(this, "copy",
+    [{other}, [Camera3D]]);
+
     this.update = other.update;
+
+    this._view = other._view.getCopy();
 
     this._position = other._position.getCopy();
     this._rotation = other._rotation.getCopy();
@@ -89,36 +93,48 @@ class Camera3D {
     [{other}, [Camera3D]]);
     
     return (
-      this._view.equals(other._transformable) &&
+      this._view.equals(other._view) &&
 
       this._position.equals(other._position) &&
       this._rotation.equals(other._rotation)
     );
   }
 
+  // [!] deprecated
   setPosition(position) {
-    this._position = position;
+    this.position = position;
     
     this.update = true;
   }
 
+  // [!] deprecated
   setRotation(rotation) {
-    this._rotation = rotation;
+    this.rotation = rotation;
     
     this.update = true;
   }
 
-  translate(direction, plane) {
+  translate(direction, plane = 0) {
+    // changes the camera position by 'direction' but
+    // accounts for current position and any rotation
+    // if a plane is specified then the camera moves only
+    // in that plane (eg, for xy any z movement is ignored)
+
+    Sol.CheckTypes(this, "translate",
+    [{direction}, [Vec3]], [{plane}, [Number]]);
+
     this._updateView();
 
-    let axis = new Array(3);
     let dist = direction.asArray();
 
     for (let i = 0; i < 3; ++i) {
       if (Math.abs(dist[i]) > 1e-15) {
-        // get the transformed axis to move along
+        // calculate the axis to move along using the
+        // current rotation from view matrix
+        // (zero the appropriate coordinate to restrict
+        // movement to the required plane)
 
-        axis[i] = new Vec3(
+        let axis = new Vec3(
           ((plane & Camera3D.Plane.YZ) === 0) ?
             this._view.arr[0 + i] : 0,
           ((plane & Camera3D.Plane.XZ) === 0) ?
@@ -127,31 +143,31 @@ class Camera3D {
             this._view.arr[8 + i] : 0
         );
         
-        axis[i].normalize();
+        axis.normalize();
 
-        this._position.x += axis[i].x * dist[i];
-        this._position.y += axis[i].y * dist[i];
-        this._position.z += axis[i].z * dist[i];
+        this._position.x += axis.x * dist[i];
+        this._position.y += axis.y * dist[i];
+        this._position.z += axis.z * dist[i];
+
+        this.update = true;
       }
     }
-
-    this.update = true;
   }
 
-  lookAt(eyeVec, centerVec, upVec) {
-    /*
-    .--LOOK-AT-------.
-    | sx  sy  sz -tx |
-    | ux  uy  uz -ty |
-    |-fx -fy -fz -tz |
-    |  0   0   0   1 |
-    '----------------'
-    */
-    
-    let up = new Vec3(0.0, 1.0, 0.0);
-    if (upVec != undefined) {
-       up = upVec.getCopy();
-    }
+  lookAt(eyeVec, centerVec, upVec = new Vec3(0.0, 1.0, 0.0)) {
+    // positions the camera at 'eyeVec' and points it
+    // towards 'centerVec', with 'upVec' denoting the
+    // vertical axis (by default positive y is up)
+    // 
+    // .--LOOK-AT-------.
+    // | sx  sy  sz -tx |
+    // | ux  uy  uz -ty |
+    // |-fx -fy -fz -tz |
+    // |  0   0   0   1 |
+    // '----------------'
+
+    Sol.CheckTypes(this, "translate", [{eyeVec}, [Vec3]],
+    [{centerVec}, [Vec3]], [{upVec}, [Vec3]]);
 
     let f = new Vec3(
       centerVec.x - eyeVec.x,
@@ -161,7 +177,7 @@ class Camera3D {
     
     f.normalize();
 
-    let s = f.getCross(up);
+    let s = f.getCross(upVec);
     s.normalize();
     let u = s.getCross(f);
 
