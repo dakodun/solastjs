@@ -265,7 +265,7 @@ class App {
     shader.attributeLocations = {
       vertexPosition : -1, // (3 4-byte)
       vertexColor    : -1, // (4 1-byte)
-      vertexTexture  : -1, // (2 2-byte)
+      vertexTexture  : -1, // (2 4-byte)
       vertexFlags    : -1, // (4 1-byte)
       vertexNormal   : -1, // (1 4-byte)
     };
@@ -291,10 +291,10 @@ class App {
       if (this.attributeLocations.vertexTexture !== -1) {
         GL.enableVertexAttribArray(this.attributeLocations.vertexTexture);
         GL.vertexAttribPointer(this.attributeLocations.vertexTexture,
-            2, GL.UNSIGNED_SHORT, true, byteSize, offset);
+            2, GL.FLOAT, false, byteSize, offset);
       }
       
-      offset += 4;
+      offset += 8;
       if (this.attributeLocations.vertexFlags !== -1) {
         GL.enableVertexAttribArray(this.attributeLocations.vertexFlags);
         GL.vertexAttribPointer(this.attributeLocations.vertexFlags,

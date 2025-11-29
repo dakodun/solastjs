@@ -58,7 +58,7 @@ class Texture {
     }
   }
 
-  create(data = []) {
+  create(data = [], params = {}) {
     this.init();
 
     // [!] type-check data
@@ -79,13 +79,20 @@ class Texture {
     }
     
     GL.texParameteri(GL.TEXTURE_2D_ARRAY,
-      GL.TEXTURE_WRAP_S, GL.CLAMP_TO_EDGE);
+      GL.TEXTURE_WRAP_S, (params.TEXTURE_WRAP_S) ?
+      params.TEXTURE_WRAP_S : GL.CLAMP_TO_EDGE);
+      
     GL.texParameteri(GL.TEXTURE_2D_ARRAY,
-      GL.TEXTURE_WRAP_T, GL.CLAMP_TO_EDGE);
+      GL.TEXTURE_WRAP_T, (params.TEXTURE_WRAP_T) ?
+      params.TEXTURE_WRAP_T : GL.CLAMP_TO_EDGE);
+
     GL.texParameteri(GL.TEXTURE_2D_ARRAY,
-      GL.TEXTURE_MAG_FILTER, GL.NEAREST);
+      GL.TEXTURE_MAG_FILTER, (params.TEXTURE_MAG_FILTER) ?
+      params.TEXTURE_MAG_FILTER : GL.NEAREST);
+
     GL.texParameteri(GL.TEXTURE_2D_ARRAY,
-      GL.TEXTURE_MIN_FILTER, GL.NEAREST);
+      GL.TEXTURE_MIN_FILTER, (params.TEXTURE_MIN_FILTER) ?
+      params.TEXTURE_MIN_FILTER : GL.NEAREST);
   }
 
   asShape(layerIn, sIn, tIn) {
