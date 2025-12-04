@@ -1,5 +1,6 @@
 export { default as App }       from       './app.js';
 export { default as AtlasFont } from './atlasfont.js';
+export { default as BSTree }    from    './bstree.js';
 export { default as Camera2D }  from  './camera2d.js';
 export { default as Camera3D }  from  './camera3d.js';
 
