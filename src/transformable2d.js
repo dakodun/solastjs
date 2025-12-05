@@ -4,12 +4,10 @@ import Mat3 from './mat3.js';
 import Vec2 from './vec2.js';
 
 class Transformable2D {
-  /*
-    serves  as an  interface  (via  composition)  to allow a
-    class to be transformed via  2D matrix transformations -
-    an implementating class should contain a 'transformable'
-    field (exposed via a getter if private)
-  */
+  // serves  as an  interface  (via  composition)  to allow a
+  // class to be transformed via  2D matrix transformations -
+  // an implementating class should contain a 'transformable'
+  // field (exposed via a getter if private)
 
   //> internal properties //
   _position = new Vec2(0.0, 0.0);

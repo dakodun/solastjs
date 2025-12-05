@@ -1,85 +1,88 @@
+import Sol from './sol.js';
+
 import Mat4 from './mat4.js';
 import Vec3 from './vec3.js';
 
 class Transformable3D {
-  /*
-    serves  as an  interface  (via  composition)  to allow a
-    class to be transformed via  3D matrix transformations -
-    an implementating class should contain a 'transformable'
-    field (exposed via a getter if private)
-  */
+  // serves  as an  interface  (via  composition)  to allow a
+  // class to be transformed via  3D matrix transformations -
+  // an implementating class should contain a 'transformable'
+  // field (exposed via a getter if private)
 
-  // private fields
-    #position = new Vec3(0.0, 0.0, 0.0);
-    #origin   = new Vec3(0.0, 0.0, 0.0);
-    
-    #transMat = new Mat4();
-    #scale    = new Vec3(1.0, 1.0, 1.0);
-    #rotation = new Vec3(0.0, 0.0, 0.0);
+  //> internal properties //
+  _position = new Vec3(0.0, 0.0, 0.0);
+  _origin   = new Vec3(0.0, 0.0, 0.0);
+  
+  _transMat = new Mat4();
+  _scale    = new Vec3(1.0, 1.0, 1.0);
+  _rotation = new Vec3(0.0, 0.0, 0.0);
 
-    #boundingBox = {
-      lower: new Vec3(Number.POSITIVE_INFINITY,
-        Number.POSITIVE_INFINITY, Number.POSITIVE_INFINITY),
-      upper: new Vec3(Number.NEGATIVE_INFINITY,
-        Number.NEGATIVE_INFINITY, Number.NEGATIVE_INFINITY)
-    };
-  // ...
+  _boundingBox = {
+    lower: new Vec3(Number.POSITIVE_INFINITY,
+      Number.POSITIVE_INFINITY, Number.POSITIVE_INFINITY),
+    upper: new Vec3(Number.NEGATIVE_INFINITY,
+      Number.NEGATIVE_INFINITY, Number.NEGATIVE_INFINITY)
+  };
 
+  //> constructor //
   constructor() {
 
   }
 
-  // getters/setters
-  get position() { return this.#position; }
-  get origin()   { return this.#origin;   }
-  get transMat() { return this.#transMat; }
-  get scale()    { return this.#scale;    }
-  get rotation() { return this.#rotation; }
-  get boundingBox() { return this.#boundingBox; }
+  //> getters //
+  get position() { return this._position; }
+  get origin()   { return this._origin;   }
+  get transMat() { return this._transMat; }
+  get scale()    { return this._scale;    }
+  get rotation() { return this._rotation; }
+  get boundingBox() { return this._boundingBox; }
 
+  get width() {
+    return this._boundingBox.upper.x - this._boundingBox.lower.x;
+  }
+
+  get height() {
+    return this._boundingBox.upper.y - this._boundingBox.lower.y;
+  }
+
+  get depth() {
+    return this._boundingBox.upper.z - this._boundingBox.lower.z;
+  }
+
+  //> setters //
   set position(position) {
-    if (!(position instanceof Vec3)) {
-      throw new TypeError("Transformable3D (position): should " +
-        "be a Vec3");
-    }
+    Sol.CheckTypes(this, "set position",
+    [{position}, [Vec3]]);
 
-    this.#position = position;
+    this._position = position;
   }
 
   set origin(origin) {
-    if (!(origin instanceof Vec3)) {
-      throw new TypeError("Transformable3D (origin): should " +
-        "be a Vec3");
-    }
+    Sol.CheckTypes(this, "set origin",
+    [{origin}, [Vec3]]);
 
-    this.#origin = origin;
+    this._origin = origin;
   }
 
   set transMat(transMat) {
-    if (!(transMat instanceof Mat4)) {
-      throw new TypeError("Transformable3D (transMat): should " +
-        "be a Mat4");
-    }
+    Sol.CheckTypes(this, "set transMat",
+    [{transMat}, [Mat4]]);
 
-    this.#transMat = transMat;
+    this._transMat = transMat;
   }
   
   set scale(scale) {
-    if (!(scale instanceof Vec3)) {
-      throw new TypeError("Transformable3D (scale): should " +
-        "be a Vec3");
-    }
+    Sol.CheckTypes(this, "set scale",
+    [{scale}, [Vec3]]);
 
-    this.#scale = scale;
+    this._scale = scale;
   }
 
   set rotation(rotation) {
-    if (!(rotation instanceof Vec3)) {
-      throw new TypeError("Transformable3D (rotation): should " +
-        "be a Vec3");
-    }
+    Sol.CheckTypes(this, "set rotation",
+    [{rotation}, [Vec3]]);
 
-    this.#rotation = rotation;
+    this._rotation = rotation;
   }
 
   set boundingBox(boundingBox) {
@@ -89,20 +92,18 @@ class Transformable3D {
       !(boundingBox.lower instanceof Vec3) ||
       !(boundingBox.upper instanceof Vec3)) {
       
-      throw new TypeError("Transformable3D (boundingBox): should " +
+      throw new TypeError("Transformable3D (set boundingBox): should " +
         "be an Object with a Vec3 field 'lower', and a Vec3 field " +
         "'upper'");
     }
 
-    this.#boundingBox = boundingBox;
+    this._boundingBox = boundingBox;
   }
-  // ...
 
+  //> public methods //
   copy(other) {
-    if (!(other instanceof Transformable3D)) {
-      throw new TypeError("Transformable3D (copy): other should be " +
-        "a Transformable3D");
-    }
+    Sol.CheckTypes(this, "copy",
+    [{other}, [Transformable3D]]);
 
     this.position = other.position.getCopy();
 		this.origin   =   other.origin.getCopy();
@@ -111,7 +112,7 @@ class Transformable3D {
 		this.scale    =    other.scale.getCopy();
 		this.rotation = other.rotation.getCopy();
 		
-    this.#boundingBox = {
+    this._boundingBox = {
       lower: other.boundingBox.lower.getCopy(),
       upper: other.boundingBox.upper.getCopy()
     };
@@ -125,33 +126,33 @@ class Transformable3D {
   }
 
   equals(other) {
-    if (!(other instanceof Transformable3D)) {
-      throw new TypeError("Transformable3D (equals): other should be " +
-        "a Transformable3D");
-    }
+    Sol.CheckTypes(this, "equals",
+    [{other}, [Transformable3D]]);
     
     return (
-      this.#position.equals(other.#position) &&
-      this.#origin.equals(other.#origin)     &&
-      this.#transMat.equals(other.#transMat) &&
-      this.#scale.equals(other.#scale)       &&
-      this.#rotation.equals(other.#rotation)
+      this._position.equals(other._position) &&
+      this._origin.equals(other._origin)     &&
+      this._transMat.equals(other._transMat) &&
+      this._scale.equals(other._scale)       &&
+      this._rotation.equals(other._rotation)
     );
   }
 
-  // return this transformable as a matrix - that is, a
-  // matrix which has all transformations applied
+  
   asMat4() {
-    let transMat = this.#transMat.getCopy();
+    // return this transformable as a matrix - that is, a
+    // matrix which has all transformations applied
+
+    let transMat = this._transMat.getCopy();
 
     let offsetPos = new Vec3(this.position.x - this.origin.x,
       this.position.y - this.origin.y, this.position.z - this.origin.z);
     transMat.translate(offsetPos);
     
-    transMat.translate(this.#origin);
-    transMat.rotateEuler(this.#rotation);
-    transMat.scale(this.#scale);
-    transMat.translate(this.#origin.getNegated());
+    transMat.translate(this._origin);
+    transMat.rotateEuler(this._rotation);
+    transMat.scale(this._scale);
+    transMat.translate(this._origin.getNegated());
 
     return transMat;
   }
