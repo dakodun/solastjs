@@ -111,7 +111,7 @@ class Mat4 {
   perspective(fovy, aspect, near, far) {
     this.identity();
 
-    let top = near * Math.tan(fovy / 2);
+    let top = near * Math.tan(fovy * 0.5);
     let bottom = -top;
     let left = bottom * aspect;
     let right = top * aspect;
