@@ -54,6 +54,7 @@ class BSTree {
 
     if (this._root === null) {
       this._root = new BSTree.Node(data);
+      return { success: true, node: this._root };
     } else {
       let curr = this._root;
       
@@ -95,14 +96,14 @@ class BSTree {
     // the left nodes and then moving back up with
     // the current node and finally the right node
 
-    if (node.left !== null) {
-      this._traverse(node.left, callbackFn);
+    if (node._left !== null) {
+      this._traverse(node._left, callbackFn);
     }
     
     callbackFn(node);
     
-    if (node.right !== null) {
-      this._traverse(node.right, callbackFn);
+    if (node._right !== null) {
+      this._traverse(node._right, callbackFn);
     }
   }
 
