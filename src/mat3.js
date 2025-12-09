@@ -1,58 +1,63 @@
+import Sol from './sol.js';
+
+import BSTree from './bstree.js';
+import Mat2 from './mat2.js';
 import Vec2 from './vec2.js';
 import Vec3 from './vec3.js';
 
 class Mat3 {
-  // private fields
-    #arr = [1, 0, 0, 0, 1, 0, 0, 0, 1];
-  // ...
+  // a 3-dimensional matrix in column-major order
+  //
+  // .-COL-MAJOR-.
+  // | 0   3   6 |
+  // | 1   4   7 |
+  // | 2   5   8 |
+  // '-----------'
 
+  //> static properties //
+  static _signChart = [1, -1, 1, -1, 1, -1, 1, -1, 1];
+  
+  //> internal properties //
+  _arr = [1, 0, 0, 0, 1, 0, 0, 0, 1];
+
+  //> constructor //
 	constructor(arr = [1, 0, 0, 0, 1, 0, 0, 0, 1]) {
-    /*
-    .-COL-MAJOR-.
-    | 0   3   6 |
-    | 1   4   7 |
-    | 2   5   8 |
-    '-----------'
-    */
-    
     this.arr = arr;
 	} 
 
-  // getters/setters
-  get arr() { return this.#arr; }
+  //> getters/setters //
+  get arr() { return this._arr; }
   
   set arr(arr) {
-    if (!(arr instanceof Array)) {
-      throw new TypeError("Mat3 (arr): should be an Array");
-    } else if (arr.length !== 9) {
-      throw new RangeError("Mat3 (arr): should be an Array with " +
-        "9 elements");
+    Sol.CheckTypes(this, "set arr", [{arr}, [Array]]);
+
+    if (arr.length !== 9) {
+      throw new RangeError("Mat3 (set arr): should be an Array " +
+      "with 9 elements");
     }
 
-    this.#arr = arr;
+    this._arr = arr;
   }
-  // ...
 
+  //> public methods //
 	copy(other) {
-    if (!(other instanceof Mat3)) {
-      throw new TypeError("Mat3 (copy): other should be a Mat3");
-    }
+    Sol.CheckTypes(this, "copy", [{other}, [Mat3]]);
 
     this.arr = other.arr.slice();
   }
 
   getCopy() {
-    let copy = new Mat3(); copy.copy(this);
+    let copy = new Mat3();
+    copy.copy(this);
+
     return copy;
   }
 
   equals(other) {
-    if (!(other instanceof Mat3)) {
-      throw new TypeError("Mat3 (equals): other should be a Mat3");
-    }
+    Sol.CheckTypes(this, "equals", [{other}, [Mat3]]);
 
-    for (let i = 0; i < this.#arr.length; ++i) {
-      if (this.#arr[i] !== other.#arr[i]) {
+    for (let i = 0; i < this._arr.length; ++i) {
+      if (this._arr[i] !== other._arr[i]) {
         return false;
       }
     }
@@ -82,10 +87,70 @@ class Mat3 {
     return transposed;
   }
 
-  multMat3(other) {
-    if (!(other instanceof Mat3)) {
-      throw new TypeError("Mat3 (multMat3): other should be a Mat3");
+  getDeterminant() {
+    // find the determinant of a 3x3 matrix via
+    // expansion using minors and cofactors
+
+    let result = 0;
+
+    let getIndex = (col, row) => {
+      // return the index in the data array pointed to
+      // by the supplied column and row, wrapping around
+      // to 0
+
+      return (((col) % 3) * 3) + (((row) % 3));
     }
+
+    // use the first column ([0], [1], and [2]) to find
+    // our determinant
+
+    // [!] reduce work by choosing a row or column with
+    //     the highest number of zeroes
+
+    // for (let col = 0; col < 1; ++col) {
+      for (let row = 0; row < 3; ++row) {
+      // let ind = (col * 3) + row;
+      let ind = row;
+      
+      // calculate the indices that make up the determinant
+      // (2x2 matrix) for the current element and add them to
+      // a tree, returning it as a sorted array
+
+      let tree = new BSTree();
+        tree.add(getIndex(1, row + 1));
+        tree.add(getIndex(1, row + 2));
+
+        tree.add(getIndex(2, row + 1));
+        tree.add(getIndex(2, row + 2));
+      
+      let arr = tree.asArray();
+      
+      // create the 2x2 matrix from the values located
+      // at the indices in this matrix's data array and
+      // use it to get the determinant for the current
+      // element
+
+      let mat = new Mat2((() => {
+        let res = new Array();
+
+        arr.forEach((e) => {
+          res.push(this._arr[e]);
+        });
+
+        return res;
+      })());
+
+      let minor = mat.getDeterminant()
+      let cofactor = (Mat3._signChart[ind] * minor);
+      result += this._arr[ind] * cofactor;
+    }
+    // }
+
+    return result;
+  }
+
+  multMat3(other) {
+    Sol.CheckTypes(this, "multMat3", [{other}, [Mat3]]);
 
     let result = new Mat3();
 
@@ -103,17 +168,13 @@ class Mat3 {
   }
 
   getMultVec3(multVec) {
-    /*
-    .--MATRIX---.   .-V-.
-    | 0   3   6 |   | 0 |
-    | 1   4   7 | . | 1 |
-    | 2   5   8 |   | 2 |
-    '-----------'   '---'
-    */
+    // .--MATRIX---.   .-V-.
+    // | 0   3   6 |   | 0 |
+    // | 1   4   7 | . | 1 |
+    // | 2   5   8 |   | 2 |
+    // '-----------'   '---'
     
-    if (!(multVec instanceof Vec3)) {
-      throw new TypeError("Mat3 (getMultVec3): multVec should be a Vec3");
-    }
+    Sol.CheckTypes(this, "getMultVec3", [{multVec}, [Vec3]]);
     
     let arrIn = multVec.asArray();
     let arrOut = new Array();
@@ -131,17 +192,13 @@ class Mat3 {
   }
 
   translate(transVec) {
-    /*
-    .TRANSLATE-.
-    | 1   0  tx|
-    | 0   1  ty|
-    | 0   0   1|
-    '----------'
-    */
+    // .TRANSLATE-.
+    // | 1   0  tx|
+    // | 0   1  ty|
+    // | 0   0   1|
+    // '----------'
     
-    if (!(transVec instanceof Vec2)) {
-      throw new TypeError("Mat3 (translate): transVec should be a Vec2");
-    }
+    Sol.CheckTypes(this, "translate", [{transVec}, [Vec2]]);
     
     let transMat = new Mat3();
     transMat.arr[6] = transVec.x;
@@ -151,17 +208,13 @@ class Mat3 {
   }
 
   rotate(angle) {
-    /*
-    .--ROLL-----------.
-    | cosZ -sinZ     0|
-    | sinZ  cosZ     0|
-    |    0     0     1|
-    '-----------------'
-    */
+    // .--ROLL-----------.
+    // | cosZ -sinZ     0|
+    // | sinZ  cosZ     0|
+    // |    0     0     1|
+    // '-----------------'
     
-    if (typeof angle != 'number') {
-      throw new TypeError("Mat3 (rotate): angle should be a Number");
-    }
+    Sol.CheckTypes(this, "rotate", [{angle}, [Number]]);
 
     let cZ = Math.cos(angle);
     let sZ = Math.sin(angle);
@@ -176,17 +229,13 @@ class Mat3 {
   }
 
   scale(scaleVec) {
-    /*
-    .--SCALE----.
-    | sx   0   0|
-    |  0  sy   0|
-    |  0   0   1|
-    '-----------'
-    */
+    // .--SCALE----.
+    // | sx   0   0|
+    // |  0  sy   0|
+    // |  0   0   1|
+    // '-----------'
     
-    if (!(scaleVec instanceof Vec2)) {
-      throw new TypeError("Mat3 (scale): scaleVec should be a Vec2");
-    }
+    Sol.CheckTypes(this, "scale", [{scaleVec}, [Vec2]]);
 
     let scaleMat = new Mat3();
 
@@ -204,7 +253,7 @@ class Mat3 {
         matStr += this.arr[(y * 3) + x];
         matStr += "  ";
 
-        if (y == 2) {
+        if (y === 2) {
           matStr += "\n";
         }
       }
