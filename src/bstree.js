@@ -90,6 +90,18 @@ class BSTree {
     }
   }
 
+  asArray() {
+    // return this tree as a sorted array
+
+    let arr = new Array();
+
+    this.forEach((n) => {
+      arr.push(n.data);
+    });
+
+    return arr;
+  }
+
   //> internal methods //
   _traverse(node, callbackFn) {
     // recursively traverse the tree starting down
