@@ -1,4 +1,5 @@
 import GLStates from './glstates.js'
+import Sol from './sol.js';
 
 import Renderable from './renderable.js'
 import RenderBatchData from './renderbatchdata.js'
@@ -6,29 +7,39 @@ import VBO from './vbo.js'
 import VBOSegment from './vbosegment.js'
 
 class RenderBatch {
-	constructor() {
-    this.renderData = new Array();
-		this.vbo = new VBO();
+  // holds data required to render to the context and
+  // and manages a vbo with which to do so
+  // 
+  // data is batched into groups of matching qualities
+  // (such as texture or shader) to reduce draw calls
+  // and state switching
 
-    this.depthSort = new Array();
+  //> internal properties //
+  _renderData = new Array();
+
+  //> public properties //
+  vbo = new VBO();
+  depthSort = new Array();
+
+  //> constructor //
+	constructor() {
+
 	}
 
+  //> getters/setters //
+  get renderData() { return this._renderData; };
+
+  //> public methods //
   delete() {
     this.vbo.delete();
   }
 	
 	add(renderBase, pass = 0) {
-    let renderable = renderBase.renderable
+    let renderable = renderBase.renderable;
 
     if (!(renderable instanceof Renderable)) {
       throw new TypeError("RenderBatch (add): renderBase should " +
       "have a 'renderable' field, which should be a Renderable");
-    }
-
-    this.vbo.init();
-
-    if (this.depthSort[pass] === undefined) {
-      this.depthSort[pass] = false;
     }
 
     let data = renderable.asData(renderBase);
@@ -37,25 +48,20 @@ class RenderBatch {
       "method should return an Array of render data");
     }
 
-    for (const datum of data) {
-      let rbd = datum.getCopy();
+    this._addData(data, pass);
+  }
 
-      rbd.pass = pass;
+  addRaw(data, pass = 0) {
+    // add an array of raw render data to the
+    // render batch
 
-      if (rbd.shaderRef === null) {
-        rbd.shaderRef = GLStates.defaultShader;
-      }
-      
-      if (this.depthSort[pass]) {
-        rbd.depthSort = true;
-      }
+    Sol.CheckTypes(this, "addRaw", [{data}, [Array]]);
 
-      this.renderData.push(rbd);
-    }
+    this._addData(data, pass);
   }
 
   upload() {
-    if (this.renderData.length !== 0) {
+    if (this._renderData.length !== 0) {
       let vertices = new Array();
       let indices = new Array();
       let segments = new Array();
@@ -66,7 +72,8 @@ class RenderBatch {
       // 3. then sort by shader id
       // 4. then sort by texture id (group non-textured)
       // 5. and finally sort by render mode
-      this.renderData.sort((first, second) => {
+      
+      this._renderData.sort((first, second) => {
         let dsort = this.depthSort[first.pass];
 
         // assign a null texture reference as id 0
@@ -92,14 +99,14 @@ class RenderBatch {
       });
 
       // info for the current vbo segment
-      let currPass = this.renderData[0].pass;
-      let currRenderMode = this.renderData[0].renderMode;
-      let currShader = this.renderData[0].shaderRef;
-      let currTex = this.renderData[0].textureRef;
+      let currPass = this._renderData[0].pass;
+      let currRenderMode = this._renderData[0].renderMode;
+      let currShader = this._renderData[0].shaderRef;
+      let currTex = this._renderData[0].textureRef;
       let currCount = 0;
       let currOffset = 0;
 
-      for (let r of this.renderData) {
+      for (let r of this._renderData) {
         for (let i = 0; i < r.indices.length; ++i) {
           r.indices[i] += vertexCount;
         }
@@ -146,22 +153,48 @@ class RenderBatch {
       }
 
       this.vbo.addData(buffer, indices, segments);
-      this.renderData.splice(0, this.renderData.length);
+      this._renderData.splice(0, this._renderData.length);
     }
   }
 
   draw(pass = 0) {
     this.vbo.draw(pass);
   }
-
+  
   setDepthSort(pass, enabled) {
     if (this.depthSort[pass] !== enabled) {
-      for (let r of this.renderData) {
+      for (let r of this._renderData) {
         r.depthSort = enabled;
       }
 
       this.depthSort[pass] = enabled;
     }
+  }
+
+  //> internal methods //
+  _addData(data, pass) {
+    this.vbo.init();
+
+    if (this.depthSort[pass] === undefined) {
+      this.depthSort[pass] = false;
+    }
+
+    let renderData = new Array();
+
+    for (const datum of data) {
+      let rbd = datum.getCopy();
+
+      rbd.pass = pass;
+      rbd.depthSort = this.depthSort[pass];
+
+      if (rbd.shaderRef === null) {
+        rbd.shaderRef = GLStates.defaultShader;
+      }
+      
+      renderData.push(rbd);
+    }
+
+    this._renderData.splice(this._renderData.length, 0, ...renderData);
   }
 };
 
