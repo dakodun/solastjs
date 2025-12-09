@@ -208,7 +208,12 @@ class Camera3D {
 
     let decom = this._view.decompose();
 
-    this._position = decom[0].getNegated();
+    // [!] decompose returns displacement (translation after
+    //     rotation/scaling applied) so until fixed just use
+    //     the eyeVec
+    // this._position = decom[0].getNegated();
+
+    this._position = eyeVec.getCopy();
     this._rotation = decom[2].getNegated();
 
     this.update = false;
