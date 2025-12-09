@@ -1,4 +1,4 @@
-import GL from './gl.js'
+import GL from './gl.js';
 import Sol from './sol.js';
 
 import Mat3 from './mat3.js';

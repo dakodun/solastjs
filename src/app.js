@@ -250,6 +250,9 @@ class App {
           (1.0 - fragTextured), 0.0, 1.0);
         fragColor = texColor * vec4(fragRGBA.r, fragRGBA.g,
           fragRGBA.b, fragRGBA.a);
+        
+        if (fragColor.a < 0.01)
+          discard;
 
         float light = max(1.0 - fragLighting,
           dot(fragNormal, vec3(0.0, 0.0, 1.0)));

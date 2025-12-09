@@ -1,121 +1,105 @@
 class List {
-  static Node = class Node {
-    // private fields
-      #prev = null;
-      #next = null;
-    // ...
+  // list - data structure
 
+  static Node = class Node {
+    // a node (or entry) in the list that holds
+    // data
+
+    //> public properties //
+    data = null;
+
+    //> internal properties //
+    _prev = null;
+    _next = null;
+
+    //> constructor //
     constructor(data) {
       this.data = data;
     }
 
-    // getters/setters
-    get prev() { return this.#prev; }
-    get next() { return this.#next; }
-
-    set prev(prev) {
-      if (!(prev instanceof List.Node) && prev !== null) {
-        throw new TypeError("List.Node (prev): should be a " +
-          "List.Node or null");
-      } else if (prev === this) {
-        throw new ReferenceError("List.Node (prev): assigning this " +
-          "to prev creates a cyclic reference");
-      }
-
-      this.#prev = prev;
-    }
-
-    set next(next) {
-      if (!(next instanceof List.Node) && next !== null) {
-        throw new TypeError("List.Node (next): should be a " +
-          "List.Node or null");
-      } else if (next === this) {
-        throw new ReferenceError("List.Node (next): assigning this " +
-          "to next creates a cyclic reference");
-      }
-
-      this.#next = next;
-    }
-    // ...
+    //> getters/setters //
+    get prev() { return this._prev; }
+    get next() { return this._next; }
   };
 
-  // private fields
-    #front = null;
-    #back  = null;
-  // ...
+  //> internal properties //
+  _front = null;
+  _back  = null;
 
+  //> constructor //
 	constructor(nodeData = []) {
     if (!(nodeData instanceof Array)) {
-      throw new TypeError("List (nodeData): should be an Array");
+      throw new TypeError("List: 'nodeData' should be an Array");
     }
 
     nodeData.forEach((e) => { this.push(e); });
   }
 
-  // getters/setters
-  get front() { return this.#front; }
-  get back()  { return this.#back;  }
-  // ...
+  //> getters/setters //
+  get front() { return this._front; }
+  get back()  { return this._back;  }
 
+  //> public methods //
   push(data) {
     let node = new List.Node(data);
 
-    if (this.#front === null) {
-      this.#front = node;
-      this.#back = node;
+    if (this._front === null) {
+      this._front = node;
+      this._back = node;
     } else {
-      this.#back.next = node;
-      node.prev = this.#back;
+      this._back._next = node;
+      node._prev = this._back;
 
-      this.#back = node;
+      this._back = node;
     }
   }
 
   delete(node) {
-    if (node === this.#front) {
-      this.#front = node.next;
+    if (node === this._front) {
+      this._front = node._next;
     }
     
-    if (node === this.#back) {
-      this.#back = node.prev;
+    if (node === this._back) {
+      this._back = node._prev;
     }
 
-    if (node.next !== null) {
-      node.next.prev = node.prev;
+    if (node._next !== null) {
+      node._next._prev = node._prev;
     }
 
-    if (node.prev !== null) {
-      node.prev.next = node.next;
+    if (node._prev !== null) {
+      node._prev._next = node._next;
     }
   }
 
   forEach(callbackFn = (n) => {}) {
-    let node = this.#front;
+    let node = this._front;
     while(node !== null) {
       callbackFn(node);
-      node = node.next;
+      node = node._next;
     }
   }
 
+  //> symbols //
   [Symbol.iterator]() {
     let curr = null;
-    let next = this.#front;
+    let next = this._front;
 
     return {
       next: () => {
         if (next !== null) {
           curr = next;
-          next = next.next;
+          next = next._next;
 
-          return {done: false, value: curr}; 
+          return { done: false, value: curr }; 
         } else {
-          return {done: true, value: undefined};
+          return { done: true, value: undefined };
         }
       },
 
       return: () => {
         next = null;
-        return {done: true, value: undefined};
+        return { done: true, value: undefined };
       },
 
       [Symbol.iterator]() {
