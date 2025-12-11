@@ -36,8 +36,8 @@ class LoadScene extends sol.Scene {
 	
 	input() {
     if (this.loaded) {
-      // APP.sceneManager.requestChange(new AlgoScene("algo"));
-      APP.sceneManager.requestChange(new PyramidScene("thepyramid"));
+      // APP.sceneManager.requestChange(AlgoScene, "algo");
+      APP.sceneManager.requestChange(PyramidScene, "thepyramid");
     }
 	}
 	

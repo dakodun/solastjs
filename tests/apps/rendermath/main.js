@@ -4,7 +4,7 @@ import LoadScene from './loadscene.js';
 function main() {
   try {
     APP.init("canvas");
-    APP.sceneManager.requestChange(new LoadScene());
+    APP.sceneManager.requestChange(LoadScene, "load");
     APP.sceneManager.change();
     APP.run();
   } catch (e) {

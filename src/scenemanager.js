@@ -1,95 +1,119 @@
-import Scene from './scene.js'
+import Sol from './sol.js';
+
+import Scene from './scene.js';
 
 class SceneManager {
+  // manages the loading, saving and changing of scenes
+
+  //> internal properties //
+  _store = new Map();
+
+  _current = null;
+	_next = null;
+
+  _loaded = false;
+  _saved = false;
+
+  //> constructor //
 	constructor() {
-		this.store = new Array();
 		
-		this.current = null;
-		this.next = null;
 	}
+
+  //> getters/setters //
+  get current() { return this._current; }
+  get next() { return this._next; }
+
+  //> public methods //
+  copy(other) {
+    throw new Error("SceneManager (copy): can't perform a deep " +
+    "copy of a SceneManager (you can but it requires extra work)");
+  }
+
+  getCopy() {
+    throw new Error("SceneManager (getCopy): can't perform a deep " +
+    "copy of a SceneManager (you can but it requires extra work)");
+  }
+
+  equals(other) {
+    throw new Error("SceneManager (equals): can't compare " +
+    "SceneManager objects (you can but it requires extra work)");
+  }
 
   delete() {
-    if (this.current) {
-      this.current.delete();
+    if (this._current !== null) {
+      this._current.delete();
+      this._current = null;
     }
     
-    if (this.next) {
-      this.next.delete();
+    if (this._next !== null) {
+      this._next.delete();
+      this._next = null;
     }
     
-    for (let s of this.store) {
+    for (let [n, s] of this._store) {
 			s.delete();
 		}
+
+    this._store = new Map();
   }
   
-  // queue up a scene change to a scene of type 'scene'
-  //   optionally indicate the current scene should be stored on change
-  //   optionally supply the name of a previously stored scene
-	requestChange(scene, save, name) {
-    let newScene = scene;
+	requestChange(sceneType, name, save = false) {
+    // retrieve the scene with a matching 'name' from
+    // the store if possible, otherwise create a new
+    // scene of type 'sceneType' with name 'name'
 
-    if (name != undefined) {
-      for (let i = 0; i < this.store.length; ++i) {
-        if (this.store[i].name == name) {
-          newScene = this.store[i];
-          newScene.loaded = true;
-          this.store.splice(i, i + 1);
-          break;
-        }
-      }
-    }
-
-    this.next = newScene;
+    Sol.CheckPrototypes(this, "requestChange",
+      [sceneType, [Scene]]);
     
-    if (this.current && save != undefined) {
-      this.current.saved = save;
+    let newScene = this._store.get(name);
+    if (newScene !== undefined) {
+      this._loaded = true;
+      this._store.delete(name);
+    } else {
+      newScene = new sceneType(name);
+      this._loaded = false;
     }
+
+    // queue up the scene change and signal if the
+    // current scene is to be stored
+
+    this._next = newScene;
+    this._saved = save;
 	}
   
-  // perform a previously queued scene change
 	change() {
-		if (this.next) {
-      if (this.current) {
-        this.current.onLeave(this.current.saved);
+    // perform a previously queued scene change
 
-        if (this.current.saved) {
-          this.store.push(this.current);
-        }
-        else {
-          this.current.delete();
+		if (this._next !== null) {
+      if (this._current !== null) {
+        // if a current scene exists then call its 'onLeave'
+        // method before storing it if requested, otherwise
+        // destroying it
+
+        this._current.onLeave(this._saved);
+
+        if (this._saved) {
+          this._store.set(this._current.name, this._current);
+        } else {
+          this._current.delete();
         }
       }
 
-      this.current = this.next;
-      this.next = null;
+      // update the current scene to the queued scene
+      // and call its 'onEnter' method
 
-      this.current.onEnter(this.current.loaded);
-      this.current.loaded = false;
+      this._current = this._next;
+      this._next = null;
 
-      if (this.current.saved) {
-        this.current.saved = false;
-      }
+      this._current.onEnter(this._loaded);
+
+      this._loaded = false;
+      this._saved = false;
 
       return true;
 		}
 
     return false;
-	}
-	
-	currentExists() {
-		return (this.current != null);
-  }
-  
-  getCurrent() {
-		return this.current;
-	}
-	
-	nextExists() {
-		return (this.next != null);
-	}
-	
-	getNext() {
-		return this.next;
 	}
 };
 
