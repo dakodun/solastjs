@@ -118,7 +118,7 @@ class App {
 
         if (this.frameSkip || framesProcessed >= this.frameMax) { break; }
         
-        if (this.sceneManager.nextExists()) { break; }
+        if (this.sceneManager.next !== null) { break; }
       }
 
       this.postProcess(frameTime, framesProcessed);
@@ -135,28 +135,28 @@ class App {
   }
 
   render(pass) {
-    if (this.sceneManager.currentExists()) {
-      this.sceneManager.getCurrent().render(pass);
+    if (this.sceneManager.current !== null) {
+      this.sceneManager.current.render(pass);
     }
 
     GL.flush();
   }
 
   input() {
-    if (this.sceneManager.currentExists()) {
-      this.sceneManager.getCurrent().input();
+    if (this.sceneManager.current !== null) {
+      this.sceneManager.current.input();
     }
   }
 
   process(dt) {
-    if (this.sceneManager.currentExists()) {
-      this.sceneManager.getCurrent().process(dt);
+    if (this.sceneManager.current !== null) {
+      this.sceneManager.current.process(dt);
     }
   }
 
   postProcess(dt, count) {
-    if (this.sceneManager.currentExists()) {
-      this.sceneManager.getCurrent().postProcess(dt, count);
+    if (this.sceneManager.current !== null) {
+      this.sceneManager.current.postProcess(dt, count);
     }
   }
 
@@ -191,8 +191,8 @@ class App {
         break;
     }
 
-    if (this.sceneManager.currentExists()) {
-      this.sceneManager.getCurrent().handleEventQueue(e);
+    if (this.sceneManager.current !== null) {
+      this.sceneManager.current.handleEventQueue(e);
     }
   }
 

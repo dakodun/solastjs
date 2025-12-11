@@ -1,10 +1,17 @@
 class Scene {
+  // an empty scene class to act as a base for
+  // derived objects, to be used mainly by a
+  // SceneManager
+
+  //> public properties //
+  name = "";
+
+  //> constructor //
 	constructor(name) {
 		this.name = name;
-		this.saved = false;
-    this.loaded = false;
 	}
 
+  //> public methods //
   delete() {
 
   }

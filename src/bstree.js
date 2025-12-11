@@ -34,8 +34,9 @@ class BSTree {
   _root = null;
   
   //> constructor //
-	constructor() {
-    
+	constructor(data = [], comparatorFn = (a, b) => {
+  return(a < b) ? -1 : (a > b) ? 1 : 0; }) {
+    data.forEach((e) => { this.add(e, comparatorFn); });
   }
 
   //> public methods //
