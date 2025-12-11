@@ -44,7 +44,7 @@ function main() {
     // finally enter the main loop of our app
 
     APP.init("canvas");
-    APP.sceneManager.requestChange(new InitialScene());
+    APP.sceneManager.requestChange(InitialScene, "init");
     APP.sceneManager.change();
     APP.run();
   } catch (e) {
