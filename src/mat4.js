@@ -1,59 +1,65 @@
+import Sol from './sol.js';
+
+import BSTree from './bstree.js';
+import Mat3 from './mat3.js';
 import Vec3 from './vec3.js';
 import Vec4 from './vec4.js';
 
 class Mat4 {
-  // private fields
-    #arr = [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1];
-  // ...
+  // a 4-dimensional matrix in column-major order
+  //
+  // .--COL-MAJOR---.
+  // | 0   4   8  12|
+  // | 1   5   9  13|
+  // | 2   6  10  14|
+  // | 3   7  11  15|
+  // '--------------'
 
+  //> static properties //
+  static _signChart = [1, -1, 1, -1, -1, 1, -1, 1,
+    1, -1, 1, -1, -1, 1, -1, 1];
+  
+  //> internal properties //
+  _arr = [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1];
+
+  //> constructor //
 	constructor(arr = [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1]) {
-    /*
-    .--COL-MAJOR---.
-    | 0   4   8  12|
-    | 1   5   9  13|
-    | 2   6  10  14|
-    | 3   7  11  15|
-    '--------------'
-    */
-
     this.arr = arr;
 	}
 
-  // getters/setters
-  get arr() { return this.#arr; }
+  //> getters/setters //
+  get arr() { return this._arr; }
   
   set arr(arr) {
-    if (!(arr instanceof Array)) {
-      throw new TypeError("Mat4 (arr): should be an Array");
-    } else if (arr.length !== 16) {
-      throw new RangeError("Mat4 (arr): should be an Array with " +
-        "16 elements");
+    Sol.CheckTypes(this, "set arr", [{arr}, [Array]]);
+
+    if (arr.length !== 16) {
+      throw new RangeError("Mat4 (set arr): should be an Array " +
+      "with 16 elements");
     }
 
-    this.#arr = arr;
+    this._arr = arr;
   }
-  // ...
 
+  //> public methods //
 	copy(other) {
-    if (!(other instanceof Mat4)) {
-      throw new TypeError("Mat4 (copy): other should be a Mat4");
-    }
+    Sol.CheckTypes(this, "copy", [{other}, [Mat4]]);
     
     this.arr = other.arr.slice();
   }
 
   getCopy() {
-    let copy = new Mat4(); copy.copy(this);
+    let copy = new Mat4();
+    copy.copy(this);
+
     return copy;
   }
 
   equals(other) {
-    if (!(other instanceof Mat4)) {
-      throw new TypeError("Mat4 (equals): other should be a Mat4");
-    }
+    Sol.CheckTypes(this, "equals", [{other}, [Mat4]]);
 
-    for (let i = 0; i < this.#arr.length; ++i) {
-      if (this.#arr[i] !== other.#arr[i]) {
+    for (let i = 0; i < this._arr.length; ++i) {
+      if (this._arr[i] !== other._arr[i]) {
         return false;
       }
     }
@@ -83,15 +89,78 @@ class Mat4 {
     return transposed;
   }
 
+  getDeterminant() {
+    // find the determinant of a 4x4 matrix via
+    // expansion using minors and cofactors
+
+    let result = 0;
+
+    let getIndex = (col, row) => {
+      // return the index in the data array pointed to
+      // by the supplied column and row, wrapping around
+      // to 0
+
+      return (((col) % 4) * 4) + (((row) % 4));
+    }
+
+    // use the first column ([0], [1], [2], and [3]) to find
+    // our determinant
+
+    // [!] reduce work by choosing a row or column with
+    //     the highest number of zeroes
+
+    for (let row = 0; row < 4; ++row) {
+      let ind = row;
+      
+      // calculate the indices that make up the determinant
+      // (3x3 matrix) for the current element and add them to
+      // a tree, returning it as a sorted array
+
+      let tree = new BSTree();
+        tree.add(getIndex(1, row + 1));
+        tree.add(getIndex(1, row + 2));
+        tree.add(getIndex(1, row + 3));
+
+        tree.add(getIndex(2, row + 1));
+        tree.add(getIndex(2, row + 2));
+        tree.add(getIndex(2, row + 3));
+
+        tree.add(getIndex(3, row + 1));
+        tree.add(getIndex(3, row + 2));
+        tree.add(getIndex(3, row + 3));
+      
+      let arr = tree.asArray();
+      
+      // create the 3x3 matrix from the values located
+      // at the indices in this matrix's data array and
+      // use it to get the determinant for the current
+      // element
+
+      let mat = new Mat3((() => {
+        let res = new Array();
+
+        arr.forEach((e) => {
+          res.push(this._arr[e]);
+        });
+
+        return res;
+      })());
+
+      let minor = mat.getDeterminant();
+      let cofactor = (Mat4._signChart[ind] * minor);
+      result += this._arr[ind] * cofactor;
+    }
+
+    return result;
+  }
+
   ortho(left, right, bottom, top, near, far) {
-    /*
-    .--ORTHO----------------------------------------------.
-    |     2/(r-l)           0            0  -((r+l)/(r-l))|
-    |           0     2/(t-b)            0  -((t+b)/(t-b))|
-    |           0           0   -2/(f - n)  -((f+n)/(f-n))|
-    |           0           0            0               1|
-    '-----------------------------------------------------'
-    */
+    // .--ORTHO----------------------------------------------.
+    // |     2/(r-l)           0            0  -((r+l)/(r-l))|
+    // |           0     2/(t-b)            0  -((t+b)/(t-b))|
+    // |           0           0   -2/(f - n)  -((f+n)/(f-n))|
+    // |           0           0            0               1|
+    // '-----------------------------------------------------'
     
     this.identity();
     
@@ -111,7 +180,7 @@ class Mat4 {
   perspective(fovy, aspect, near, far) {
     this.identity();
 
-    let top = near * Math.tan(fovy / 2);
+    let top = near * Math.tan(fovy * 0.5);
     let bottom = -top;
     let left = bottom * aspect;
     let right = top * aspect;
@@ -120,14 +189,12 @@ class Mat4 {
   }
 
   frustum(left, right, bottom, top, near, far) {
-    /*
-    .--FRUSTUM---------------------------------------.
-    |  2n/(r-l)         0   (r+l)/(r-l)             0|
-    |         0  2n/(t-b)   (t+b)/(t-b)             0|
-    |         0         0  -(f+n)/(f-n)  -(2fn)/(f-n)|
-    |         0         0            -1             0|
-    '------------------------------------------------'
-    */
+    // .--FRUSTUM---------------------------------------.
+    // |  2n/(r-l)         0   (r+l)/(r-l)             0|
+    // |         0  2n/(t-b)   (t+b)/(t-b)             0|
+    // |         0         0  -(f+n)/(f-n)  -(2fn)/(f-n)|
+    // |         0         0            -1             0|
+    // '------------------------------------------------'
     
     this.identity();
 
@@ -148,9 +215,7 @@ class Mat4 {
   }
 
   multMat4(other) {
-    if (!(other instanceof Mat4)) {
-      throw new TypeError("Mat4 (multMat4): other should be a Mat4");
-    }
+    Sol.CheckTypes(this, "multMat4", [{other}, [Mat4]]);
 
     let result = new Mat4();
 
@@ -169,18 +234,14 @@ class Mat4 {
   }
 
   getMultVec4(multVec) {
-    /*
-    .--MATRIX------.   .-V-.
-    | 0   4   8  12|   | 0 |
-    | 1   5   9  13|   | 1 |
-    | 2   6  10  14| . | 2 |
-    | 3   7  11  15|   | 3 |
-    '--------------'   '---'
-    */
+    // .--MATRIX------.   .-V-.
+    // | 0   4   8  12|   | 0 |
+    // | 1   5   9  13|   | 1 |
+    // | 2   6  10  14| . | 2 |
+    // | 3   7  11  15|   | 3 |
+    // '--------------'   '---'
     
-    if (!(multVec instanceof Vec4)) {
-      throw new TypeError("Mat4 (getMultVec4): multVec should be a Vec4");
-    }
+    Sol.CheckTypes(this, "getMultVec4", [{multVec}, [Vec4]]);
 
     let arrIn = multVec.asArray();
     let arrOut = new Array();
@@ -199,18 +260,14 @@ class Mat4 {
   }
 
   translate(transVec) {
-    /*
-    .--TRANSLATE---.
-    | 1   0   0  tx|
-    | 0   1   0  ty|
-    | 0   0   1  tz|
-    | 0   0   0   1|
-    '--------------'
-    */
+    // .--TRANSLATE---.
+    // | 1   0   0  tx|
+    // | 0   1   0  ty|
+    // | 0   0   1  tz|
+    // | 0   0   0   1|
+    // '--------------'
     
-    if (!(transVec instanceof Vec3)) {
-      throw new TypeError("Mat4 (translate): transVec should be a Vec3");
-    }
+    Sol.CheckTypes(this, "translate", [{transVec}, [Vec3]]);
 
     let transMat = new Mat4();
     transMat.arr[12] = transVec.x;
@@ -221,20 +278,14 @@ class Mat4 {
   }
 
   rotateAxis(angle, axis) {
-    /*
-    .--ROTATION-------------------------------------------------.
-    | (1-cosA)(XX)+ cosA  (1-cosA)(XY)-ZsinA  (1-cosA)(XZ)+YsinA|
-    | (1-cosA)(XY)+ZsinA  (1-cosA)(YY)+ cosA  (1-cosA)(YZ)-XsinA|
-    | (1-cosA)(XZ)-YsinA  (1-cosA)(YZ)+XsinA  (1-cosA)(ZZ)+ cosA|
-    '-----------------------------------------------------------'
-    */
+    // .--ROTATION-------------------------------------------------.
+    // | (1-cosA)(XX)+ cosA  (1-cosA)(XY)-ZsinA  (1-cosA)(XZ)+YsinA|
+    // | (1-cosA)(XY)+ZsinA  (1-cosA)(YY)+ cosA  (1-cosA)(YZ)-XsinA|
+    // | (1-cosA)(XZ)-YsinA  (1-cosA)(YZ)+XsinA  (1-cosA)(ZZ)+ cosA|
+    // '-----------------------------------------------------------'
 
-    if (typeof angle != 'number') {
-      throw new TypeError("Mat4 (rotateAxis): angle should be a Number");
-    }
-    else if (!(axis instanceof Vec3)) {
-      throw new TypeError("Mat4 (rotateAxis): axis should be a Vec3");
-    }
+    Sol.CheckTypes(this, "rotateAxis",
+    [{angle}, [Number], {axis}, [Vec3]]);
 
     let rotAA = new Mat4();
     
@@ -264,22 +315,18 @@ class Mat4 {
   }
 
   rotateEuler(angles) {
-    /*
-    .--ROLL-----------. .--PITCH----------. .--YAW------------.
-    | cosZ  sinZ     0| | cosY     0 -sinY| |    1     0     0|
-    |-sinZ  cosZ     0|.|    0     1     0|.|    0  cosX -sinX|
-    |    0     0     1| | sinY     0  cosY| |    0  sinX  cosX|
-    '-----------------' '-----------------' '-----------------'
-    .--ROTATION-----------------------------------------------.
-    |              cosZcosY                sinZcosY      -sinY|
-    |-sinZcosX-cosZsinYsinX   cosZcosX-sinZsinYsinX  -cosYsinX|
-    |-sinZsinX+cosZsinYcosX   cosZsinX+sinZsinYcosX   cosYcosX|
-    '---------------------------------------------------------'
-    */
+    // .--ROLL-----------. .--PITCH----------. .--YAW------------.
+    // | cosZ  sinZ     0| | cosY     0 -sinY| |    1     0     0|
+    // |-sinZ  cosZ     0|.|    0     1     0|.|    0  cosX -sinX|
+    // |    0     0     1| | sinY     0  cosY| |    0  sinX  cosX|
+    // '-----------------' '-----------------' '-----------------'
+    // .--ROTATION-----------------------------------------------.
+    // |              cosZcosY                sinZcosY      -sinY|
+    // |-sinZcosX-cosZsinYsinX   cosZcosX-sinZsinYsinX  -cosYsinX|
+    // |-sinZsinX+cosZsinYcosX   cosZsinX+sinZsinYcosX   cosYcosX|
+    // '---------------------------------------------------------'
     
-    if (!(angles instanceof Vec3)) {
-      throw new TypeError("Mat4 (rotateEuler): angles should be a Vec3");
-    }
+    Sol.CheckTypes(this, "rotateEuler", [{angles}, [Vec3]]);
 
     let rotZYX = new Mat4();
 
@@ -307,18 +354,14 @@ class Mat4 {
   }
 
   scale(scaleVec) {
-    /*
-    .--SCALE--------.
-    | sx   0   0   0|
-    |  0  sy   0   0|
-    |  0   0  sz   0|
-    |  0   0   0   1|
-    '---------------'
-    */
+    // .--SCALE--------.
+    // | sx   0   0   0|
+    // |  0  sy   0   0|
+    // |  0   0  sz   0|
+    // |  0   0   0   1|
+    // '---------------'
     
-    if (!(scaleVec instanceof Vec3)) {
-      throw new TypeError("Mat4 (scale): scaleVec should be a Vec3");
-    }
+    Sol.CheckTypes(this, "scale", [{scaleVec}, [Vec3]]);
     
     let scaleMat = new Mat4();
 
@@ -330,92 +373,87 @@ class Mat4 {
   }
 
   decompose() {
-    // translation...
-      let position = new Vec3(
-        this.arr[12],
-        this.arr[13],
-        this.arr[14]
-      );
-    // ...
+    // [!] is this really the translation? possibly 'displacement'
+    //     and requires inverse of rotation/scale to be applied
 
+    // translation
+    let position = new Vec3(
+      this.arr[12],
+      this.arr[13],
+      this.arr[14]
+    );
 
-    // scaling...
-      let sxLen = Math.sqrt(
-        this.arr[0] * this.arr[0] +
-        this.arr[1] * this.arr[1] +
-        this.arr[2] * this.arr[2]
-      ); let invSXLen = 1 / sxLen;
+    // scaling
+    let sxLen = Math.sqrt(
+      this.arr[0] * this.arr[0] +
+      this.arr[1] * this.arr[1] +
+      this.arr[2] * this.arr[2]
+    ); let invSXLen = 1 / sxLen;
 
-      let syLen = Math.sqrt(
-        this.arr[4] * this.arr[4] +
-        this.arr[5] * this.arr[5] +
-        this.arr[6] * this.arr[6]
-      ); let invSYLen = 1 / syLen;
+    let syLen = Math.sqrt(
+      this.arr[4] * this.arr[4] +
+      this.arr[5] * this.arr[5] +
+      this.arr[6] * this.arr[6]
+    ); let invSYLen = 1 / syLen;
 
-      let szLen = Math.sqrt(
-        this.arr[ 8] * this.arr[ 8] +
-        this.arr[ 9] * this.arr[ 9] +
-        this.arr[10] * this.arr[10]
-      ); let invSZLen = 1 / szLen;
+    let szLen = Math.sqrt(
+      this.arr[ 8] * this.arr[ 8] +
+      this.arr[ 9] * this.arr[ 9] +
+      this.arr[10] * this.arr[10]
+    ); let invSZLen = 1 / szLen;
 
-      let scale = new Vec3(sxLen, syLen, szLen);
-    // ...
+    let scale = new Vec3(sxLen, syLen, szLen);
 
+    // rotation
+    // create a rotation matrix from our matrix
+    let rotMat = this.getCopy();
 
-    // rotation...
-      // create a rotation matrix from our matrix
-        let rotMat = this.getCopy();
+    rotMat.arr[0] *= invSXLen;
+    rotMat.arr[1] *= invSXLen;
+    rotMat.arr[2] *= invSXLen;
 
-        rotMat.arr[0] *= invSXLen;
-        rotMat.arr[1] *= invSXLen;
-        rotMat.arr[2] *= invSXLen;
+    rotMat.arr[4] *= invSYLen;
+    rotMat.arr[5] *= invSYLen;
+    rotMat.arr[6] *= invSYLen;
 
-        rotMat.arr[4] *= invSYLen;
-        rotMat.arr[5] *= invSYLen;
-        rotMat.arr[6] *= invSYLen;
+    rotMat.arr[ 8] *= invSZLen;
+    rotMat.arr[ 9] *= invSZLen;
+    rotMat.arr[10] *= invSZLen;
 
-        rotMat.arr[ 8] *= invSZLen;
-        rotMat.arr[ 9] *= invSZLen;
-        rotMat.arr[10] *= invSZLen;
+    rotMat.arr[12] = 0;
+    rotMat.arr[13] = 0;
+    rotMat.arr[14] = 0;
 
-        rotMat.arr[12] = 0;
-        rotMat.arr[13] = 0;
-        rotMat.arr[14] = 0;
-      // ...
+    let rotation = new Vec3();
 
-      let rotation = new Vec3();
+    if (Math.abs(Math.abs(rotMat.arr[2]) - 1.0) < 1e-15) {
+      // if the value of the rotation matrix at [0, 2] is 1 or -1
 
-      if (Math.abs(Math.abs(rotMat.arr[2]) - 1.0) < 1e-15) { // if the value
-        // of the rotation matrix at [0, 2] is 1 or -1...
+      rotation.z = 0.0;
 
-        rotation.z = 0.0;
-
-        if (rotMat.arr[2] < 0.0) {
-          rotation.y = Math.PI / 2.0;
-          rotation.x = Math.atan2(
-            rotMat.arr[4],  rotMat.arr[8]
-          ) + rotation.z;
-        }
-        else {
-          rotation.y = -Math.PI / 2.0;
-          rotation.x = Math.atan2(
-            -rotMat.arr[4], -rotMat.arr[8]
-          ) - rotation.z;
-        }
-      }
-      else {
-        rotation.y = -Math.asin(rotMat.arr[2]);
-        let invCY = 1 / Math.cos(rotation.y);
-
+      if (rotMat.arr[2] < 0.0) {
+        rotation.y = Math.PI / 2.0;
         rotation.x = Math.atan2(
-          (rotMat.arr[ 6] * invCY), (rotMat.arr[10] * invCY)
-        );
-
-        rotation.z = Math.atan2(
-          (rotMat.arr[ 1] * invCY), (rotMat.arr[ 0] * invCY)
-        );
+          rotMat.arr[4],  rotMat.arr[8]
+        ) + rotation.z;
+      } else {
+        rotation.y = -Math.PI / 2.0;
+        rotation.x = Math.atan2(
+          -rotMat.arr[4], -rotMat.arr[8]
+        ) - rotation.z;
       }
-    // ...
+    } else {
+      rotation.y = -Math.asin(rotMat.arr[2]);
+      let invCY = 1 / Math.cos(rotation.y);
+
+      rotation.x = Math.atan2(
+        (rotMat.arr[ 6] * invCY), (rotMat.arr[10] * invCY)
+      );
+
+      rotation.z = Math.atan2(
+        (rotMat.arr[ 1] * invCY), (rotMat.arr[ 0] * invCY)
+      );
+    }
 
     return [position, scale, rotation];
   }
@@ -428,7 +466,7 @@ class Mat4 {
         matStr += this.arr[(y * 4) + x];
         matStr += "  ";
 
-        if (y == 3) {
+        if (y === 3) {
           matStr += "\n";
         }
       }

@@ -1,51 +1,78 @@
-class Vec2 {
-  // private fields
-    #x = 0;
-    #y = 0;
-  // ...
+import Sol from './sol.js';
 
+class Vec2 {
+  // a 2-dimensional vector (x and y) with methods
+  // for convenience as well as to perform common
+  // mathematical operations
+
+  //> internal properties //
+  _x = 0;
+  _y = 0;
+
+  _size   = null;
+  _sizeSq = null;
+
+  //> constructor //
 	constructor(x = 0, y = x) {
     this.x = x;
     this.y = y;
 	}
 
-  // getters/setters
-  get x() { return this.#x; }
-  get y() { return this.#y; }
-  
-  set x(x) {
-    if (typeof x !== 'number') {
-      throw new TypeError("Vec2 (x): should be a Number");
+  //> getters/setters //
+  get x() { return this._x; }
+  get y() { return this._y; }
+
+  get size() {
+    if (this._sizeSq === null) {
+      let sizeSq = this.sizeSq;
+      this._size = Math.sqrt(sizeSq);
     }
 
-    this.#x = x;
+    return this._size;
+  }
+
+  get sizeSq() {
+    if (this._sizeSq === null) {
+      this._sizeSq = (this._x * this._x) + 
+        (this._y * this._y);
+    }
+
+    return this._sizeSq;
+  }
+  
+  set x(x) {
+    Sol.CheckTypes(this, "set x",
+    [{x}, [Number]]);
+
+    this._size   = null;
+    this._sizeSq = null;
+    this._x = x;
   }
 
   set y(y) {
-    if (typeof y !== 'number') {
-      throw new TypeError("Vec2 (y): should be a Number");
-    }
+    Sol.CheckTypes(this, "set y",
+    [{y}, [Number]]);
 
-    this.#y = y;
+    this._size   = null;
+    this._sizeSq = null;
+    this._y = y;
   }
 
   set xy(xy) {
-    if (!(xy instanceof Array)) {
-      throw new TypeError("Vec2 (xy): should be an Array");
-    }
+    Sol.CheckTypes(this, "set xy",
+    [{xy}, [Array]]);
 
     this.x = xy[0];
-    this.y = (xy[1] !== undefined) ? xy[1] : this.#x;
+    this.y = (xy[1] !== undefined) ? xy[1] : this._x;
   }
-  // ...
 
+  //> public methods //
 	copy(other) {
-    if (!(other instanceof Vec2)) {
-      throw new TypeError("Vec2 (copy): other should be a Vec2");
-    }
+    Sol.CheckTypes(this, "copy",
+    [{other}, [Vec2]]);
 
-    this.x = other.x;
-		this.y = other.y;
+    this._x = other._x;
+		this._y = other._y;
   }
 
   getCopy() {
@@ -56,20 +83,16 @@ class Vec2 {
   }
 
   equals(other, tolerance = 0) {
-    if (!(other instanceof Vec2)) {
-      throw new TypeError("Vec2 (equals): other should be a Vec2");
-    } else if (typeof tolerance !== 'number') {
-      throw new TypeError("Vec2 (equals): tolerance should " +
-        "be a Number");
-    }
+    Sol.CheckTypes(this, "equals",
+    [{other}, [Vec2]], [{tolerance}, [Number]]);
 
-    return (Math.abs(this.x - other.x) <= tolerance &&
-            Math.abs(this.y - other.y) <= tolerance) ? true : false;
+    return (Math.abs(this._x - other._x) <= tolerance &&
+      Math.abs(this._y - other._y) <= tolerance) ? true : false;
   }
 
   negate() {
-    this.x = -this.x;
-    this.y = -this.y;
+    this._x = -this._x;
+    this._y = -this._y;
   }
 
   getNegated() {
@@ -80,13 +103,11 @@ class Vec2 {
   }
 
   normalize() {
-    let len = Math.sqrt((this.x * this.x) + (this.y * this.y));
-    
-    if (len !== 0) {
-      let invLen = 1 / len;
+    if (this.size !== 0) {
+      let invLen = 1 / this.size;
 
-      this.x *= invLen;
-      this.y *= invLen;
+      this._x *= invLen;
+      this._y *= invLen;
     }
   }
 
@@ -98,37 +119,34 @@ class Vec2 {
   }
 
   getDot(other) {
-    if (!(other instanceof Vec2)) {
-      throw new TypeError("Vec2 (getDot): other should be a Vec2");
-    }
+    Sol.CheckTypes(this, "getDot",
+    [{other}, [Vec2]]);
 
-    let result = ((this.x * other.x) + (this.y * other.y));
+    let result = ((this._x * other._x) + (this._y * other._y));
 
     return result;
   }
 
   getDeterminant(other) {
-    if (!(other instanceof Vec2)) {
-      throw new TypeError("Vec2 (getDeterminant): other should " + 
-        "be a Vec2");
-    }
+    Sol.CheckTypes(this, "getDeterminant",
+    [{other}, [Vec2]]);
 
-    let result = (this.x * other.y) - (other.x * this.y);
+    let result = (this._x * other._y) - (other._x * this._y);
 
     return result;
   }
 
   asArray() {
-    return [this.x, this.y];
+    return [this._x, this._y];
   }
 
   fromArray(arr) {
-    if (!Array.isArray(arr)) {
-      throw new TypeError("Vec2 (fromArray): arr should be an Array");
-    }
+    Sol.CheckTypes(this, "fromArray",
+    [{arr}, [Array]]);
 
     // pad the input if necessary, using default value of 0
     // or the last value supplied
+
     let result = new Array(2);
     let padValue = 0;
 
@@ -145,10 +163,9 @@ class Vec2 {
         padValue = arr[i];
       }
     }
-    // ...
 
-    this.x = result[0];
-    this.y = result[1];
+    this._x = result[0];
+    this._y = result[1];
   }
 };
 

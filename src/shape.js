@@ -1,4 +1,4 @@
-import GL from './gl.js'
+import GL from './gl.js';
 import Sol from './sol.js';
 
 import Mat3 from './mat3.js';
@@ -926,11 +926,10 @@ class Shape extends Polygon {
         (v.y - this.boundingBox.lower.y) * invMinMax.y
       );
 
-      // pack floating point values into unsigned short
       vboVert.s = (((1 - ratio.x) * frame.s.x) +
-        (ratio.x * frame.s.y)) * 65535;
+        (ratio.x * frame.s.y));
       vboVert.t = (((1 - ratio.y) * frame.t.x) +
-        (ratio.y * frame.t.y)) * 65535;
+        (ratio.y * frame.t.y));
       vboVert.textureLayer = frame.layer;
       
       if (frame.texture && frame.texture.texture) {

@@ -5,9 +5,9 @@ import Vec2 from './vec2.js';
 
 class Polygon {
   //> internal properties //
-  _transformable = new Transformable2D();
-
   _verts = new Array();
+
+  _transformable = new Transformable2D();
 
   //> constructor //
   constructor(verts = undefined) {
@@ -22,6 +22,7 @@ class Polygon {
 
   //> getters/setters //
   get verts() { return this._verts; }
+  get transformable() { return this._transformable; }
 
   set verts(verts) {
     Sol.CheckTypes(this, "set verts",
@@ -52,8 +53,6 @@ class Polygon {
   }
 
   //> getters (transformable) //
-  get transformable() { return this._transformable; }
-  
   get position() { return this._transformable.position; }
   get origin()   { return this._transformable.origin;   }
   get transMat() { return this._transformable.transMat; }
@@ -61,8 +60,8 @@ class Polygon {
   get rotation() { return this._transformable.rotation; }
   get boundingBox() { return this._transformable.boundingBox; }
 
-  get width()  { return this._transformable.width;  }
-  get height() { return this._transformable.height; }
+  get bbWidth()  { return this._transformable.width;  }
+  get bbHeight() { return this._transformable.height; }
 
   //> setters (transformable) //
   set position(position) { this._transformable.position = position; }
