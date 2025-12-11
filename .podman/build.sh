@@ -14,6 +14,9 @@
 
 # run tests using 'npm run test' or via playwright and headless
 # browser using 'xnpm run test'
+# there are various aliases for other test related operations,
+# such as coverage and benchmarking, which you can view in
+# node.containerfile (under package.json)
 
 # help
 help() {
@@ -27,8 +30,8 @@ help() {
 }
 
 build() {
-  # pull base image (if necessary) and build container image
-  # (using containerfile)
+  # pull base image (if necessary) and build container
+  # image (using containerfile)
   
   set -x
   podman pull docker.io/library/node:25.0-bookworm-slim
@@ -41,6 +44,9 @@ build() {
 
 run() {
   # create the pod and attach containers to it
+
+  # "/workspace/solastjs" is the location of the local
+  # dev folder
 
   set -x
   podman pod create --name sol-pod --volume ../:/workspace/solastjs \
