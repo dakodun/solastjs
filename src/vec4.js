@@ -1,7 +1,7 @@
 import Sol from './sol.js';
 
 class Vec4 {
- // a 3-dimensional vector (x, y and z) with methods
+ // a 4-dimensional vector (x, y, z and w) with methods
   // for convenience as well as to perform common
   // mathematical operations
 
@@ -29,7 +29,7 @@ class Vec4 {
   get w() { return this._w; }
 
   get size() {
-    if (this._sizeSq === null) {
+    if (this._size === null) {
       let sizeSq = this.sizeSq;
       this._size = Math.sqrt(sizeSq);
     }
@@ -50,36 +50,44 @@ class Vec4 {
     Sol.CheckTypes(this, "set x",
     [{x}, [Number]]);
 
-    this._size   = null;
-    this._sizeSq = null;
-    this._x = x;
+    if (this._x !== x) {
+      this._size   = null;
+      this._sizeSq = null;
+      this._x = x;
+    }
   }
 
   set y(y) {
     Sol.CheckTypes(this, "set y",
     [{y}, [Number]]);
 
-    this._size   = null;
-    this._sizeSq = null;
-    this._y = y;
+    if (this._y !== y) {
+      this._size   = null;
+      this._sizeSq = null;
+      this._y = y;
+    }
   }
 
   set z(z) {
     Sol.CheckTypes(this, "set z",
     [{z}, [Number]]);
-
-    this._size   = null;
-    this._sizeSq = null;
-    this._z = z;
+    
+    if (this._z !== z) {
+      this._size   = null;
+      this._sizeSq = null;
+      this._z = z;
+    }
   }
 
   set w(w) {
     Sol.CheckTypes(this, "set w",
     [{w}, [Number]]);
 
-    this._size   = null;
-    this._sizeSq = null;
-    this._w = w;
+    if (this._w !== w) {
+      this._size   = null;
+      this._sizeSq = null;
+      this._w = w;
+    }
   }
 
   set xy(xy) {
@@ -185,6 +193,9 @@ class Vec4 {
 		this.y = other.y;
     this.z = other.z;
     this.w = other.w;
+
+    this._size = other._size;
+		this._sizeSq = other._sizeSq;
   }
 
   getCopy() {
@@ -198,6 +209,9 @@ class Vec4 {
     Sol.CheckTypes(this, "equals",
     [{other}, [Vec4]], [{tolerance}, [Number]]);
     
+    // don't need to compare size (squared) as its fully
+    // dependent on individual components
+
     return (Math.abs(this._x - other._x) <= tolerance &&
       Math.abs(this._y - other._y) <= tolerance &&
       Math.abs(this._z - other._z) <= tolerance &&
@@ -226,6 +240,9 @@ class Vec4 {
       this._y *= invLen;
       this._z *= invLen;
       this._w *= invLen;
+
+      this._size   = 1;
+      this._sizeSq = 1;
     }
   }
 
@@ -255,7 +272,8 @@ class Vec4 {
     [{arr}, [Array]]);
 
     // pad the input if necessary, using default value of 0
-    // or the last value supplied
+    // or the last value supplied and then assign each to
+    // the corresponding property
 
     let result = new Array(4);
     let padValue = 0;
@@ -273,12 +291,17 @@ class Vec4 {
         padValue = arr[i];
       }
     }
-    // ...
 
-    this._x = result[0];
-    this._y = result[1];
-    this._z = result[2];
-    this._w = result[3];
+    if (this._x !== result[0] || this._y !== result[1]
+    || this._z !== result[2] || this._w !== result[3]) {
+      this._x = result[0];
+      this._y = result[1];
+      this._z = result[2];
+      this._w = result[3];
+
+      this._size   = null;
+      this._sizeSq = null;
+    }
   }
 };
 

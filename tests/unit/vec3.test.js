@@ -2,505 +2,873 @@ import { describe, test, expect } from 'vitest';
 
 import Vec3 from '../../src/vec3.js';
 
-describe("construction", () => {
-  test("new Vec3(x, y, z, ...)", () => {
-    // assign x, y, and z; ignore extra
-      // => new Vec3(1, 2, 3)
-    let vector = new Vec3(1, 2, 3, 4);
+//> Vec3 //
+describe("Vec3", () => {
+  //> constructor //
+  describe("constructor", () => {
+    test("defaults to 0 when no arguments passed", () => {
+      let vec = new Vec3();
 
-    expect(vector.x).toEqual(1);
-    expect(vector.y).toEqual(2);
-    expect(vector.z).toEqual(3);
-  });
+      let expected = { x: 0, y: 0, z: 0 }
 
-  test("new Vec3(x)", () => {
-    // assign x, y, and z; pad input
-      // => new Vec3(1, 1, 1)
-    let vector = new Vec3(1);
-
-    expect(vector.x).toEqual(1);
-    expect(vector.y).toEqual(1);
-    expect(vector.z).toEqual(1);
-  });
-
-  test("new Vec3()", () => {
-    // assign x, y, and z; default value
-      // => new Vec3(0, 0, 0)
-    let vector = new Vec3();
-
-    expect(vector.x).toEqual(0);
-    expect(vector.y).toEqual(0);
-    expect(vector.z).toEqual(0);
-  });
-});
-
-
-describe("getters/setters", () => {
-  describe("this.x, this.y, and this.z", () => {
-    test("x = this.x, ...", () => {
-      // return x, y, or z
-      let vector = new Vec3(1, 2, 3);
-
-      let x = vector.x;
-        expect(x).toEqual(vector.x);
-      let y = vector.y;
-        expect(y).toEqual(vector.y);
-      let z = vector.z;
-        expect(z).toEqual(vector.z);
+      expect(vec._x).toEqual(expected.x);
+      expect(vec._y).toEqual(expected.y);
+      expect(vec._z).toEqual(expected.z);
     });
 
-    test("this.x = 'string', ...", () => {
-      // throw an error
-      let vector = new Vec3();
+    describe("pads the input with the last supplied argument", () => {
+      test("(x)", () => {
+        let vec = new Vec3(1);
+        
+        let expected = { x: 1, y: 1, z: 1 }
 
-      expect(() => vector.x = "1").toThrowError(/Number/);
-      expect(() => vector.y = "2").toThrowError(/Number/);
-      expect(() => vector.z = "3").toThrowError(/Number/);
+        expect(vec._x).toEqual(expected.x);
+        expect(vec._y).toEqual(expected.y);
+        expect(vec._z).toEqual(expected.z);
+      });
+
+      test("(x, y)", () => {
+        let vec = new Vec3(1, 2);
+        
+        let expected = { x: 1, y: 2, z: 2 }
+
+        expect(vec._x).toEqual(expected.x);
+        expect(vec._y).toEqual(expected.y);
+        expect(vec._z).toEqual(expected.z);
+      });
     });
 
-    test("this.x = 1, ...", () => {
-      // assign x, y, or z
-      let vector = new Vec3();
+    test("assigns arguments in order", () => {
+      let vec = new Vec3(1, 2, 3);
 
-      vector.x = 1;
-        expect(vector.x).toEqual(1);
-      vector.y = 2;
-        expect(vector.y).toEqual(2);
-      vector.z = 3;
-        expect(vector.z).toEqual(3);
+      let expected = { x: 1, y: 2, z: 3 }
+
+      expect(vec._x).toEqual(expected.x);
+      expect(vec._y).toEqual(expected.y);
+      expect(vec._z).toEqual(expected.z);
+    });
+
+    test("throws an error on type mismatch", () => {
+      expect(() => { let vec = new Vec3("str", 1, 1); })
+        .toThrowError(/Number/);
+      expect(() => { let vec = new Vec3(1, "str", 1); })
+        .toThrowError(/Number/);
+      expect(() => { let vec = new Vec3(1, 1, "str"); })
+        .toThrowError(/Number/);
     });
   });
 
-  describe("this.xy, this.xz, and this.yz", () => {
-    test("this.xy = 'string', ...", () => {
-      // throw an error
-      let vector = new Vec3();
-      let arrStr = "string";
+  //> x //
+  describe("x", () => {
+    describe("get", () => {
+      test("returns the value of x", () => {
+        let vec = new Vec3();
+          vec._x = 1;
+        
+        let x = vec.x;
 
-      expect(() => vector.xy  = arrStr).toThrowError(/Array/);
-      expect(() => vector.xz  = arrStr).toThrowError(/Array/);
-      expect(() => vector.yz  = arrStr).toThrowError(/Array/);
+        expect(x).toEqual(vec._x);
+      });
     });
 
-    test("this.xy = [x, y, ...], ...", () => {
-      // assign x, y, or z; ignore extra
-        // => new this.xy = [1, 2]
-      let vector = new Vec3();
-      vector.xy = [1, 2, 3];
-        expect(vector.x).toEqual(1);
-        expect(vector.y).toEqual(2);
+    describe("set", () => {
+      test("sets the value of x and resets size/sizesq", () => {
+        let vec = new Vec3();
+          vec._x = 1;
+          vec._size = 2;
+          vec._sizeSq = 3;
+        
+        let expected = {
+          x: 3,
+          size: null,
+          sizeSq: null
+        }
 
-      vector = new Vec3();
-      vector.xz = [1, 2, 3];
-        expect(vector.x).toEqual(1);
-        expect(vector.z).toEqual(2);
+        vec.x = 3;
 
-      vector = new Vec3();
-      vector.yz = [1, 2, 3];
-        expect(vector.y).toEqual(1);
-        expect(vector.z).toEqual(2);
-    });
+        expect(vec._x).toEqual(expected.x);
+        expect(vec._size).toEqual(expected.size);
+        expect(vec._sizeSq).toEqual(expected.sizeSq);
+      });
 
-    test("this.xy = [x], ...", () => {
-      // assign x, y, or z; pad input
-        // => new this.xy = [4, 4]
-      let vector = new Vec3();
-      vector.xy = [4];
-        expect(vector.x).toEqual(4);
-        expect(vector.y).toEqual(4);
+      test("does nothing if x is unchanged", () => {
+        let vec = new Vec3();
+          vec._x = 1;
+          vec._size = 2;
+          vec._sizeSq = 3;
+        
+        let expected = {
+          x: 1,
+          size: 2,
+          sizeSq: 3
+        }
 
-      vector = new Vec3();
-      vector.xz = [4];
-        expect(vector.x).toEqual(4);
-        expect(vector.z).toEqual(4);
+        vec.x = 1;
 
-      vector = new Vec3();
-      vector.yz = [4];
-        expect(vector.y).toEqual(4);
-        expect(vector.z).toEqual(4);
-    });
-  });
+        expect(vec._x).toEqual(expected.x);
+        expect(vec._size).toEqual(expected.size);
+        expect(vec._sizeSq).toEqual(expected.sizeSq);
+      });
 
-  describe("this.xyz", () => {
-    test("this.xyz = 'string'", () => {
-      // throw an error
-      let vector = new Vec3();
-      let arrStr = "string";
-
-      expect(() => vector.xyz  = arrStr).toThrowError(/Array/);
-    });
-
-    test("this.xyz = [x, y, z, ...]", () => {
-      // assign x, y, and z; ignore extra
-        // => new this.xyz = [1, 2, 3]
-      let vector = new Vec3();
-      vector.xyz = [1, 2, 3, 4];
-        expect(vector.x).toEqual(1);
-        expect(vector.y).toEqual(2);
-        expect(vector.z).toEqual(3);
-    });
-
-    test("this.xyz = [x]", () => {
-      // assign x, y, and z; pad input
-        // => new this.xyz = [4, 4, 4]
-      let vector = new Vec3();
-      vector.xyz = [4];
-        expect(vector.x).toEqual(4);
-        expect(vector.y).toEqual(4);
-        expect(vector.z).toEqual(4);
+      test("throws an error on a type mismatch", () => {
+        let vec = new Vec3();
+        
+        expect(() => { vec.x = "string"; }).toThrowError(/Number/);
+      });
     });
   });
-});
 
+  //> y //
+  describe("y", () => {
+    describe("get", () => {
+      test("returns the value of y", () => {
+        let vec = new Vec3();
+          vec._y = 2;
+        
+        let y = vec.y;
 
-describe("copying", () => {
-  test("this.copy(other) should make a deep copy of 'other'", () => {
-    let vector = new Vec3();
-    let vectorOther = new Vec3(10, 20, 30);
+        expect(y).toEqual(vec._y);
+      });
+    });
 
-    vector.copy(vectorOther);
-    
-    expect(vector).toEqual(vectorOther);
-    expect(vector).not.toBe(vectorOther);
+    describe("set", () => {
+      test("sets the value of y and resets size/sizesq", () => {
+        let vec = new Vec3();
+          vec._y = 2;
+          vec._size = 2;
+          vec._sizeSq = 3;
+        
+        let expected = {
+          y: 3,
+          size: null,
+          sizeSq: null
+        }
+
+        vec.y = 3;
+
+        expect(vec._y).toEqual(expected.y);
+        expect(vec._size).toEqual(expected.size);
+        expect(vec._sizeSq).toEqual(expected.sizeSq);
+      });
+
+      test("does nothing if y is unchanged", () => {
+        let vec = new Vec3();
+          vec._y = 2;
+          vec._size = 2;
+          vec._sizeSq = 3;
+        
+        let expected = {
+          y: 2,
+          size: 2,
+          sizeSq: 3
+        }
+
+        vec.y = 2;
+
+        expect(vec._y).toEqual(expected.y);
+        expect(vec._size).toEqual(expected.size);
+        expect(vec._sizeSq).toEqual(expected.sizeSq);
+      });
+
+      test("throws an error on a type mismatch", () => {
+        let vec = new Vec3();
+        
+        expect(() => { vec.y = "string"; }).toThrowError(/Number/);
+      });
+    });
   });
 
-  test("this.copy(other) should throw an error if 'other' is not " +
-  "a 'Vec3'", () => {
-    let vector = new Vec3();
-    let vectorStr = "vectorStr";
+  //> z //
+  describe("z", () => {
+    describe("get", () => {
+      test("returns the value of z", () => {
+        let vec = new Vec3();
+          vec._z = 3;
+        
+        let z = vec.z;
 
-    expect(() => vector.copy(vectorStr)).toThrowError(/Vec3/);
+        expect(z).toEqual(vec._z);
+      });
+    });
+
+    describe("set", () => {
+      test("sets the value of z and resets size/sizesq", () => {
+        let vec = new Vec3();
+          vec._z = 3;
+          vec._size = 2;
+          vec._sizeSq = 3;
+        
+        let expected = {
+          z: 1,
+          size: null,
+          sizeSq: null
+        }
+
+        vec.z = 1;
+
+        expect(vec._z).toEqual(expected.z);
+        expect(vec._size).toEqual(expected.size);
+        expect(vec._sizeSq).toEqual(expected.sizeSq);
+      });
+
+      test("does nothing if z is unchanged", () => {
+        let vec = new Vec3();
+          vec._z = 3;
+          vec._size = 2;
+          vec._sizeSq = 3;
+        
+        let expected = {
+          z: 3,
+          size: 2,
+          sizeSq: 3
+        }
+
+        vec.z = 3;
+
+        expect(vec._z).toEqual(expected.z);
+        expect(vec._size).toEqual(expected.size);
+        expect(vec._sizeSq).toEqual(expected.sizeSq);
+      });
+
+      test("throws an error on a type mismatch", () => {
+        let vec = new Vec3();
+        
+        expect(() => { vec.z = "string"; }).toThrowError(/Number/);
+      });
+    });
   });
 
-  test("this.copy(other) should not modify 'other'", () => {
-    let vector = new Vec3();
-    let vectorOther = new Vec3(10, 20, 30);
-    let expected = [10, 20, 30];
+  //> size //
+  describe("size", () => {
+    describe("get", () => {
+      test("calculates and returns the value of size (also " +
+      "calculates sizeSq)", () => {
+        let vec = new Vec3();
+          vec._x = 1;
+          vec._y = 2;
+          vec._z = 3;
+          vec._size = null;
+          vec._sizeSq = null;
 
-    vector.copy(vectorOther);
+        let expected = {
+          size: 3.742,
+          sizeSq: 14
+        }
 
-    expect(vectorOther.x).toEqual(expected[0]);
-    expect(vectorOther.y).toEqual(expected[1]);
-    expect(vectorOther.z).toEqual(expected[2]);
+        let size = vec.size;
+
+        expect(size).toBeCloseTo(expected.size, 3);
+        expect(vec._sizeSq).toEqual(expected.sizeSq);
+      });
+
+      test("returns size if it has already been stored (no " +
+      "recalculation)", () => {
+        let vec = new Vec3();
+          vec._x = 1;
+          vec._y = 2;
+          vec._z = 3;
+          vec._size = 10;
+
+        let size = vec.size;
+
+        expect(size).toEqual(10);
+      });
+    });
   });
 
+  //> sizeSq //
+  describe("sizeSq", () => {
+    describe("get", () => {
+      test("calculates and returns the value of sizesq (only)", () => {
+        let vec = new Vec3();
+          vec._x = 1;
+          vec._y = 2;
+          vec._z = 3;
+          vec._size = null;
+          vec._sizeSq = null;
 
-  test("this.getCopy() should return a 'Vec3'", () => {
-    let vectorOther = new Vec3();
-    let vector = vectorOther.getCopy();
+        let expected = {
+          size: null,
+          sizeSq: 14
+        }
 
-    expect(vector).toBeInstanceOf(Vec3);
+        let sizeSq = vec.sizeSq;
+
+        expect(vec._size).toEqual(expected.size);
+        expect(sizeSq).toEqual(expected.sizeSq);
+      });
+
+      test("returns sizesq if it has already been stored (no " +
+      "recalculation)", () => {
+        let vec = new Vec3();
+          vec._x = 1;
+          vec._y = 2;
+          vec._z = 3;
+          vec._sizeSq = 10;
+
+        let sizeSq = vec.sizeSq;
+
+        expect(sizeSq).toEqual(10);
+      });
+    });
   });
 
-  test("this.getCopy() should return a 'Vec3' which is a deep copy " +
-  "of 'this'", () => {
-    let vectorOther = new Vec3(10, 20, 30);
-    let vector = vectorOther.getCopy();
+  //> xy //
+  describe("xy", () => {
+    describe("set", () => {
+      test("sets the value of x and y", () => {
+        let vec = new Vec3();
+          vec._x = 1;
+          vec._y = 2;
+        
+        let expected = { x: 4, y: 5 }
 
-    expect(vectorOther).toEqual(vector);
-    expect(vectorOther).not.toBe(vector);
-  });
-});
+        vec.xy = [4, 5];
 
-describe("comparison", () => {
-  test("this.equals(other, tolerance) should throw an error if " +
-  "'other' is not a 'Vec3'", () => {
-    let vector = new Vec3();
-    let vectorStr = "vectorStr";
+        expect(vec._x).toEqual(expected.x);
+        expect(vec._y).toEqual(expected.y);
+      });
 
-    expect(() => vector.equals(vectorStr, 0.1)).toThrowError(/Vec3/);
-  });
+      test("sets the value of x and y if there is only one " +
+      "value provided", () => {
+        let vec = new Vec3();
+          vec._x = 1;
+          vec._y = 2;
+        
+        let expected = { x: 4, y: 4 }
 
-  test("this.equals(other, tolerance) should throw an error if " +
-  "'tolerance' is not a 'Number'", () => {
-    let vector = new Vec3();
-    let vectorOther = new Vec3();
-    let toleranceStr = "toleranceStr";
+        vec.xy = [4];
 
-    expect(() => vector.equals(vectorOther, toleranceStr)).
-      toThrowError(/Number/);
-  });
+        expect(vec._x).toEqual(expected.x);
+        expect(vec._y).toEqual(expected.y);
+      });
 
-  test("this.equals(other, tolerance) should return a 'Boolean'", () => {
-    let vector = new Vec3();
-    let vectorOther = new Vec3();
-
-    let result = vector.equals(vectorOther);
-
-    expect(result).toBeTypeOf('boolean');
-  });
-
-  test("this.equals(other, tolerance) returns correct result when " +
-  "within the tolerance supplied", () => {
-    let vector = new Vec3(10, 20, 30);
-    let vectorOther = new Vec3(10.4, 19.6, 29.8);
-    let expected = true;
-
-    let result = vector.equals(vectorOther, 0.5);
-
-    expect(result).toEqual(expected);
+      test("throws an error on a type mismatch", () => {
+        let vec = new Vec3();
+        
+        expect(() => { vec.xy = "string"; }).toThrowError(/Array/);
+      });
+    });
   });
 
-  test("this.equals(other, tolerance) returns correct result when " +
-  "outwith the tolerance supplied", () => {
-    let vector = new Vec3(10, 20, 30);
-    let vectorOther = new Vec3(-10.4, 19.2, 29);
-    let expected = false;
+  //> xz //
+  describe("xz", () => {
+    describe("set", () => {
+      test("sets the value of x and z", () => {
+        let vec = new Vec3();
+          vec._x = 1;
+          vec._z = 3;
+        
+        let expected = { x: 4, z: 5 }
 
-    let result = vector.equals(vectorOther, 0.5);
+        vec.xz = [4, 5];
 
-    expect(result).toEqual(expected);
-  });
-  
-  test("this.equals(other, tolerance) returns correct result when " +
-  "within the default tolerance", () => {
-    let vector = new Vec3(10, 20, 30);
-    let vectorOther = new Vec3(10, 20, 30);
-    let expected = true;
+        expect(vec._x).toEqual(expected.x);
+        expect(vec._z).toEqual(expected.z);
+      });
 
-    let result = vector.equals(vectorOther);
+      test("sets the value of x and z if there is only one " +
+      "value provided", () => {
+        let vec = new Vec3();
+          vec._x = 1;
+          vec._z = 3;
+        
+        let expected = { x: 4, z: 4 }
 
-    expect(result).toEqual(expected);
-  });
+        vec.xz = [4];
 
-  test("this.equals(other, tolerance) returns correct result when " +
-  "outwith the default tolerance", () => {
-    let vector = new Vec3(10, 20, 30);
-    let vectorOther = new Vec3(10.05, 19.95, 29);
-    let expected = false;
+        expect(vec._x).toEqual(expected.x);
+        expect(vec._z).toEqual(expected.z);
+      });
 
-    let result = vector.equals(vectorOther);
-
-    expect(result).toEqual(expected);
-  });
-});
-
-describe("modification", () => {
-  test("this.negate() should reverse the signs of x, y and z fields " +
-  "in place", () => {
-    let vector = new Vec3(10, -20, 30);
-    let expected = [-10, 20, -30];
-
-    vector.negate();
-
-    expect(vector.x).toEqual(expected[0]);
-    expect(vector.y).toEqual(expected[1]);
-    expect(vector.z).toEqual(expected[2]);
+      test("throws an error on a type mismatch", () => {
+        let vec = new Vec3();
+        
+        expect(() => { vec.xz = "string"; }).toThrowError(/Array/);
+      });
+    });
   });
 
+  //> yz //
+  describe("yz", () => {
+    describe("set", () => {
+      test("sets the value of y and z", () => {
+        let vec = new Vec3();
+          vec._y = 2;
+          vec._z = 3;
+        
+        let expected = { y: 4, z: 5 }
 
-  test("this.getNegated() should return a 'Vec3'", () => {
-    let vector = new Vec3();
-    let vectorOther = vector.getNegated();
+        vec.yz = [4, 5];
 
-    expect(vectorOther).toBeInstanceOf(Vec3);
+        expect(vec._y).toEqual(expected.y);
+        expect(vec._z).toEqual(expected.z);
+      });
+
+      test("sets the value of y and z if there is only one " +
+      "value provided", () => {
+        let vec = new Vec3();
+          vec._y = 2;
+          vec._z = 3;
+        
+        let expected = { y: 4, z: 4 }
+
+        vec.yz = [4];
+
+        expect(vec._y).toEqual(expected.y);
+        expect(vec._z).toEqual(expected.z);
+      });
+
+      test("throws an error on a type mismatch", () => {
+        let vec = new Vec3();
+        
+        expect(() => { vec.yz = "string"; }).toThrowError(/Array/);
+      });
+    });
   });
 
-  test("this.getNegated() should not modify 'this'", () => {
-    let vector = new Vec3(10, -20, 30);
-    let expected = [10, -20, 30];
+  //> xyz //
+  describe("xyz", () => {
+    describe("set", () => {
+      test("sets the value of x, y and z", () => {
+        let vec = new Vec3();
+          vec._x = 1;
+          vec._y = 2;
+          vec._z = 3;
+        
+        let expected = { x: 4, y: 5, z: 6 }
 
-    vector.getNegated();
+        vec.xyz = [4, 5, 6];
 
-    expect(vector.x).toEqual(expected[0]);
-    expect(vector.y).toEqual(expected[1]);
-    expect(vector.z).toEqual(expected[2]);
+        expect(vec._x).toEqual(expected.x);
+        expect(vec._y).toEqual(expected.y);
+        expect(vec._z).toEqual(expected.z);
+      });
+
+      describe("sets the value of x, y and z if there are not " +
+      "enough values provided", () => {
+        test("[x]", () => {
+          let vec = new Vec3();
+            vec._x = 1;
+            vec._y = 2;
+            vec._z = 3;
+          
+          let expected = { x: 4, y: 4, z: 4 }
+
+          vec.xyz = [4];
+
+          expect(vec._x).toEqual(expected.x);
+          expect(vec._y).toEqual(expected.y);
+          expect(vec._z).toEqual(expected.z);
+        });
+
+        test("[x, y]", () => {
+          let vec = new Vec3();
+            vec._x = 1;
+            vec._y = 2;
+            vec._z = 3;
+          
+          let expected = { x: 4, y: 5, z: 5 }
+
+          vec.xyz = [4, 5];
+
+          expect(vec._x).toEqual(expected.x);
+          expect(vec._y).toEqual(expected.y);
+          expect(vec._z).toEqual(expected.z);
+        });
+      });
+
+      test("throws an error on a type mismatch", () => {
+        let vec = new Vec3();
+        
+        expect(() => { vec.xyz = "string"; }).toThrowError(/Array/);
+      });
+    });
   });
 
-  test("this.getNegated() should return a 'Vec3' with the signs " +
-  "of x, y and z fields reversed", () => {
-    let vector = new Vec3(10, -20, 30);
-    let vectorOther = vector.getNegated();
-    let expected = [-10, 20, -30];
+  //> copy(other) //
+  describe("copy()", () => {
+    test("copies all properties from other to this", () => {
+      let vec = new Vec3();
+        vec._x = 0;
+        vec._y = 0;
+        vec._z = 0;
+        vec._size = null;
+        vec._sizeSq = null;
 
-    expect(vectorOther.x).toEqual(expected[0]);
-    expect(vectorOther.y).toEqual(expected[1]);
-    expect(vectorOther.z).toEqual(expected[2]);
+      let other = new Vec3();
+        other._x = 1;
+        other._y = 2;
+        other._z = 3;
+        other._size = 4;
+        other._sizeSq = 5;
+      
+      vec.copy(other);
+
+      expect(vec._x).toEqual(other._x);
+      expect(vec._y).toEqual(other._y);
+      expect(vec._z).toEqual(other._z);
+      expect(vec._size).toEqual(other._size);
+      expect(vec._sizeSq).toEqual(other._sizeSq);
+    });
+
+    test("throws an error if other is not a vec3", () => {
+      let vec = new Vec3();
+
+      expect(() => { vec.copy("string"); }).toThrowError(/Vec3/);
+    });
   });
 
+  //> getCopy() //
+  describe("getCopy()", () => {
+    test("returns a matching copy (deep)", () => {
+      let other = new Vec3();
+        other._x = 1;
+        other._y = 2;
+        other._z = 3;
+        other._size = 4;
+        other._sizeSq = 5;
+      
+      let vec = other.getCopy();
 
-  test("this.normalize() should normalize the x, y and z fields " +
-  "in place", () => {
-    let vector = new Vec3(1, 1, 1);
-    let expected = 0.577;
-
-    vector.normalize();
-
-    expect(vector.x).toBeCloseTo(expected, 3);
-    expect(vector.y).toBeCloseTo(expected, 3);
-    expect(vector.z).toBeCloseTo(expected, 3);
+      expect(vec._x).toEqual(other._x);
+      expect(vec._y).toEqual(other._y);
+      expect(vec._z).toEqual(other._z);
+      expect(vec._size).toEqual(other._size);
+      expect(vec._sizeSq).toEqual(other._sizeSq);
+    });
   });
 
-  test("this.normalize() should handle a vector with a " +
-  "0 length", () => {
-    let vector = new Vec3(0, 0, 0);
-    let expected = [0, 0, 0];
+  //> equals(other, tolerance) //
+  describe("equals()", () => {
+    let compare = (modFunc, expected, tolerance = 0) => {
+      let vec = new Vec3();
+        vec._x = 1;
+        vec._y = 2;
+        vec._z = 3;
+      let other = new Vec3();
+        other._x = 1;
+        other._y = 2;
+        other._z = 3;
 
-    vector.normalize();
+      expect(vec.equals(other)).toEqual(true);
+      modFunc(other);
+      expect(vec.equals(other, tolerance)).toEqual(expected);
+    }
 
-    expect(vector.x).toEqual(expected[0]);
-    expect(vector.y).toEqual(expected[1]);
-    expect(vector.z).toEqual(expected[2]);
+    test("returns true if all components match", () => {
+      compare(() => { }, true);
+    });
+
+    test("returns true even if size/sizeSq don't match", () => {
+      compare((other) => {
+        other._size = 1;
+        other._sizeSq = 2;
+      }, true);
+    });
+
+    test("returns false on a mismatch", () => {
+      compare((other) => { other._x = 0; }, false);
+      compare((other) => { other._y = 0; }, false);
+      compare((other) => { other._z = 0; }, false);
+    });
+
+    test("returns true if within custom tolerance value", () => {
+      compare((other) => { other._x = 0.95; }, true, 0.1);
+    });
   });
 
-  
-  test("this.getNormalized() should return a 'Vec3'", () => {
-    let vector = new Vec3();
-    let vectorOther = vector.getNormalized();
+  //> negate() //
+  describe("negate()", () => {
+    test("negates vector", () => {
+      let vec = new Vec3();
+        vec._x = 2;
+        vec._y = -3;
+        vec._z = 4;
 
-    expect(vectorOther).toBeInstanceOf(Vec3);
+      let expected = { x: -2, y: 3, z: -4 }
+
+      vec.negate();
+
+      expect(vec._x).toEqual(expected.x);
+      expect(vec._y).toEqual(expected.y);
+      expect(vec._z).toEqual(expected.z);
+    });
   });
 
-  test("this.getNormalized() should not modify 'this'", () => {
-    let vector = new Vec3(1, 1, 1);
-    let expected = [1, 1, 1];
+  //> getNegated() //
+  describe("getNegated()", () => {
+    test("returns a negated vector", () => {
+      let vec = new Vec3();
+        vec._x = 2;
+        vec._y = -3;
+        vec._z = 4;
 
-    vector.getNormalized();
+      let expected = { x: -2, y: 3, z: -4 }
 
-    expect(vector.x).toEqual(expected[0]);
-    expect(vector.y).toEqual(expected[1]);
-    expect(vector.z).toEqual(expected[2]);
+      let result = vec.getNegated();
+
+      expect(result._x).toEqual(expected.x);
+      expect(result._y).toEqual(expected.y);
+      expect(result._z).toEqual(expected.z);
+    });
   });
 
-  test("this.getNormalized() should return a 'Vec3' with " +
-  "x, y and z fields normalized", () => {
-    let vector = new Vec3(1, 1, 1);
-    let vectorOther = vector.getNormalized();
-    let expected = 0.577;
+  //> normalize() //
+  describe("normalize()", () => {
+    test("normalises vector (and sets size/sizesq)", () => {
+      let vec = new Vec3();
+        vec._x = 2;
+        vec._y = 3;
+        vec._z = 4;
+        vec._size = null;
+        vec._sizeSq = null;
 
-    expect(vectorOther.x).toBeCloseTo(expected, 3);
-    expect(vectorOther.y).toBeCloseTo(expected, 3);
-    expect(vectorOther.z).toBeCloseTo(expected, 3);
-  });
-});
+      let expected = {
+        x: 0.371,
+        y: 0.557,
+        z: 0.743,
+        size: 1,
+        sizeSq: 1
+      }
 
-describe("transform", () => {
-  test("this.getDot(other) should throw an error if 'other' is not " +
-  "a 'Vec3'", () => {
-    let vector = new Vec3();
-    let vectorStr = "vectorStr";
+      vec.normalize();
 
-    expect(() => vector.getDot(vectorStr)).toThrowError(/Vec3/);
-  });
+      expect(vec._x).toBeCloseTo(expected.x, 3);
+      expect(vec._y).toBeCloseTo(expected.y, 3);
+      expect(vec._z).toBeCloseTo(expected.z, 3);
+      expect(vec._size).toEqual(expected.size);
+      expect(vec._sizeSq).toEqual(expected.sizeSq);
+    });
 
-  test("this.getDot(other) should return a 'Number'", () => {
-    let vector = new Vec3();
-    let vectorOther = new Vec3();
+    test("does nothing if vec is a zero vector (but does store " +
+    "size/sizesq)", () => {
+      let vec = new Vec3();
+        vec._x = 0;
+        vec._y = 0;
+        vec._z = 0;
+        vec._size = null;
+        vec._sizeSq = null;
 
-    let result = vector.getDot(vectorOther);
+      let expected = {
+        x: 0,
+        y: 0,
+        z: 0,
+        size: 0,
+        sizeSq: 0
+      }
 
-    expect(result).toBeTypeOf('number');
-  });
+      vec.normalize();
 
-  test("this.getDot(other) should return a 'Number' which is " +
-  "the dot product of both vectors", () => {
-    let vector = new Vec3(1, 2, 3);
-    let vectorOther = new Vec3(4, 5, 6);
-    let expected = 32;
-
-    let result = vector.getDot(vectorOther);
-
-    expect(result).toEqual(expected);
-  });
-
-  test("this.getDot(other) should not modify 'this'", () => {
-    let vector = new Vec3(1, 2, 3);
-    let vectorOther = new Vec3(4, 5, 6);
-    let expected = [1, 2, 3];
-
-    vector.getDot(vectorOther);
-
-    expect(vector.x).toEqual(expected[0]);
-    expect(vector.y).toEqual(expected[1]);
-    expect(vector.z).toEqual(expected[2]);
-  });
-
-  test("this.getDot(other) should not modify 'other'", () => {
-    let vector = new Vec3(1, 2, 3);
-    let vectorOther = new Vec3(4, 5, 6);
-    let expected = [4, 5, 6];
-
-    vector.getDot(vectorOther);
-
-    expect(vectorOther.x).toEqual(expected[0]);
-    expect(vectorOther.y).toEqual(expected[1]);
-    expect(vectorOther.z).toEqual(expected[2]);
+      expect(vec._x).toEqual(expected.x);
+      expect(vec._y).toEqual(expected.y);
+      expect(vec._z).toEqual(expected.z);
+      expect(vec._size).toEqual(expected.size);
+      expect(vec._sizeSq).toEqual(expected.sizeSq);
+    });
   });
 
+  //> getNormalized() //
+  describe("getNormalized()", () => {
+    test("returns a normalised vector (and sets size/sizesq)", () => {
+      let vec = new Vec3();
+        vec._x = 2;
+        vec._y = 3;
+        vec._z = 4;
+        vec._size = null;
+        vec._sizeSq = null;
 
-  test.todo("this.getCross(other)");
-});
+      let expected = {
+        x: 0.371,
+        y: 0.557,
+        z: 0.743,
+        size: 1,
+        sizeSq: 1
+      }
 
-describe("conversion", () => {
-  test("this.asArray() should return an 'Array'", () => {
-    let vector = new Vec3();
-    let vectorArr = vector.asArray();
+      let result = vec.getNormalized();
 
-    expect(vectorArr).toBeInstanceOf(Array);
-  });
-  
-  test("this.asArray() should return an 'Array' containing the " +
-  "value of x, y and z fields", () => {
-    let vector = new Vec3(10, 20, 30);
-    let vectorArr = vector.asArray();
-
-    expect(vectorArr.length).toEqual(3);
-
-    expect(vectorArr[0]).toEqual(vector.x);
-    expect(vectorArr[1]).toEqual(vector.y);
-    expect(vectorArr[2]).toEqual(vector.z);
-  });
-
-
-  test("this.fromArray(arr) should throw an error if 'arr' is not " +
-  "an 'Array'", () => {
-    let vector = new Vec3();
-    let arrayStr = "arrayStr";
-
-    expect(() => vector.fromArray(arrayStr)).toThrowError(/Array/);
+      expect(result._x).toBeCloseTo(expected.x, 3);
+      expect(result._y).toBeCloseTo(expected.y, 3);
+      expect(result._z).toBeCloseTo(expected.z, 3);
+      expect(result._size).toEqual(expected.size);
+      expect(result._sizeSq).toEqual(expected.sizeSq);
+    });
   });
 
-  test("this.fromArray(arr) should throw an error if 'arr[i]' is not " +
-  "a 'Number'", () => {
-    let vector = new Vec3();
-    let array = ["str", "str", "str"];
+  //> getDot(other) //
+  describe("getDot()", () => {
+    test("returns the dot product of both vectors", () => {
+      let vec = new Vec3();
+        vec._x = 2;
+        vec._y = 3;
+        vec._z = 4;
+      let other = new Vec3();
+        other._x = 4;
+        other._y = 5;
+        other._z = 6;
 
-    expect(() => vector.fromArray(array)).toThrowError(/Number/);
+      let result = vec.getDot(other);
+
+      expect(result).toEqual(47);
+    });
+
+    test("throws an error if other is not a vec3", () => {
+      let vec = new Vec3();
+
+      expect(() => { vec.getDot("string"); })
+        .toThrowError(/Vec3/);
+    });
   });
 
-  test("this.fromArray([x, y, z, ...]) should assign x, y and z fields " +
-  "using the first 3 parameters supplied", () => {
-    let vector = new Vec3();
-    let expected = [10, 20, 30];
+  //> getCross(other) //
+  describe("getCross()", () => {
+    test("returns the cross product of both vectors", () => {
+      let vec = new Vec3();
+        vec._x = 2;
+        vec._y = 3;
+        vec._z = 4;
+      let other = new Vec3();
+        other._x = 5;
+        other._y = 6;
+        other._z = 1;
+      
+      let expected = { x: -21, y: 18, z: -3 }
 
-    vector.fromArray([10, 20, 30, 40]);
+      let result = vec.getCross(other);
 
-    expect(vector.x).toEqual(expected[0]);
-    expect(vector.y).toEqual(expected[1]);
-    expect(vector.z).toEqual(expected[2]);
+      expect(result._x).toEqual(expected.x);
+      expect(result._y).toEqual(expected.y);
+      expect(result._z).toEqual(expected.z);
+    });
+
+    test("throws an error if other is not a vec3", () => {
+      let vec = new Vec3();
+
+      expect(() => { vec.getCross("string"); })
+        .toThrowError(/Vec3/);
+    });
   });
 
-  test("this.fromArray([x]) should pad the input using the parameter " +
-  "supplied", () => {
-    let vector = new Vec3();
-    let expected = 10;
+  //> asArray() //
+  describe("asArray()", () => {
+    test("returns an array containing the components of the " +
+    "vector", () => {
+      let vec = new Vec3();
+        vec._x = 1;
+        vec._y = 2;
+        vec._z = 3;
+      
+      let expected = { arr: [1, 2, 3] }
+      
+      let arr = vec.asArray();
 
-    vector.fromArray([10]);
-
-    expect(vector.x).toEqual(expected);
-    expect(vector.y).toEqual(expected);
-    expect(vector.z).toEqual(expected);
+      expect(arr[0]).toEqual(expected.arr[0]);
+      expect(arr[1]).toEqual(expected.arr[1]);
+      expect(arr[2]).toEqual(expected.arr[2]);
+    });
   });
 
-  test("this.fromArray([]) should assign a default value of 0 to " +
-  "x, y and z fields", () => {
-    let vector = new Vec3();
-    let expected = 0;
+  //> fromArray(arr) //
+  describe("fromArray()", () => {
+    test("assigns values to components in order", () => {
+      let vec = new Vec3();
+        vec._x = 1;
+        vec._y = 2;
+        vec._z = 3;
 
-    vector.fromArray([]);
+      let expected = { x: 4, y: 5, z: 6 }
+      
+      vec.fromArray([4, 5, 6]);
 
-    expect(vector.x).toEqual(expected);
-    expect(vector.y).toEqual(expected);
-    expect(vector.z).toEqual(expected);
+      expect(vec._x).toEqual(expected.x);
+      expect(vec._y).toEqual(expected.y);
+      expect(vec._z).toEqual(expected.z);
+    });
+
+    describe("assigns the last value if arr does not contain enough " +
+    "values", () => {
+      test("[x]", () => {
+        let vec = new Vec3();
+          vec._x = 1;
+          vec._y = 2;
+          vec._z = 3;
+
+        let expected = { x: 4, y: 4, z: 4 }
+        
+        vec.fromArray([4]);
+
+        expect(vec._x).toEqual(expected.x);
+        expect(vec._y).toEqual(expected.y);
+        expect(vec._z).toEqual(expected.z);
+      });
+
+      test("[x, y]", () => {
+        let vec = new Vec3();
+          vec._x = 1;
+          vec._y = 2;
+          vec._z = 3;
+
+        let expected = { x: 4, y: 5, z: 5 }
+        
+        vec.fromArray([4, 5]);
+
+        expect(vec._x).toEqual(expected.x);
+        expect(vec._y).toEqual(expected.y);
+        expect(vec._z).toEqual(expected.z);
+      });
+    });
+
+    test("assigns a value of 0 if arr is empty", () => {
+      let vec = new Vec3();
+        vec._x = 1;
+        vec._y = 2;
+        vec._z = 3;
+
+      let expected = { x: 0, y: 0, z: 0 }
+      
+      vec.fromArray([]);
+
+      expect(vec._x).toEqual(expected.x);
+      expect(vec._y).toEqual(expected.y);
+      expect(vec._z).toEqual(expected.z);
+    });
+
+    test("throws an error if arr is not an array", () => {
+      let vec = new Vec3();
+
+      expect(() => { vec.fromArray("string"); }).toThrowError(/Array/);
+    });
+
+    test("throws an error if contents of arr are not numbers", () => {
+      let vec = new Vec3();
+
+      expect(() => { vec.fromArray(["string"]); }).toThrowError(/Number/);
+    });
+
+    test("does nothing if components are unchanged", () => {
+      let vec = new Vec3();
+        vec._x = 1;
+        vec._y = 2;
+        vec._z = 3;
+        vec._size = 3;
+        vec._sizeSq = 4;
+
+      let expected = {
+        x: 1,
+        y: 2,
+        z: 3,
+        size: 3,
+        sizeSq: 4
+      }
+      
+      vec.fromArray([1, 2, 3]);
+
+      expect(vec._x).toEqual(expected.x);
+      expect(vec._y).toEqual(expected.y);
+      expect(vec._z).toEqual(expected.z);
+      expect(vec._size).toEqual(expected.size);
+      expect(vec._sizeSq).toEqual(expected.sizeSq);
+    });
   });
 });
