@@ -31,7 +31,7 @@ class Mat4 {
   get arr() { return this._arr; }
   
   set arr(arr) {
-    Sol.CheckTypes(this, "set arr", [{arr}, [Array]]);
+    Sol.checkTypes(this, "set arr", [{arr}, [Array]]);
 
     if (arr.length !== 16) {
       throw new RangeError("Mat4 (set arr): should be an Array " +
@@ -43,7 +43,7 @@ class Mat4 {
 
   //> public methods //
 	copy(other) {
-    Sol.CheckTypes(this, "copy", [{other}, [Mat4]]);
+    Sol.checkTypes(this, "copy", [{other}, [Mat4]]);
     
     this.arr = other.arr.slice();
   }
@@ -55,16 +55,12 @@ class Mat4 {
     return copy;
   }
 
-  equals(other) {
-    Sol.CheckTypes(this, "equals", [{other}, [Mat4]]);
+  equals(other, tolerance = 0) {
+    Sol.checkTypes(this, "equals", [{other}, [Mat4]]);
 
-    for (let i = 0; i < this._arr.length; ++i) {
-      if (this._arr[i] !== other._arr[i]) {
-        return false;
-      }
-    }
-
-    return true;
+    return this._arr.every((e, i) => {
+      return Math.abs(e - other._arr[i]) <= tolerance;
+    });
   }
 
   identity() {
@@ -95,63 +91,29 @@ class Mat4 {
 
     let result = 0;
 
-    let getIndex = (col, row) => {
-      // return the index in the data array pointed to
-      // by the supplied column and row, wrapping around
-      // to 0
-
-      return (((col) % 4) * 4) + (((row) % 4));
-    }
-
     // use the first column ([0], [1], [2], and [3]) to find
     // our determinant
-
     // [!] reduce work by choosing a row or column with
     //     the highest number of zeroes
 
     for (let row = 0; row < 4; ++row) {
-      let ind = row;
-      
-      // calculate the indices that make up the determinant
-      // (3x3 matrix) for the current element and add them to
-      // a tree, returning it as a sorted array
-
-      let tree = new BSTree();
-        tree.add(getIndex(1, row + 1));
-        tree.add(getIndex(1, row + 2));
-        tree.add(getIndex(1, row + 3));
-
-        tree.add(getIndex(2, row + 1));
-        tree.add(getIndex(2, row + 2));
-        tree.add(getIndex(2, row + 3));
-
-        tree.add(getIndex(3, row + 1));
-        tree.add(getIndex(3, row + 2));
-        tree.add(getIndex(3, row + 3));
-      
-      let arr = tree.asArray();
-      
-      // create the 3x3 matrix from the values located
-      // at the indices in this matrix's data array and
-      // use it to get the determinant for the current
-      // element
-
-      let mat = new Mat3((() => {
-        let res = new Array();
-
-        arr.forEach((e) => {
-          res.push(this._arr[e]);
-        });
-
-        return res;
-      })());
-
-      let minor = mat.getDeterminant();
-      let cofactor = (Mat4._signChart[ind] * minor);
-      result += this._arr[ind] * cofactor;
+      result += this._arr[row] * this._getCofactor(0, row);
     }
 
     return result;
+  }
+
+  getAdjoint() {
+    let result = new Mat4();
+
+    for (let col = 0; col < 4; ++col) {
+      for (let row = 0; row < 4; ++row) {
+        let index = (col * 4) + row;
+        result.arr[index] = this._getCofactor(col, row);
+      }
+    }
+
+    return result.getTranspose();
   }
 
   ortho(left, right, bottom, top, near, far) {
@@ -215,7 +177,7 @@ class Mat4 {
   }
 
   multMat4(other) {
-    Sol.CheckTypes(this, "multMat4", [{other}, [Mat4]]);
+    Sol.checkTypes(this, "multMat4", [{other}, [Mat4]]);
 
     let result = new Mat4();
 
@@ -241,7 +203,7 @@ class Mat4 {
     // | 3   7  11  15|   | 3 |
     // '--------------'   '---'
     
-    Sol.CheckTypes(this, "getMultVec4", [{multVec}, [Vec4]]);
+    Sol.checkTypes(this, "getMultVec4", [{multVec}, [Vec4]]);
 
     let arrIn = multVec.asArray();
     let arrOut = new Array();
@@ -267,7 +229,7 @@ class Mat4 {
     // | 0   0   0   1|
     // '--------------'
     
-    Sol.CheckTypes(this, "translate", [{transVec}, [Vec3]]);
+    Sol.checkTypes(this, "translate", [{transVec}, [Vec3]]);
 
     let transMat = new Mat4();
     transMat.arr[12] = transVec.x;
@@ -284,7 +246,7 @@ class Mat4 {
     // | (1-cosA)(XZ)-YsinA  (1-cosA)(YZ)+XsinA  (1-cosA)(ZZ)+ cosA|
     // '-----------------------------------------------------------'
 
-    Sol.CheckTypes(this, "rotateAxis",
+    Sol.checkTypes(this, "rotateAxis",
     [{angle}, [Number], {axis}, [Vec3]]);
 
     let rotAA = new Mat4();
@@ -326,7 +288,7 @@ class Mat4 {
     // |-sinZsinX+cosZsinYcosX   cosZsinX+sinZsinYcosX   cosYcosX|
     // '---------------------------------------------------------'
     
-    Sol.CheckTypes(this, "rotateEuler", [{angles}, [Vec3]]);
+    Sol.checkTypes(this, "rotateEuler", [{angles}, [Vec3]]);
 
     let rotZYX = new Mat4();
 
@@ -361,7 +323,7 @@ class Mat4 {
     // |  0   0   0   1|
     // '---------------'
     
-    Sol.CheckTypes(this, "scale", [{scaleVec}, [Vec3]]);
+    Sol.checkTypes(this, "scale", [{scaleVec}, [Vec3]]);
     
     let scaleMat = new Mat4();
 
@@ -473,6 +435,56 @@ class Mat4 {
     }
 
     return matStr;
+  }
+
+  //> internal methods //
+  _getCofactor(col, row) {
+    let index = (col * 4) + row;
+
+    let getIndex = (col, row) => {
+      // return the index in the data array pointed to
+      // by the supplied column and row, wrapping around
+      // to 0
+
+      return (((col) % 4) * 4) + (((row) % 4));
+    }
+    
+    // calculate the indices that make up the determinant
+    // (3x3 matrix) for the current element and add them to
+    // a tree, returning it as a sorted array
+
+    let tree = new BSTree([
+      getIndex(col + 1, row + 1),
+      getIndex(col + 1, row + 2),
+      getIndex(col + 1, row + 3),
+
+      getIndex(col + 2, row + 1),
+      getIndex(col + 2, row + 2),
+      getIndex(col + 2, row + 3),
+
+      getIndex(col + 3, row + 1),
+      getIndex(col + 3, row + 2),
+      getIndex(col + 3, row + 3)
+    ]);
+    
+    let arr = tree.asArray();
+    
+    // create the 3x3 matrix from the values located
+    // at the indices in this matrix's data array and
+    // use it to get the determinant for the current
+    // element
+
+    let mat = new Mat3((() => {
+      let res = new Array();
+      arr.forEach((e) => {
+        res.push(this._arr[e]);
+      });
+
+      return res;
+    })());
+
+    let minor = mat.getDeterminant();
+    return Mat4._signChart[index] * minor;
   }
 };
 
