@@ -45,28 +45,28 @@ class Shape extends Polygon {
 
     //> setters //
     set texture(texture) {
-      Sol.CheckTypes("Shape.Frame", "set texture",
+      Sol.checkTypes("Shape.Frame", "set texture",
       [{texture}, [Texture, null]]);
 
       this._texture = texture;
     }
 
     set s(s) {
-      Sol.CheckTypes("Shape.Frame", "set s",
+      Sol.checkTypes("Shape.Frame", "set s",
       [{s}, [Vec2]]);
 
       this._s = s;
     }
 
     set t(t) {
-      Sol.CheckTypes("Shape.Frame", "set t",
+      Sol.checkTypes("Shape.Frame", "set t",
       [{t}, [Vec2]]);
 
       this._t = t;
     }
 
     set layer(layer) {
-      Sol.CheckTypes("Shape.Frame", "set layer",
+      Sol.checkTypes("Shape.Frame", "set layer",
       [{layer}, [Number]]);
 
       this._layer = layer;
@@ -74,7 +74,7 @@ class Shape extends Polygon {
 
     //> public methods //
     copy(other) {
-      Sol.CheckTypes("Shape.Frame", "copy",
+      Sol.checkTypes("Shape.Frame", "copy",
       [{other}, [Shape.Frame]]);
 
       this._texture = other._texture;
@@ -92,7 +92,7 @@ class Shape extends Polygon {
     }
 
     equals(other) {
-      Sol.CheckTypes("Shape.Frame", "equals",
+      Sol.checkTypes("Shape.Frame", "equals",
       [{other}, [Shape.Frame]]);
       
       return (
@@ -141,7 +141,7 @@ class Shape extends Polygon {
 
     //> public methods //
     copy(other) {
-      Sol.CheckTypes("Shape.Animation", "copy",
+      Sol.checkTypes("Shape.Animation", "copy",
       [{other}, [Shape.Animation]]);
 
       this._index = other._index;
@@ -167,7 +167,7 @@ class Shape extends Polygon {
     }
 
     equals(other) {
-      Sol.CheckTypes("Shape.Animation", "equals",
+      Sol.checkTypes("Shape.Animation", "equals",
       [{other}, [Shape.Animation]]);
 
       // only check if the animation's initial state
@@ -195,7 +195,7 @@ class Shape extends Polygon {
       // to end, first creating an array of indices and then passing
       // it to the fromArray method to do the actual creation
 
-      Sol.CheckTypes("Shape.Animation", "fromRange",
+      Sol.checkTypes("Shape.Animation", "fromRange",
       [{frameCount}, [Number]], [{timingsIn}, [Array]],
       [{startIn}, [Number]], [{endIn}, [Number]],
       [{directionIn}, [String]], [{loopsIn}, [Number]]);
@@ -235,7 +235,7 @@ class Shape extends Polygon {
       // which correspond to frames as they are store in the
       // parent shape's frame array
 
-      Sol.CheckTypes("Shape.Animation", "fromArray",
+      Sol.checkTypes("Shape.Animation", "fromArray",
       [{timingsIn}, [Array]], [{indices}, [Array]],
       [{directionIn}, [String]], [{loopsIn}, [Number]]);
 
@@ -374,7 +374,7 @@ class Shape extends Polygon {
 
   //> setters //
   set indices(indices) {
-    Sol.CheckTypes(this, "set indices",
+    Sol.checkTypes(this, "set indices",
     [{indices}, [Array]]);
 
     for (const index of indices) {
@@ -388,7 +388,7 @@ class Shape extends Polygon {
   }
 
   set colors(colors) {
-    Sol.CheckTypes(this, "set colors",
+    Sol.checkTypes(this, "set colors",
     [{colors}, [Array]]);
 
     for (const color of colors) {
@@ -402,7 +402,7 @@ class Shape extends Polygon {
   }
 
   set frames(frames) {
-    Sol.CheckTypes(this, "set frames",
+    Sol.checkTypes(this, "set frames",
     [{frames}, [Array]]);
 
     for (const frame of frames) {
@@ -416,21 +416,21 @@ class Shape extends Polygon {
   }
 
   set currentFrame(currentFrame) {
-    Sol.CheckTypes(this, "set currentFrame",
+    Sol.checkTypes(this, "set currentFrame",
     [{currentFrame}, [Number]]);
 
     this._currentFrame = currentFrame;
   }
   
   set animation(animation) {
-    Sol.CheckTypes(this, "set animation",
+    Sol.checkTypes(this, "set animation",
     [{animation}, [Shape.Animation]]);
 
     this._animation = animation;
   }
 
   set timer(timer) {
-    Sol.CheckTypes(this, "set timer",
+    Sol.checkTypes(this, "set timer",
     [{timer}, [Number]]);
 
     this._timer = timer;
@@ -472,7 +472,7 @@ class Shape extends Polygon {
   
   //> public methods //
   copy(other) {
-    Sol.CheckTypes(this, "copy",
+    Sol.checkTypes(this, "copy",
     [{other}, [Shape]]);
 
     super.copy(other);
@@ -505,7 +505,7 @@ class Shape extends Polygon {
   }
 
   equals(other) {
-    Sol.CheckTypes(this, "equals",
+    Sol.checkTypes(this, "equals",
     [{other}, [Shape]]);
 
     // for the sake of equality we don't care about the current
@@ -542,7 +542,7 @@ class Shape extends Polygon {
     // specified by the shape's assigned animation, or
     // indicate animation has finished if no next frame
 
-    Sol.CheckTypes(this, "process", [{dt}, [Number]]);
+    Sol.checkTypes(this, "process", [{dt}, [Number]]);
 
     if (this.animating === true) {
       let limit = this._animation.currentTime;
@@ -582,7 +582,7 @@ class Shape extends Polygon {
     
     // (layerIn type is checked in Shape.Frame constructor)
 
-    Sol.CheckTypes(this, "pushFrameStrip", [{textureIn}, [Texture]],
+    Sol.checkTypes(this, "pushFrameStrip", [{textureIn}, [Texture]],
     [{countIn}, [Number]], [{columnsIn}, [Number]], [{rowsIn}, [Number]],
     [{startIn}, [Number]], [{offset}, [Vec2]]);
 
@@ -637,7 +637,7 @@ class Shape extends Polygon {
     // create an animation using the range startIn >= n >= endIn
     // and start the animation if valid
 
-    Sol.CheckTypes(this, "setAnimation", [{endIn}, [Number]]);
+    Sol.checkTypes(this, "setAnimation", [{endIn}, [Number]]);
 
     let anim = new Shape.Animation();
     let end = (endIn < 0) ? this._frames.length - 1 : endIn;
@@ -943,6 +943,7 @@ class Shape extends Polygon {
     rbd.vertices = vboVerts;
     rbd.indices = this._indices.slice();
     rbd.renderMode = renderMode;
+    rbd.shaderRef = (this.shader) ? this.shader : null;
     rbd.textureRef = (frame.texture) ? frame.texture.texture : null;
     rbd.depth = this.depth;
 
@@ -1017,7 +1018,7 @@ class Shape extends Polygon {
 
         // deal with the intersection
 
-        let intersect = Polygon.SegSeg(
+        let intersect = Polygon.segSeg(
           [rects[i], rects[i + 1]],
           [rects[j], rects[j +1]]
         );

@@ -50,7 +50,7 @@ class VertexBatch {
 
   //> setters //
   set verts(verts) {
-    Sol.CheckTypes(this, "set verts",
+    Sol.checkTypes(this, "set verts",
     [{verts}, [Array]]);
 
     let bbox = {
@@ -80,7 +80,7 @@ class VertexBatch {
   }
 
   set indices(indices) {
-    Sol.CheckTypes(this, "set indices",
+    Sol.checkTypes(this, "set indices",
     [{indices}, [Array]]);
 
     for (const index of indices) {
@@ -94,7 +94,7 @@ class VertexBatch {
   }
 
   set normals(normals) {
-    Sol.CheckTypes(this, "set normals",
+    Sol.checkTypes(this, "set normals",
     [{normals}, [Array]]);
 
     for (const normal of normals) {
@@ -108,7 +108,7 @@ class VertexBatch {
   }
 
   set texCoords(texCoords) {
-    Sol.CheckTypes(this, "set indices",
+    Sol.checkTypes(this, "set indices",
     [{texCoords}, [Array]]);
 
     for (const coord of texCoords) {
@@ -122,7 +122,7 @@ class VertexBatch {
   }
 
   set colors(colors) {
-    Sol.CheckTypes(this, "set colors",
+    Sol.checkTypes(this, "set colors",
     [{colors}, [Array]]);
 
     for (const color of colors) {
@@ -306,6 +306,7 @@ class VertexBatch {
     let rbd = new RenderBatchData();
     rbd.vertices = vboVerts;
     rbd.indices = this.indices.slice();
+    rbd.shaderRef = (this.shader) ? this.shader : null;
     rbd.textureRef = (this._texture) ? this._texture.texture : null;
     rbd.renderMode = this.renderMode;
     rbd.depth = this.depth;
@@ -317,7 +318,7 @@ class VertexBatch {
     // sorts the indices (in groups denoted by 'groupSize')
     // by their avaerage depth value, lowest to highest
 
-    Sol.CheckTypes(this, "sortIndices",
+    Sol.checkTypes(this, "sortIndices",
     [{groupSize}, [Number]]);
 
     if (this._indices.length % groupSize !== 0) {
