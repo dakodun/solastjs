@@ -51,35 +51,35 @@ class Transformable3D {
 
   //> setters //
   set position(position) {
-    Sol.CheckTypes(this, "set position",
+    Sol.checkTypes(this, "set position",
     [{position}, [Vec3]]);
 
     this._position = position;
   }
 
   set origin(origin) {
-    Sol.CheckTypes(this, "set origin",
+    Sol.checkTypes(this, "set origin",
     [{origin}, [Vec3]]);
 
     this._origin = origin;
   }
 
   set transMat(transMat) {
-    Sol.CheckTypes(this, "set transMat",
+    Sol.checkTypes(this, "set transMat",
     [{transMat}, [Mat4]]);
 
     this._transMat = transMat;
   }
   
   set scale(scale) {
-    Sol.CheckTypes(this, "set scale",
+    Sol.checkTypes(this, "set scale",
     [{scale}, [Vec3]]);
 
     this._scale = scale;
   }
 
   set rotation(rotation) {
-    Sol.CheckTypes(this, "set rotation",
+    Sol.checkTypes(this, "set rotation",
     [{rotation}, [Vec3]]);
 
     this._rotation = rotation;
@@ -102,7 +102,7 @@ class Transformable3D {
 
   //> public methods //
   copy(other) {
-    Sol.CheckTypes(this, "copy",
+    Sol.checkTypes(this, "copy",
     [{other}, [Transformable3D]]);
 
     this.position = other.position.getCopy();
@@ -126,7 +126,7 @@ class Transformable3D {
   }
 
   equals(other) {
-    Sol.CheckTypes(this, "equals",
+    Sol.checkTypes(this, "equals",
     [{other}, [Transformable3D]]);
     
     return (

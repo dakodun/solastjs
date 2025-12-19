@@ -62,7 +62,7 @@ class SceneManager {
     // the store if possible, otherwise create a new
     // scene of type 'sceneType' with name 'name'
 
-    Sol.CheckPrototypes(this, "requestChange",
+    Sol.checkPrototypes(this, "requestChange",
       [sceneType, [Scene]]);
     
     let newScene = this._store.get(name);

@@ -47,7 +47,7 @@ class Vec4 {
   }
   
   set x(x) {
-    Sol.CheckTypes(this, "set x",
+    Sol.checkTypes(this, "set x",
     [{x}, [Number]]);
 
     if (this._x !== x) {
@@ -58,7 +58,7 @@ class Vec4 {
   }
 
   set y(y) {
-    Sol.CheckTypes(this, "set y",
+    Sol.checkTypes(this, "set y",
     [{y}, [Number]]);
 
     if (this._y !== y) {
@@ -69,7 +69,7 @@ class Vec4 {
   }
 
   set z(z) {
-    Sol.CheckTypes(this, "set z",
+    Sol.checkTypes(this, "set z",
     [{z}, [Number]]);
     
     if (this._z !== z) {
@@ -80,7 +80,7 @@ class Vec4 {
   }
 
   set w(w) {
-    Sol.CheckTypes(this, "set w",
+    Sol.checkTypes(this, "set w",
     [{w}, [Number]]);
 
     if (this._w !== w) {
@@ -91,7 +91,7 @@ class Vec4 {
   }
 
   set xy(xy) {
-    Sol.CheckTypes(this, "set xy",
+    Sol.checkTypes(this, "set xy",
     [{xy}, [Array]]);
 
     this.x = xy[0];
@@ -99,7 +99,7 @@ class Vec4 {
   }
 
   set xz(xz) {
-    Sol.CheckTypes(this, "set xz",
+    Sol.checkTypes(this, "set xz",
     [{xz}, [Array]]);
 
     this.x = xz[0];
@@ -107,7 +107,7 @@ class Vec4 {
   }
 
   set xw(xw) {
-    Sol.CheckTypes(this, "set xw",
+    Sol.checkTypes(this, "set xw",
     [{xw}, [Array]]);
 
     this.x = xw[0];
@@ -115,7 +115,7 @@ class Vec4 {
   }
 
   set yz(yz) {
-    Sol.CheckTypes(this, "set yz",
+    Sol.checkTypes(this, "set yz",
     [{yz}, [Array]]);
 
     this.y = yz[0];
@@ -123,7 +123,7 @@ class Vec4 {
   }
 
   set yw(yw) {
-    Sol.CheckTypes(this, "set yw",
+    Sol.checkTypes(this, "set yw",
     [{yw}, [Array]]);
 
     this.y = yw[0];
@@ -131,7 +131,7 @@ class Vec4 {
   }
 
   set zw(zw) {
-    Sol.CheckTypes(this, "set zw",
+    Sol.checkTypes(this, "set zw",
     [{zw}, [Array]]);
 
     this.z = zw[0];
@@ -139,7 +139,7 @@ class Vec4 {
   }
 
   set xyz(xyz) {
-    Sol.CheckTypes(this, "set xyz",
+    Sol.checkTypes(this, "set xyz",
     [{xyz}, [Array]]);
 
     this.x = xyz[0];
@@ -148,7 +148,7 @@ class Vec4 {
   }
 
   set xyw(xyw) {
-    Sol.CheckTypes(this, "set xyw",
+    Sol.checkTypes(this, "set xyw",
     [{xyw}, [Array]]);
 
     this.x = xyw[0];
@@ -157,7 +157,7 @@ class Vec4 {
   }
 
   set xzw(xzw) {
-    Sol.CheckTypes(this, "set xzw",
+    Sol.checkTypes(this, "set xzw",
     [{xzw}, [Array]]);
 
     this.x = xzw[0];
@@ -166,7 +166,7 @@ class Vec4 {
   }
 
   set yzw(yzw) {
-    Sol.CheckTypes(this, "set yzw",
+    Sol.checkTypes(this, "set yzw",
     [{yzw}, [Array]]);
 
     this.y = yzw[0];
@@ -175,7 +175,7 @@ class Vec4 {
   }
 
   set xyzw(xyzw) {
-    Sol.CheckTypes(this, "set xyzw",
+    Sol.checkTypes(this, "set xyzw",
     [{xyzw}, [Array]]);
 
     this.x = xyzw[0];
@@ -186,7 +186,7 @@ class Vec4 {
 
   //> public methods //
 	copy(other) {
-    Sol.CheckTypes(this, "copy",
+    Sol.checkTypes(this, "copy",
     [{other}, [Vec4]]);
 
     this.x = other.x;
@@ -206,7 +206,7 @@ class Vec4 {
   }
 
   equals(other, tolerance = 0) {
-    Sol.CheckTypes(this, "equals",
+    Sol.checkTypes(this, "equals",
     [{other}, [Vec4]], [{tolerance}, [Number]]);
     
     // don't need to compare size (squared) as its fully
@@ -254,7 +254,7 @@ class Vec4 {
   }
 
   getDot(other) {
-    Sol.CheckTypes(this, "getDot",
+    Sol.checkTypes(this, "getDot",
     [{other}, [Vec4]]);
 
     let result = ((this._x * other._x) + (this._y * other._y) +
@@ -268,7 +268,7 @@ class Vec4 {
   }
 
   fromArray(arr) {
-    Sol.CheckTypes(this, "fromArray",
+    Sol.checkTypes(this, "fromArray",
     [{arr}, [Array]]);
 
     // pad the input if necessary, using default value of 0

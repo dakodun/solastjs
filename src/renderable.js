@@ -43,49 +43,49 @@ class Renderable {
 
   //> setters //
   set color(color) {
-    Sol.CheckTypes(this, "set color",
+    Sol.checkTypes(this, "set color",
     [{color}, [Vec3]]);
 
     this._color = color;
   }
 
   set alpha(alpha) {
-    Sol.CheckTypes(this, "set alpha",
+    Sol.checkTypes(this, "set alpha",
     [{alpha}, [Number]]);
 
     this._alpha = alpha;
   }
 
   set depth(depth) {
-    Sol.CheckTypes(this, "set depth",
+    Sol.checkTypes(this, "set depth",
     [{depth}, [Number]]);
 
     this._depth = depth;
   }
 
   set renderMode(renderMode) {
-    Sol.CheckTypes(this, "set renderMode",
+    Sol.checkTypes(this, "set renderMode",
     [{renderMode}, [Number]]);
 
     this._renderMode = renderMode;
   }
 
   set shader(shader) {
-    Sol.CheckTypes(this, "set renderMode",
+    Sol.checkTypes(this, "set renderMode",
     [{shader}, [Shader]]);
 
     this._shader = shader;
   }
 
   set outline(outline) {
-    Sol.CheckTypes(this, "set outline",
+    Sol.checkTypes(this, "set outline",
     [{outline}, [Array]]);
     
     this._outline = outline;
   }
 
   set lineWidth(lineWidth) {
-    Sol.CheckTypes(this, "set lineWidth",
+    Sol.checkTypes(this, "set lineWidth",
     [{lineWidth}, [Number]]);
 
     this._lineWidth = lineWidth;
@@ -93,7 +93,7 @@ class Renderable {
 
   //> public methods //
   copy(other) {
-    Sol.CheckTypes(this, "copy",
+    Sol.checkTypes(this, "copy",
     [{other}, [Renderable]]);
 
     this._color = other._color.getCopy();
@@ -112,7 +112,7 @@ class Renderable {
   }
 
   equals(other) {
-    Sol.CheckTypes(this, "equals",
+    Sol.checkTypes(this, "equals",
     [{other}, [Renderable]]);
     
     return (

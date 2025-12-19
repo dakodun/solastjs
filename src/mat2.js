@@ -22,7 +22,7 @@ class Mat2 {
   get arr() { return this._arr; }
   
   set arr(arr) {
-    Sol.CheckTypes(this, "set arr", [{arr}, [Array]]);
+    Sol.checkTypes(this, "set arr", [{arr}, [Array]]);
 
     if (arr.length !== 4) {
       throw new RangeError("Mat2 (set arr): should be an Array " +
@@ -34,7 +34,7 @@ class Mat2 {
 
   //> public methods //
 	copy(other) {
-    Sol.CheckTypes(this, "copy", [{other}, [Mat2]]);
+    Sol.checkTypes(this, "copy", [{other}, [Mat2]]);
     
     this.arr = other.arr.slice();
   }
@@ -47,7 +47,7 @@ class Mat2 {
   }
 
   equals(other) {
-    Sol.CheckTypes(this, "equals", [{other}, [Mat2]]);
+    Sol.checkTypes(this, "equals", [{other}, [Mat2]]);
 
     for (let i = 0; i < this._arr.length; ++i) {
       if (this._arr[i] !== other._arr[i]) {
@@ -91,7 +91,7 @@ class Mat2 {
   }
 
   multMat2(other) {
-    Sol.CheckTypes(this, "multMat2", [{other}, [Mat2]]);
+    Sol.checkTypes(this, "multMat2", [{other}, [Mat2]]);
 
     let result = new Mat2();
 
@@ -113,7 +113,7 @@ class Mat2 {
     // | 1   3 | . | 1 |
     // '-------'   '---'
     
-    Sol.CheckTypes(this, "getMultVec2", [{multVec}, [Vec2]]);
+    Sol.checkTypes(this, "getMultVec2", [{multVec}, [Vec2]]);
     
     let arrIn = multVec.asArray();
     let arrOut = new Array();

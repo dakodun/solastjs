@@ -47,35 +47,35 @@ class Transformable2D {
 
   //> setters //
   set position(position) {
-    Sol.CheckTypes(this, "set position",
+    Sol.checkTypes(this, "set position",
     [{position}, [Vec2]]);
 
     this._position = position;
   }
 
   set origin(origin) {
-    Sol.CheckTypes(this, "set origin",
+    Sol.checkTypes(this, "set origin",
     [{origin}, [Vec2]]);
 
     this._origin = origin;
   }
 
   set transMat(transMat) {
-    Sol.CheckTypes(this, "set transMat",
+    Sol.checkTypes(this, "set transMat",
     [{transMat}, [Mat3]]);
 
     this._transMat = transMat;
   }
   
   set scale(scale) {
-    Sol.CheckTypes(this, "set scale",
+    Sol.checkTypes(this, "set scale",
     [{scale}, [Vec2]]);
 
     this._scale = scale;
   }
 
   set rotation(rotation) {
-    Sol.CheckTypes(this, "set rotation",
+    Sol.checkTypes(this, "set rotation",
     [{rotation}, [Number]]);
 
     this._rotation = rotation;
@@ -98,7 +98,7 @@ class Transformable2D {
 
   //> public methods //
   copy(other) {
-    Sol.CheckTypes(this, "copy",
+    Sol.checkTypes(this, "copy",
     [{other}, [Transformable2D]]);
 
     this._position = other._position.getCopy();
@@ -122,7 +122,7 @@ class Transformable2D {
   }
 
   equals(other) {
-    Sol.CheckTypes(this, "equals",
+    Sol.checkTypes(this, "equals",
     [{other}, [Transformable2D]]);
     
     return (

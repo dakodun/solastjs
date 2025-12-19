@@ -55,7 +55,7 @@ class RenderBatch {
     // add an array of raw render data to the
     // render batch
 
-    Sol.CheckTypes(this, "addRaw", [{data}, [Array]]);
+    Sol.checkTypes(this, "addRaw", [{data}, [Array]]);
 
     this._addData(data, pass);
   }

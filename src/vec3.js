@@ -44,7 +44,7 @@ class Vec3 {
   }
   
   set x(x) {
-    Sol.CheckTypes(this, "set x",
+    Sol.checkTypes(this, "set x",
     [{x}, [Number]]);
 
     if (this._x !== x) {
@@ -55,7 +55,7 @@ class Vec3 {
   }
 
   set y(y) {
-    Sol.CheckTypes(this, "set y",
+    Sol.checkTypes(this, "set y",
     [{y}, [Number]]);
 
     if (this._y !== y) {
@@ -66,7 +66,7 @@ class Vec3 {
   }
 
   set z(z) {
-    Sol.CheckTypes(this, "set z",
+    Sol.checkTypes(this, "set z",
     [{z}, [Number]]);
 
     if (this._z !== z) {
@@ -77,7 +77,7 @@ class Vec3 {
   }
 
   set xy(xy) {
-    Sol.CheckTypes(this, "set xy",
+    Sol.checkTypes(this, "set xy",
     [{xy}, [Array]]);
 
     this.x = xy[0];
@@ -85,7 +85,7 @@ class Vec3 {
   }
 
   set xz(xz) {
-    Sol.CheckTypes(this, "set xz",
+    Sol.checkTypes(this, "set xz",
     [{xz}, [Array]]);
 
     this.x = xz[0];
@@ -93,7 +93,7 @@ class Vec3 {
   }
 
   set yz(yz) {
-    Sol.CheckTypes(this, "set yz",
+    Sol.checkTypes(this, "set yz",
     [{yz}, [Array]]);
 
     this.y = yz[0];
@@ -101,7 +101,7 @@ class Vec3 {
   }
 
   set xyz(xyz) {
-    Sol.CheckTypes(this, "set xyz",
+    Sol.checkTypes(this, "set xyz",
     [{xyz}, [Array]]);
 
     this.x = xyz[0];
@@ -111,7 +111,7 @@ class Vec3 {
 
   //> public methods //
 	copy(other) {
-    Sol.CheckTypes(this, "copy",
+    Sol.checkTypes(this, "copy",
     [{other}, [Vec3]]);
 
     this._x = other._x;
@@ -130,7 +130,7 @@ class Vec3 {
   }
 
   equals(other, tolerance = 0) {
-    Sol.CheckTypes(this, "equals",
+    Sol.checkTypes(this, "equals",
     [{other}, [Vec3]], [{tolerance}, [Number]]);
 
     // don't need to compare size (squared) as its fully
@@ -175,7 +175,7 @@ class Vec3 {
   }
 
   getDot(other) {
-    Sol.CheckTypes(this, "getDot",
+    Sol.checkTypes(this, "getDot",
     [{other}, [Vec3]]);
 
     let result = ((this._x * other._x) + (this._y * other._y) +
@@ -185,7 +185,7 @@ class Vec3 {
   }
 
   getCross(other) {
-    Sol.CheckTypes(this, "getCross",
+    Sol.checkTypes(this, "getCross",
     [{other}, [Vec3]]);
 
     let result = new Vec3(
@@ -202,7 +202,7 @@ class Vec3 {
   }
 
   fromArray(arr) {
-    Sol.CheckTypes(this, "fromArray",
+    Sol.checkTypes(this, "fromArray",
     [{arr}, [Array]]);
 
     // pad the input if necessary, using default value of 0

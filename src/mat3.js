@@ -29,7 +29,7 @@ class Mat3 {
   get arr() { return this._arr; }
   
   set arr(arr) {
-    Sol.CheckTypes(this, "set arr", [{arr}, [Array]]);
+    Sol.checkTypes(this, "set arr", [{arr}, [Array]]);
 
     if (arr.length !== 9) {
       throw new RangeError("Mat3 (set arr): should be an Array " +
@@ -41,7 +41,7 @@ class Mat3 {
 
   //> public methods //
 	copy(other) {
-    Sol.CheckTypes(this, "copy", [{other}, [Mat3]]);
+    Sol.checkTypes(this, "copy", [{other}, [Mat3]]);
 
     this.arr = other.arr.slice();
   }
@@ -54,7 +54,7 @@ class Mat3 {
   }
 
   equals(other) {
-    Sol.CheckTypes(this, "equals", [{other}, [Mat3]]);
+    Sol.checkTypes(this, "equals", [{other}, [Mat3]]);
 
     for (let i = 0; i < this._arr.length; ++i) {
       if (this._arr[i] !== other._arr[i]) {
@@ -150,7 +150,7 @@ class Mat3 {
   }
 
   multMat3(other) {
-    Sol.CheckTypes(this, "multMat3", [{other}, [Mat3]]);
+    Sol.checkTypes(this, "multMat3", [{other}, [Mat3]]);
 
     let result = new Mat3();
 
@@ -174,7 +174,7 @@ class Mat3 {
     // | 2   5   8 |   | 2 |
     // '-----------'   '---'
     
-    Sol.CheckTypes(this, "getMultVec3", [{multVec}, [Vec3]]);
+    Sol.checkTypes(this, "getMultVec3", [{multVec}, [Vec3]]);
     
     let arrIn = multVec.asArray();
     let arrOut = new Array();
@@ -198,7 +198,7 @@ class Mat3 {
     // | 0   0   1|
     // '----------'
     
-    Sol.CheckTypes(this, "translate", [{transVec}, [Vec2]]);
+    Sol.checkTypes(this, "translate", [{transVec}, [Vec2]]);
     
     let transMat = new Mat3();
     transMat.arr[6] = transVec.x;
@@ -214,7 +214,7 @@ class Mat3 {
     // |    0     0     1|
     // '-----------------'
     
-    Sol.CheckTypes(this, "rotate", [{angle}, [Number]]);
+    Sol.checkTypes(this, "rotate", [{angle}, [Number]]);
 
     let cZ = Math.cos(angle);
     let sZ = Math.sin(angle);
@@ -235,7 +235,7 @@ class Mat3 {
     // |  0   0   1|
     // '-----------'
     
-    Sol.CheckTypes(this, "scale", [{scaleVec}, [Vec2]]);
+    Sol.checkTypes(this, "scale", [{scaleVec}, [Vec2]]);
 
     let scaleMat = new Mat3();
 
