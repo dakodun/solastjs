@@ -7,7 +7,7 @@ class Sol {
   static minFrameTime = 0.006944; // 1/144 - the shortest time a
   // frame can be displayed for
 
-  static CheckTypes(classNameIn, methodName, ...checks) {
+  static checkTypes(classNameIn, methodName, ...checks) {
     // [!] if type is array then allow comparison of contents
 
     // a method that performs a simple type check by comparing
@@ -81,7 +81,7 @@ class Sol {
     }
   }
 
-  static CheckPrototypes(classNameIn, methodName, ...checks) {
+  static checkPrototypes(classNameIn, methodName, ...checks) {
     // similar to type check above but instead of looking at
     // instances matching types we're looking at prototypes to
     // identify inheritance

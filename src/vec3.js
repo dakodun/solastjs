@@ -26,7 +26,7 @@ class Vec3 {
   get z() { return this._z; }
 
   get size() {
-    if (this._sizeSq === null) {
+    if (this._size === null) {
       let sizeSq = this.sizeSq;
       this._size = Math.sqrt(sizeSq);
     }
@@ -44,34 +44,40 @@ class Vec3 {
   }
   
   set x(x) {
-    Sol.CheckTypes(this, "set x",
+    Sol.checkTypes(this, "set x",
     [{x}, [Number]]);
 
-    this._size   = null;
-    this._sizeSq = null;
-    this._x = x;
+    if (this._x !== x) {
+      this._size   = null;
+      this._sizeSq = null;
+      this._x = x;
+    }
   }
 
   set y(y) {
-    Sol.CheckTypes(this, "set y",
+    Sol.checkTypes(this, "set y",
     [{y}, [Number]]);
 
-    this._size   = null;
-    this._sizeSq = null;
-    this._y = y;
+    if (this._y !== y) {
+      this._size   = null;
+      this._sizeSq = null;
+      this._y = y;
+    }
   }
 
   set z(z) {
-    Sol.CheckTypes(this, "set z",
+    Sol.checkTypes(this, "set z",
     [{z}, [Number]]);
 
-    this._size   = null;
-    this._sizeSq = null;
-    this._z = z;
+    if (this._z !== z) {
+      this._size   = null;
+      this._sizeSq = null;
+      this._z = z;
+    }
   }
 
   set xy(xy) {
-    Sol.CheckTypes(this, "set xy",
+    Sol.checkTypes(this, "set xy",
     [{xy}, [Array]]);
 
     this.x = xy[0];
@@ -79,7 +85,7 @@ class Vec3 {
   }
 
   set xz(xz) {
-    Sol.CheckTypes(this, "set xz",
+    Sol.checkTypes(this, "set xz",
     [{xz}, [Array]]);
 
     this.x = xz[0];
@@ -87,7 +93,7 @@ class Vec3 {
   }
 
   set yz(yz) {
-    Sol.CheckTypes(this, "set yz",
+    Sol.checkTypes(this, "set yz",
     [{yz}, [Array]]);
 
     this.y = yz[0];
@@ -95,7 +101,7 @@ class Vec3 {
   }
 
   set xyz(xyz) {
-    Sol.CheckTypes(this, "set xyz",
+    Sol.checkTypes(this, "set xyz",
     [{xyz}, [Array]]);
 
     this.x = xyz[0];
@@ -105,12 +111,15 @@ class Vec3 {
 
   //> public methods //
 	copy(other) {
-    Sol.CheckTypes(this, "copy",
+    Sol.checkTypes(this, "copy",
     [{other}, [Vec3]]);
 
     this._x = other._x;
 		this._y = other._y;
     this._z = other._z;
+
+    this._size = other._size;
+		this._sizeSq = other._sizeSq;
   }
 
   getCopy() {
@@ -121,8 +130,11 @@ class Vec3 {
   }
 
   equals(other, tolerance = 0) {
-    Sol.CheckTypes(this, "equals",
+    Sol.checkTypes(this, "equals",
     [{other}, [Vec3]], [{tolerance}, [Number]]);
+
+    // don't need to compare size (squared) as its fully
+    // dependent on individual components
 
     return (Math.abs(this._x - other._x) <= tolerance &&
       Math.abs(this._y - other._y) <= tolerance &&
@@ -149,6 +161,9 @@ class Vec3 {
       this._x *= invLen;
       this._y *= invLen;
       this._z *= invLen;
+
+      this._size   = 1;
+      this._sizeSq = 1;
     }
   }
 
@@ -160,7 +175,7 @@ class Vec3 {
   }
 
   getDot(other) {
-    Sol.CheckTypes(this, "getDot",
+    Sol.checkTypes(this, "getDot",
     [{other}, [Vec3]]);
 
     let result = ((this._x * other._x) + (this._y * other._y) +
@@ -170,7 +185,7 @@ class Vec3 {
   }
 
   getCross(other) {
-    Sol.CheckTypes(this, "getCross",
+    Sol.checkTypes(this, "getCross",
     [{other}, [Vec3]]);
 
     let result = new Vec3(
@@ -187,7 +202,7 @@ class Vec3 {
   }
 
   fromArray(arr) {
-    Sol.CheckTypes(this, "fromArray",
+    Sol.checkTypes(this, "fromArray",
     [{arr}, [Array]]);
 
     // pad the input if necessary, using default value of 0
@@ -211,9 +226,18 @@ class Vec3 {
       }
     }
 
-    this._x = result[0];
-    this._y = result[1];
-    this._z = result[2];
+    // don't unset size/sizeSq if nothing has changed to
+    // avoid it having to be unnecessarily recalculated
+
+    if (this._x !== result[0] || this._y !== result[1]
+    || this._z !== result[2]) {
+      this._x = result[0];
+      this._y = result[1];
+      this._z = result[2];
+
+      this._size   = null;
+      this._sizeSq = null;
+    }
   }
 };
 

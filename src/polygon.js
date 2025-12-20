@@ -25,7 +25,7 @@ class Polygon {
   get transformable() { return this._transformable; }
 
   set verts(verts) {
-    Sol.CheckTypes(this, "set verts",
+    Sol.checkTypes(this, "set verts",
     [{verts}, [Array]]);
 
     let bbox = {
@@ -76,7 +76,7 @@ class Polygon {
 
   //> public methods //
   copy(other) {
-    Sol.CheckTypes("Polygon", "copy",
+    Sol.checkTypes("Polygon", "copy",
     [{other}, [Polygon]]);
 
     this._transformable = other._transformable.getCopy();
@@ -95,7 +95,7 @@ class Polygon {
   }
 
   equals(other) {
-    Sol.CheckTypes("Polygon", "equals",
+    Sol.checkTypes("Polygon", "equals",
     [{other}, [Polygon]]);
     
     return (
@@ -109,7 +109,7 @@ class Polygon {
   }
 
   pushVert(vert) {
-    Sol.CheckTypes("Polygon", "pushVert",
+    Sol.checkTypes("Polygon", "pushVert",
     [{vert}, [Vec2]]);
     
     this._verts.push(vert.getCopy());
@@ -126,7 +126,7 @@ class Polygon {
   }
 
   pushVerts(verts) {
-    Sol.CheckTypes("Polygon", "pushVerts",
+    Sol.checkTypes("Polygon", "pushVerts",
     [{verts}, [Array]]);
     
     for (const vert of verts) {
@@ -331,12 +331,12 @@ class Polygon {
   }
 
   //> static methods //
-  static SegSeg(frstSeg, scndSeg) {
+  static segSeg(frstSeg, scndSeg) {
     // an alias function for segment-segment intersection
-    return Polygon.SegmentSegmentIntersect(frstSeg, scndSeg);
+    return Polygon.segmentSegmentIntersect(frstSeg, scndSeg);
   }
 
-  static SegmentSegmentIntersect(frstSeg, scndSeg) {
+  static segmentSegmentIntersect(frstSeg, scndSeg) {
     // from Graphics Gems 3
 
     let result = {

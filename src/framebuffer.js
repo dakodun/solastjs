@@ -1,18 +1,44 @@
 import GL from './gl.js'
+import Sol from './sol.js'
+
+import Texture from './texture.js';
 
 class FrameBuffer {
-  static _idCount = BigInt(1);
-    
-  _frameBuffer = null;
+  // creates and manages a webgl framebuffer ensuring
+  // it is properly initialised before use (and
+  // assigning it a unique id)
 
+  //> static properties //
+  static _idCount = BigInt(1);
+  
+  //> internal properties //
+  _frameBuffer = null;
   _id = BigInt(0);
   
+  //> constructor //
 	constructor() {
 		
 	}
 
+  //> getters //
   get frameBuffer() { return this._frameBuffer; }
   get id() { return this._id; }
+
+  //> public methods //
+  copy(other) {
+    throw new Error("FrameBuffer (copy): can't perform a deep " +
+    "copy of a FrameBuffer (you can but it requires extra work)");
+  }
+
+  getCopy() {
+    throw new Error("FrameBuffer (getCopy): can't perform a deep " +
+    "copy of a FrameBuffer (you can but it requires extra work)");
+  }
+
+  equals(other) {
+    throw new Error("FrameBuffer (equals): can't compare " +
+    "FrameBuffer objects (you can but it requires extra work)");
+  }
 
   init() {
     if (this._frameBuffer === null) {
@@ -31,6 +57,14 @@ class FrameBuffer {
 
   attachTexture(texture, attachment, layerIn) {
     this.init();
+
+    Sol.checkTypes(this, "attachTexture",
+    [{texture}, [Texture]], [{layerIn}, [Number]]);
+
+    if (typeof attachment !== "number") {
+      throw new TypeError("FrameBuffer (attachTexture): " +
+      "should be a GLenum");
+    }
 
     GL.bindFramebuffer(GL.FRAMEBUFFER, this._frameBuffer);
     GL.framebufferTextureLayer(GL.FRAMEBUFFER, attachment,

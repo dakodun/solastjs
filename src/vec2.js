@@ -23,7 +23,7 @@ class Vec2 {
   get y() { return this._y; }
 
   get size() {
-    if (this._sizeSq === null) {
+    if (this._size === null) {
       let sizeSq = this.sizeSq;
       this._size = Math.sqrt(sizeSq);
     }
@@ -41,25 +41,29 @@ class Vec2 {
   }
   
   set x(x) {
-    Sol.CheckTypes(this, "set x",
+    Sol.checkTypes(this, "set x",
     [{x}, [Number]]);
 
-    this._size   = null;
-    this._sizeSq = null;
-    this._x = x;
+    if (this._x !== x) {
+      this._size   = null;
+      this._sizeSq = null;
+      this._x = x;
+    }
   }
 
   set y(y) {
-    Sol.CheckTypes(this, "set y",
+    Sol.checkTypes(this, "set y",
     [{y}, [Number]]);
 
-    this._size   = null;
-    this._sizeSq = null;
-    this._y = y;
+    if (this._y !== y) {
+      this._size   = null;
+      this._sizeSq = null;
+      this._y = y;
+    }
   }
 
   set xy(xy) {
-    Sol.CheckTypes(this, "set xy",
+    Sol.checkTypes(this, "set xy",
     [{xy}, [Array]]);
 
     this.x = xy[0];
@@ -68,11 +72,14 @@ class Vec2 {
 
   //> public methods //
 	copy(other) {
-    Sol.CheckTypes(this, "copy",
+    Sol.checkTypes(this, "copy",
     [{other}, [Vec2]]);
 
     this._x = other._x;
 		this._y = other._y;
+
+    this._size = other._size;
+		this._sizeSq = other._sizeSq;
   }
 
   getCopy() {
@@ -83,8 +90,11 @@ class Vec2 {
   }
 
   equals(other, tolerance = 0) {
-    Sol.CheckTypes(this, "equals",
+    Sol.checkTypes(this, "equals",
     [{other}, [Vec2]], [{tolerance}, [Number]]);
+
+    // don't need to compare size (squared) as its fully
+    // dependent on individual components
 
     return (Math.abs(this._x - other._x) <= tolerance &&
       Math.abs(this._y - other._y) <= tolerance) ? true : false;
@@ -108,6 +118,9 @@ class Vec2 {
 
       this._x *= invLen;
       this._y *= invLen;
+
+      this._size   = 1;
+      this._sizeSq = 1;
     }
   }
 
@@ -119,7 +132,7 @@ class Vec2 {
   }
 
   getDot(other) {
-    Sol.CheckTypes(this, "getDot",
+    Sol.checkTypes(this, "getDot",
     [{other}, [Vec2]]);
 
     let result = ((this._x * other._x) + (this._y * other._y));
@@ -128,7 +141,7 @@ class Vec2 {
   }
 
   getDeterminant(other) {
-    Sol.CheckTypes(this, "getDeterminant",
+    Sol.checkTypes(this, "getDeterminant",
     [{other}, [Vec2]]);
 
     let result = (this._x * other._y) - (other._x * this._y);
@@ -141,11 +154,12 @@ class Vec2 {
   }
 
   fromArray(arr) {
-    Sol.CheckTypes(this, "fromArray",
+    Sol.checkTypes(this, "fromArray",
     [{arr}, [Array]]);
 
     // pad the input if necessary, using default value of 0
-    // or the last value supplied
+    // or the last value supplied and then assign each to
+    // the corresponding property
 
     let result = new Array(2);
     let padValue = 0;
@@ -164,8 +178,16 @@ class Vec2 {
       }
     }
 
-    this._x = result[0];
-    this._y = result[1];
+    // don't unset size/sizeSq if nothing has changed to
+    // avoid it having to be unnecessarily recalculated
+
+    if (this._x !== result[0] || this._y !== result[1]) {
+      this._x = result[0];
+      this._y = result[1];
+
+      this._size   = null;
+      this._sizeSq = null;
+    }
   }
 };
 

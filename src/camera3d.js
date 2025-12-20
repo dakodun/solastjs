@@ -40,7 +40,7 @@ class Camera3D {
   get rotation() { return this._rotation; }
 
   set view(view) {
-    Sol.CheckTypes(this, "set view",
+    Sol.checkTypes(this, "set view",
     [{view}, [Mat4]]);
 
     this._view = view;
@@ -53,7 +53,7 @@ class Camera3D {
   }
 
   set position(position) {
-    Sol.CheckTypes(this, "set position",
+    Sol.checkTypes(this, "set position",
     [{position}, [Vec3]]);
 
     this._position = position;
@@ -61,7 +61,7 @@ class Camera3D {
   }
 
   set rotation(rotation) {
-    Sol.CheckTypes(this, "set rotation",
+    Sol.checkTypes(this, "set rotation",
     [{rotation}, [Vec3]]);
 
     this._rotation = rotation;
@@ -70,7 +70,7 @@ class Camera3D {
 
   //> public methods //
 	copy(other) {
-    Sol.CheckTypes(this, "copy",
+    Sol.checkTypes(this, "copy",
     [{other}, [Camera3D]]);
 
     this.update = other.update;
@@ -89,7 +89,7 @@ class Camera3D {
   }
 
   equals(other) {
-    Sol.CheckTypes(this, "equals",
+    Sol.checkTypes(this, "equals",
     [{other}, [Camera3D]]);
     
     return (
@@ -120,7 +120,7 @@ class Camera3D {
     // if a plane is specified then the camera moves only
     // in that plane (eg, for xy any z movement is ignored)
 
-    Sol.CheckTypes(this, "translate",
+    Sol.checkTypes(this, "translate",
     [{direction}, [Vec3]], [{plane}, [Number]]);
 
     this._updateView();
@@ -166,7 +166,7 @@ class Camera3D {
     // |  0   0   0   1 |
     // '----------------'
 
-    Sol.CheckTypes(this, "translate", [{eyeVec}, [Vec3]],
+    Sol.checkTypes(this, "translate", [{eyeVec}, [Vec3]],
     [{centerVec}, [Vec3]], [{upVec}, [Vec3]]);
 
     let f = new Vec3(
