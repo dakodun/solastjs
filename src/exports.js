@@ -4,9 +4,10 @@ export { default as BSTree }    from    './bstree.js';
 export { default as Camera2D }  from  './camera2d.js';
 export { default as Camera3D }  from  './camera3d.js';
 
-export { default as DefaultEvent } from './events/defaultevent.js';
-export { default as EventQueue }   from          './eventqueue.js';
-export { default as FrameBuffer }  from         './framebuffer.js';
+export { default as DefaultEvent }    from    './events/defaultevent.js';
+export { default as EventQueue }      from             './eventqueue.js';
+export { default as FrameBuffer }     from            './framebuffer.js';
+export { default as FullscreenEvent } from './events/fullscreenevent.js';
 
 export { default as InputManager } from './inputmanager.js';
 export { default as ImageArray   } from   './imagearray.js';
