@@ -1,18 +1,25 @@
-import * as enums from "../exportenums.js";
-import SolEvent from "../solevent.js";
+import Sol from '../sol.js';
+
+import SolEvent from '../solevent.js';
+
+import * as enums from '../exportenums.js';
 
 class DefaultEvent extends SolEvent {
+  //> static properties //
   static type = enums.Event.DEFAULT;
   
+  //> constructor //
   constructor() {
     super();
   }
 
+  //> getters //
+  get type() { return DefaultEvent.type; };
+
+  //> public methods //
   copy(other) {
-    if (!(other instanceof DefaultEvent)) {
-      throw new TypeError("DefaultEvent (copy): other should " +
-        "be a DefaultEvent");
-    }
+    Sol.checkTypes(this, "copy",
+        [{other}, [DefaultEvent]]);
   }
 
   getCopy() {
@@ -22,8 +29,16 @@ class DefaultEvent extends SolEvent {
     return copy;
   }
 
+  equals(other) {
+    Sol.checkTypes(this, "equals",
+        [{other}, [DefaultEvent]]);
+    
+    return true;
+  }
+
+  // [!] deprecated
   getType() {
-    return DefaultEvent.type;
+    return this.type;
   }
 }
 

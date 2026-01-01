@@ -1,42 +1,54 @@
-import * as enums from '../exportenums.js';
+import Sol from '../sol.js';
+
 import SolEvent from '../solevent.js';
 import Vec2 from '../vec2.js';
 
+import * as enums from '../exportenums.js';
+
 class SizeEvent extends SolEvent {
+  //> static properties //
   static type = enums.Event.SIZE;
 
-  constructor(prevDimensions, newDimensions) {
+  //> internal properties //
+  _prevDimensions = new Vec2(1);
+  _newDimensions  = new Vec2(1);
+
+  //> constructor //
+  constructor(prevDimensions = new Vec2(1),
+      newDimensions = new Vec2(1)) {
+
     super();
 
-    this.prevDimensions = new Vec2(1);
-    if (prevDimensions !== undefined) {
-      if (!(prevDimensions instanceof Vec2)) {
-        throw new TypeError("Vec2 (constructor): prevDimensions " +
-          "should be a Vec2");
-      }
-
-      this.prevDimensions.copy(prevDimensions);
-    }
-    
-    this.newDimensions = new Vec2(1);
-    if (newDimensions !== undefined) {
-      if (!(newDimensions instanceof Vec2)) {
-        throw new TypeError("Vec2 (constructor): newDimensions " +
-          "should be a Vec2");
-      }
-
-      this.newDimensions.copy(newDimensions);
-    }
+    this.prevDimensions = prevDimensions;
+    this.newDimensions = newDimensions;
   }
 
-  copy(other) {
-    if (!(other instanceof SizeEvent)) {
-      throw new TypeError("SizeEvent (copy): other should " +
-        "be a SizeEvent");
-    }
+  //> getters/setters //
+  get type() { return SizeEvent.type; };
+  get prevDimensions() { return this._prevDimensions; };
+  get newDimensions()  { return this._newDimensions;  };
 
-    this.prevDimensions = other.prevDimensions.getCopy();
-    this.newDimensions  =  other.newDimensions.getCopy();
+  set prevDimensions(prevDimensions) {
+    Sol.checkTypes(this, "set prevDimensions",
+        [{prevDimensions}, [Vec2]]);
+
+    this._prevDimensions = prevDimensions;
+  };
+
+  set newDimensions(newDimensions) {
+    Sol.checkTypes(this, "set newDimensions",
+        [{newDimensions}, [Vec2]]);
+
+    this._newDimensions = newDimensions;
+  };
+
+  //> public methods //
+  copy(other) {
+    Sol.checkTypes(this, "copy",
+        [{other}, [SizeEvent]]);
+
+    this._prevDimensions.copy(other._prevDimensions);
+    this._newDimensions.copy(other._newDimensions);
   }
 
   getCopy() {
@@ -46,8 +58,19 @@ class SizeEvent extends SolEvent {
     return copy;
   }
 
+  equals(other) {
+    Sol.checkTypes(this, "equals",
+        [{other}, [SizeEvent]]);
+    
+    return (
+      this._prevDimensions.equals(other._prevDimensions) &&
+      this._newDimensions.equals(other._newDimensions)
+    );
+  }
+
+  // [!] deprecated
   getType() {
-    return SizeEvent.type;
+    return this.type;
   }
 }
 

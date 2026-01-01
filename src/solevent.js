@@ -1,16 +1,23 @@
+import Sol from './sol.js';
+
 import * as enums from './exportenums.js';
 
 class SolEvent {
+  //> static properties //
   static type = enums.Event.DEFAULT;
 
+  //> constructor //
   constructor() {
     
   }
 
+  //> getters //
+  get type() { return SolEvent.type; };
+
+  //> public methods //
   copy(other) {
-    if (!(other instanceof SolEvent)) {
-      throw new TypeError("SolEvent (copy): other should be a SolEvent");
-    }
+    Sol.checkTypes(this, "copy",
+        [{other}, [SolEvent]]);
   }
 
   getCopy() {
@@ -20,8 +27,16 @@ class SolEvent {
     return copy;
   }
 
+  equals(other) {
+    Sol.checkTypes(this, "equals",
+        [{other}, [SolEvent]]);
+    
+    return true;
+  }
+
+  // [!] deprecated
   getType() {
-    return SolEvent.type;
+    return this.type;
   }
 }
 

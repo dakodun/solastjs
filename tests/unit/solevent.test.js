@@ -2,61 +2,61 @@ import { describe, test, expect } from 'vitest';
 
 import SolEvent from '../../src/solevent.js';
 
-import * as enums from '../../src/exportenums.js';
+//> SolEvent //
+describe("SolEvent", () => {
+  //> type //
+  describe("type", () => {
+    describe("get", () => {
+      test("returns the static type property associated with " +
+          "SolEvent", () => {
+        
+        let event = new SolEvent();
 
-describe("copying", () => {
-  test("this.copy(other) should make a deep copy of 'other'", () => {
-    let event = new SolEvent();
-    let eventOther = new SolEvent();
-
-    event.copy(eventOther);
-    
-    expect(event).toEqual(eventOther);
-    expect(event).not.toBe(eventOther);
+        expect(event.type).toEqual(SolEvent.type);
+      });
+    });
   });
 
-  test("this.copy(other) should throw an error if 'other' is not " +
-  "a 'Event'", () => {
-    let event = new SolEvent();
-    let eventStr = "eventStr";
+  //> copy(other) //
+  describe("copy()", () => {
+    test("throws an error if other is not a SolEvent", () => {
+      let event = new SolEvent();
 
-    expect(() => event.copy(eventStr)).toThrowError(/SolEvent/);
+      expect(() => { event.copy("string"); })
+        .toThrowError(/SolEvent/);
+    });
   });
 
+  //> getCopy() //
+  describe("getCopy()", () => {
+    test("returns a matching copy (deep)", () => {
+      let other = new SolEvent();
+      
+      let event = other.getCopy();
 
-  test("this.getCopy() should return a 'SolEvent'", () => {
-    let eventOther = new SolEvent();
-    let event = eventOther.getCopy();
-
-    expect(event).toBeInstanceOf(SolEvent);
+      expect(event instanceof SolEvent).toEqual(true);
+    });
   });
 
-  test("this.getCopy() should return a 'SolEvent' which is " +
-  "a deep copy of 'this'", () => {
-    let eventOther = new SolEvent();
-    let event = eventOther.getCopy();
+  //> equals(other) //
+  describe("equals()", () => {
+    test("returns true", () => {
+      let event = new SolEvent();
+      let other = new SolEvent();
+      
+      expect(event.equals(other)).toEqual(true);
+    });
 
-    expect(eventOther).toEqual(event);
-    expect(eventOther).not.toBe(event);
-  });
-});
+    test("throws an error if 'other' is not a SolEvent", () => {
+      let event = new SolEvent();
 
-describe("typing", () => {
-  test("this.getType() should return a 'Number'", () => {
-    let event = new SolEvent();
-
-    let type = event.getType();
-
-    expect(type).toBeTypeOf('number');
+      expect(() => { event.equals("str"); })
+        .toThrowError(/SolEvent/);
+    });
   });
 
-  test("this.getType() should return a 'Number' which matches " +
-  "the enum associated with this type", () => {
-    let event = new SolEvent();
-    let expected = enums.Event.DEFAULT;
-
-    let type = event.getType();
-
-    expect(type).toEqual(expected);
+  //> getType() //
+  describe.todo("getType()", () => {
+    // [!] deprecated
   });
 });

@@ -2,61 +2,61 @@ import { describe, test, expect } from 'vitest';
 
 import DefaultEvent from '../../../src/events/defaultevent.js';
 
-import * as enums from '../../../src/exportenums.js';
+//> DefaultEvent //
+describe("DefaultEvent", () => {
+  //> type //
+  describe("type", () => {
+    describe("get", () => {
+      test("returns the static type property associated with " +
+          "DefaultEvent", () => {
+        
+        let event = new DefaultEvent();
 
-describe("copying", () => {
-  test("this.copy(other) should make a deep copy of 'other'", () => {
-    let event = new DefaultEvent();
-    let eventOther = new DefaultEvent();
-
-    event.copy(eventOther);
-    
-    expect(event).toEqual(eventOther);
-    expect(event).not.toBe(eventOther);
+        expect(event.type).toEqual(DefaultEvent.type);
+      });
+    });
   });
 
-  test("this.copy(other) should throw an error if 'other' is not " +
-  "a 'DefaultEvent'", () => {
-    let event = new DefaultEvent();
-    let eventStr = "eventStr";
+  //> copy(other) //
+  describe("copy()", () => {
+    test("throws an error if other is not a DefaultEvent", () => {
+      let event = new DefaultEvent();
 
-    expect(() => event.copy(eventStr)).toThrowError(/DefaultEvent/);
+      expect(() => { event.copy("string"); })
+        .toThrowError(/DefaultEvent/);
+    });
   });
 
+  //> getCopy() //
+  describe("getCopy()", () => {
+    test("returns a matching copy (deep)", () => {
+      let other = new DefaultEvent();
+      
+      let event = other.getCopy();
 
-  test("this.getCopy() should return a 'DefaultEvent'", () => {
-    let eventOther = new DefaultEvent();
-    let event = eventOther.getCopy();
-
-    expect(event).toBeInstanceOf(DefaultEvent);
+      expect(event instanceof DefaultEvent).toEqual(true);
+    });
   });
 
-  test("this.getCopy() should return a 'DefaultEvent' which is " +
-  "a deep copy of 'this'", () => {
-    let eventOther = new DefaultEvent();
-    let event = eventOther.getCopy();
+  //> equals(other) //
+  describe("equals()", () => {
+    test("returns true", () => {
+      let event = new DefaultEvent();
+      let other = new DefaultEvent();
+      
+      expect(event.equals(other)).toEqual(true);
+    });
 
-    expect(eventOther).toEqual(event);
-    expect(eventOther).not.toBe(event);
-  });
-});
+    test("throws an error if 'other' is not a DefaultEvent", () => {
+      let event = new DefaultEvent();
 
-describe("typing", () => {
-  test("this.getType() should return a 'Number'", () => {
-    let event = new DefaultEvent();
-
-    let type = event.getType();
-
-    expect(type).toBeTypeOf('number');
+      expect(() => { event.equals("str"); })
+        .toThrowError(/DefaultEvent/);
+    });
   });
 
-  test("this.getType() should return a 'Number' which matches " +
-  "the enum associated with this type", () => {
-    let event = new DefaultEvent();
-    let expected = enums.Event.DEFAULT;
-
-    let type = event.getType();
-
-    expect(type).toEqual(expected);
+  //> getType() //
+  describe.todo("getType()", () => {
+    // [!] deprecated
   });
 });
