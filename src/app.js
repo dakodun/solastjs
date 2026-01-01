@@ -76,14 +76,23 @@ class App {
       }, true);
     }
 
+    // add event listeners that dispatch a fullscreen event
+    // when an attempt to alter the fullscreen state has
+    // been made
+
     document.addEventListener("fullscreenchange", (e) => {
       this.eventQueue.push(new FullscreenEvent(true,
-        (this.isFullscreen === true) ? 1 : 0));
+        (this.isFullscreen === true) ? FullscreenEvent.Status.ENTER :
+        FullscreenEvent.Status.EXIT));
     }, true);
 
     document.addEventListener("fullscreenerror", (e) => {
-      this.eventQueue.push(new FullscreenEvent(false, this.isFullscreen));
+      this.eventQueue.push(new FullscreenEvent(false,
+        (this.isFullscreen === true) ? FullscreenEvent.Status.ENTER :
+        FullscreenEvent.Status.EXIT));
     }, true);
+
+    // 
 
     this.updateCanvas();
     this.frameTimer.reset();
@@ -223,7 +232,11 @@ class App {
     }
   }
 
-  requestFullscreen(options) {
+  requestFullscreen(options = {}) {
+    // if app is not in fuillscreen state then attempt
+    // to enter it - must be in response to user input
+    // (transient user activation)
+
     canvas.requestFullscreen(options)
       .then(() => {})
       .catch((error) => {
@@ -232,12 +245,26 @@ class App {
   }
 
   exitFullscreen() {
-    if (this.isFullscreen) {
+    // if app is currently in fuillscreen state then
+    // attempt to leave it
+
+    if (this.isFullscreen === true) {
       document.exitFullscreen()
         .then(() => {})
         .catch((error) => {
           console.log(error);
         });
+    }
+  }
+
+  toggleFullscreen(options = {}) {
+    // helper function to more easily toggle
+    // between fullscreen states
+
+    if (this.isFullscreen === false) {
+      this.requestFullscreen(options);
+    } else {
+      this.exitFullscreen();
     }
   }
 
