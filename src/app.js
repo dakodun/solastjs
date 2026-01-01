@@ -11,34 +11,46 @@ import Timer from './timer.js';
 import VBOVertex from './vbovertex.js';
 import Vec2 from './vec2.js';
 
+import FullscreenEvent from './events/fullscreenevent.js';
 import OrientationEvent from './events/orientationevent.js';
 import SizeEvent from './events/sizeevent.js';
 
 class App {
+  //> public properties //
+  canvas = null;
+  context = null;
+
+  canvasPos = new Vec2(0.0, 0.0);
+
+  resourceManager = new ResourceManager();
+  inputManager = new InputManager();
+  sceneManager = new SceneManager();
+
+  resourceLoader = new ResourceLoader();
+
+  frameTimer = new Timer();
+  frameLimit = 0.02;
+  frameSkip = true;
+  frameMax = 15;
+
+  renderPasses = 1;
+
+  eventQueue = new EventQueue();
+
+  fillParent = true;
+
+  //> constructor //
   constructor() {
-    this.canvas = null;
-    this.context = null;
+    
+  }
 
-    this.canvasPos = new Vec2(0.0, 0.0);
-
-    this.resourceManager = new ResourceManager();
-    this.inputManager = new InputManager();
-    this.sceneManager = new SceneManager();
-
-    this.resourceLoader = new ResourceLoader();
-
-    this.frameTimer = new Timer();
-    this.frameLimit = 0.02;
-    this.frameSkip = true;
-    this.frameMax = 15;
-
-    this.renderPasses = 1;
-
-    this.eventQueue = new EventQueue();
-
-    this.fillParent = true;
+  //> getters //
+  get isFullscreen() {
+    return (document.fullscreenElement !== null &&
+      document.fullscreenElement === this.canvas);
   }
   
+  //> public methods //
   init(canvasID) {
     this.canvas = document.getElementById(canvasID);
     this.context = this.canvas.getContext("webgl2", {alpha: false});
@@ -48,27 +60,48 @@ class App {
 
     glSetContext(this.context);
     GL.viewport(0, 0, this.canvas.width, this.canvas.height);
-    this.#createDefaultShader();
+    this._createDefaultShader();
 
     // flip texture source data to bring it in line
     // with framebuffer texture rendering (so texture
     // coordinates are consistent)
+
     GL.pixelStorei(GL.UNPACK_FLIP_Y_WEBGL, true);
 
     this.inputManager.register(this);
 
     if (screen.orientation) {
-      screen.orientation.addEventListener("change",
-          (e) => {this.eventQueue.push(new OrientationEvent());},
-          true);
+      screen.orientation.addEventListener("change", (e) => {
+        this.eventQueue.push(new OrientationEvent());
+      }, true);
     }
+
+    // add event listeners that dispatch a fullscreen event
+    // when an attempt to alter the fullscreen state has
+    // been made
+
+    document.addEventListener("fullscreenchange", (e) => {
+      this.eventQueue.push(new FullscreenEvent(true,
+        (this.isFullscreen === true) ? FullscreenEvent.Status.ENTER :
+        FullscreenEvent.Status.EXIT));
+    }, true);
+
+    document.addEventListener("fullscreenerror", (e) => {
+      this.eventQueue.push(new FullscreenEvent(false,
+        (this.isFullscreen === true) ? FullscreenEvent.Status.ENTER :
+        FullscreenEvent.Status.EXIT));
+    }, true);
+
+    // 
 
     this.updateCanvas();
     this.frameTimer.reset();
   }
 
-  // needs to be called seperately from other init upon a user input
   initAudio() {
+    // needs to be called seperately from other init
+    // upon a user input (transient user activation)
+
     acSetContext(new AudioContext());
   }
 
@@ -116,9 +149,11 @@ class App {
         ++framesProcessed;
         frameAccum -= this.frameLimit;
 
-        if (this.frameSkip || framesProcessed >= this.frameMax) { break; }
-        
-        if (this.sceneManager.next !== null) { break; }
+        if ((this.frameSkip || framesProcessed >= this.frameMax) ||
+          (this.sceneManager.next !== null)) {
+
+          break;
+        }
       }
 
       this.postProcess(frameTime, framesProcessed);
@@ -131,7 +166,7 @@ class App {
       this.frameTimer.reset();
     }
 
-    requestAnimationFrame(() => {this.run();});
+    requestAnimationFrame(() => { this.run(); });
   }
 
   render(pass) {
@@ -187,8 +222,9 @@ class App {
 
   handleEvent(e) {
     switch(e.getType()) {
-      default :
+      default : {
         break;
+      }
     }
 
     if (this.sceneManager.current !== null) {
@@ -196,7 +232,44 @@ class App {
     }
   }
 
-  #createDefaultShader() {
+  requestFullscreen(options = {}) {
+    // if app is not in fuillscreen state then attempt
+    // to enter it - must be in response to user input
+    // (transient user activation)
+
+    canvas.requestFullscreen(options)
+      .then(() => {})
+      .catch((error) => {
+        console.log(error);
+      });
+  }
+
+  exitFullscreen() {
+    // if app is currently in fuillscreen state then
+    // attempt to leave it
+
+    if (this.isFullscreen === true) {
+      document.exitFullscreen()
+        .then(() => {})
+        .catch((error) => {
+          console.log(error);
+        });
+    }
+  }
+
+  toggleFullscreen(options = {}) {
+    // helper function to more easily toggle
+    // between fullscreen states
+
+    if (this.isFullscreen === false) {
+      this.requestFullscreen(options);
+    } else {
+      this.exitFullscreen();
+    }
+  }
+
+  //> internal methods //
+  _createDefaultShader() {
     let shader = GLStates.defaultShader;
 
     shader.vertSrc =

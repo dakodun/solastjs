@@ -1,5 +1,7 @@
 import Sol from './sol.js';
 
+import Vec2 from './vec2.js';
+
 class Vec3 {
   // a 3-dimensional vector (x, y and z) with methods
   // for convenience as well as to perform common
@@ -42,6 +44,12 @@ class Vec3 {
 
     return this._sizeSq;
   }
+
+  get xy() { return new Vec2(this._x, this._y); }
+  get xz() { return new Vec2(this._x, this._z); }
+  get yz() { return new Vec2(this._y, this._z); }
+
+  get xyz() { return new Vec3(this._x, this._y, this._z); }
   
   set x(x) {
     Sol.checkTypes(this, "set x",

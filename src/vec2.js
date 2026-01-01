@@ -39,6 +39,8 @@ class Vec2 {
 
     return this._sizeSq;
   }
+
+  get xy() { return new Vec2(this._x, this._y); }
   
   set x(x) {
     Sol.checkTypes(this, "set x",

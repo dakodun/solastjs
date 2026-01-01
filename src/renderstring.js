@@ -219,7 +219,9 @@ class RenderString {
     }
 
     rbd.indices = this._indices.slice();
-    rbd.textureRef = this._font.texture.texture;
+    rbd.textureRef = (this._font !== null) ?
+      this._font.texture.texture : null;
+    rbd.depth = this.depth;
 
     return [rbd];
   }
@@ -230,7 +232,9 @@ class RenderString {
     // to the corresponding glyphs in our font, then update
     // width and height
 
-    if (this._vertices.length === 0) {
+    if (this._font !== null && this._text !== "" &&
+      this._vertices.length === 0) {
+
       let lines = this._preParse();
 
       let indexCount = 0;
@@ -359,11 +363,9 @@ class RenderString {
 
       // update the bounding box width to account for the last
       // line of text, round values, and then set it
-      bbox.upper.x = Math.max(bbox.upper.x, cursor.x);
-
-      this.boundingBox.upper = new Vec2(Math.round(bbox.upper.x),
-        Math.round(bbox.upper.y));
-      this.boundingBox.lower = new Vec2(0, 0);
+      bbox.upper.x = Math.round(Math.max(bbox.upper.x, cursor.x));
+      bbox.upper.y = Math.round(bbox.upper.y);
+      this.boundingBox = bbox;
     }
   }
 

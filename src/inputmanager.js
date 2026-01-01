@@ -14,8 +14,8 @@ class InputManager {
     this.wheelDelta = 0;
     this.disableMouseWheel = false;
 
-    this.localMouse  = new Vec2(0.0, 0.0);
-    this.globalMouse = new Vec2(0.0, 0.0);
+    this.localMouse  = new Vec2(-1, -1);
+    this.globalMouse = new Vec2(-1, -1);
     this.localMousePrev  = null;
     this.globalMousePrev = null;
 

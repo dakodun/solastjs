@@ -1,5 +1,8 @@
 import Sol from './sol.js';
 
+import Vec2 from './vec2.js';
+import Vec3 from './vec3.js';
+
 class Vec4 {
  // a 4-dimensional vector (x, y, z and w) with methods
   // for convenience as well as to perform common
@@ -44,6 +47,22 @@ class Vec4 {
     }
 
     return this._sizeSq;
+  }
+
+  get xy() { return new Vec2(this._x, this._y); }
+  get xz() { return new Vec2(this._x, this._z); }
+  get xw() { return new Vec2(this._x, this._w); }
+  get yz() { return new Vec2(this._y, this._z); }
+  get yw() { return new Vec2(this._y, this._w); }
+  get zw() { return new Vec2(this._z, this._w); }
+
+  get xyz() { return new Vec3(this._x, this._y, this._z); }
+  get xyw() { return new Vec3(this._x, this._y, this._w); }
+  get xzw() { return new Vec3(this._x, this._z, this._w); }
+  get yzw() { return new Vec3(this._y, this._z, this._w); }
+
+  get xyzw() {
+    return new Vec4(this._x, this._y, this._z, this._w);
   }
   
   set x(x) {
