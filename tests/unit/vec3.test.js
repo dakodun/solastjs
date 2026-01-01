@@ -636,6 +636,19 @@ describe("Vec3", () => {
     test("returns true if within custom tolerance value", () => {
       compare((other) => { other._x = 0.95; }, true, 0.1);
     });
+
+    test("throws an error if 'other' is not a Vec3", () => {
+      let vec = new Vec3();
+
+      expect(() => { vec.equals("str"); }).toThrowError(/Vec3/);
+    });
+
+    test("throws an error if 'tolerance' is not a Number", () => {
+      let vec = new Vec3();
+
+      expect(() => { vec.equals(new Vec3(), "str"); })
+        .toThrowError(/Number/);
+    });
   });
 
   //> negate() //
