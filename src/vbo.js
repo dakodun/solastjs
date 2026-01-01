@@ -42,7 +42,7 @@ class VBO {
 
     GL.bindBuffer(GL.ELEMENT_ARRAY_BUFFER, this.indexBuffer);
     GL.bufferData(GL.ELEMENT_ARRAY_BUFFER,
-        new Uint16Array(indices), GL.STATIC_DRAW);
+      new Uint16Array(indices), GL.STATIC_DRAW);
 
     this.segments.clear();
 
