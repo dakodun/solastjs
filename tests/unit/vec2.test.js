@@ -234,6 +234,20 @@ describe("Vec2", () => {
 
   //> xy //
   describe("xy", () => {
+    describe("get", () => {
+      test("returns a Vec2 comprised of (x, y)", () => {
+        let vec = new Vec2();
+          vec._x = 1;
+          vec._y = 2;
+        
+        let vec2 = vec.xy;
+        
+        expect(vec2 instanceof Vec2).toEqual(true);
+        expect(vec2._x).toEqual(vec._x);
+        expect(vec2._y).toEqual(vec._y);
+      });
+    });
+
     describe("set", () => {
       test("sets the value of x and y", () => {
         let vec = new Vec2();

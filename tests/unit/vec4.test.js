@@ -2,6 +2,9 @@ import { describe, test, expect } from 'vitest';
 
 import Vec4 from '../../src/vec4.js';
 
+import Vec2 from '../../src/vec2.js';
+import Vec3 from '../../src/vec3.js';
+
 //> Vec4 //
 describe("Vec4", () => {
   //> constructor //
@@ -396,6 +399,20 @@ describe("Vec4", () => {
 
   //> xy //
   describe("xy", () => {
+    describe("get", () => {
+      test("returns a Vec2 comprised of (x, y)", () => {
+        let vec = new Vec4();
+          vec._x = 1;
+          vec._y = 2;
+        
+        let vec2 = vec.xy;
+        
+        expect(vec2 instanceof Vec2).toEqual(true);
+        expect(vec2._x).toEqual(vec._x);
+        expect(vec2._y).toEqual(vec._y);
+      });
+    });
+
     describe("set", () => {
       test("sets the value of x and y", () => {
         let vec = new Vec4();
@@ -434,6 +451,20 @@ describe("Vec4", () => {
 
   //> xz //
   describe("xz", () => {
+    describe("get", () => {
+      test("returns a Vec2 comprised of (x, z)", () => {
+        let vec = new Vec4();
+          vec._x = 1;
+          vec._z = 3;
+        
+        let vec2 = vec.xz;
+        
+        expect(vec2 instanceof Vec2).toEqual(true);
+        expect(vec2._x).toEqual(vec._x);
+        expect(vec2._y).toEqual(vec._z);
+      });
+    });
+
     describe("set", () => {
       test("sets the value of x and z", () => {
         let vec = new Vec4();
@@ -472,6 +503,20 @@ describe("Vec4", () => {
 
   //> xw //
   describe("xw", () => {
+    describe("get", () => {
+      test("returns a Vec2 comprised of (x, w)", () => {
+        let vec = new Vec4();
+          vec._x = 1;
+          vec._w = 4;
+        
+        let vec2 = vec.xw;
+        
+        expect(vec2 instanceof Vec2).toEqual(true);
+        expect(vec2._x).toEqual(vec._x);
+        expect(vec2._y).toEqual(vec._w);
+      });
+    });
+
     describe("set", () => {
       test("sets the value of x and w", () => {
         let vec = new Vec4();
@@ -510,6 +555,20 @@ describe("Vec4", () => {
 
   //> yz //
   describe("yz", () => {
+    describe("get", () => {
+      test("returns a Vec2 comprised of (y, z)", () => {
+        let vec = new Vec4();
+          vec._y = 2;
+          vec._z = 3;
+        
+        let vec2 = vec.yz;
+        
+        expect(vec2 instanceof Vec2).toEqual(true);
+        expect(vec2._x).toEqual(vec._y);
+        expect(vec2._y).toEqual(vec._z);
+      });
+    });
+
     describe("set", () => {
       test("sets the value of y and z", () => {
         let vec = new Vec4();
@@ -548,6 +607,20 @@ describe("Vec4", () => {
 
   //> yw //
   describe("yw", () => {
+    describe("get", () => {
+      test("returns a Vec2 comprised of (y, w)", () => {
+        let vec = new Vec4();
+          vec._y = 2;
+          vec._w = 4;
+        
+        let vec2 = vec.yw;
+        
+        expect(vec2 instanceof Vec2).toEqual(true);
+        expect(vec2._x).toEqual(vec._y);
+        expect(vec2._y).toEqual(vec._w);
+      });
+    });
+
     describe("set", () => {
       test("sets the value of y and w", () => {
         let vec = new Vec4();
@@ -586,6 +659,20 @@ describe("Vec4", () => {
 
   //> zw //
   describe("zw", () => {
+    describe("get", () => {
+      test("returns a Vec2 comprised of (z, w)", () => {
+        let vec = new Vec4();
+          vec._z = 3;
+          vec._w = 4;
+        
+        let vec2 = vec.zw;
+        
+        expect(vec2 instanceof Vec2).toEqual(true);
+        expect(vec2._x).toEqual(vec._z);
+        expect(vec2._y).toEqual(vec._w);
+      });
+    });
+
     describe("set", () => {
       test("sets the value of z and w", () => {
         let vec = new Vec4();
@@ -624,6 +711,22 @@ describe("Vec4", () => {
 
   //> xyz //
   describe("xyz", () => {
+    describe("get", () => {
+      test("returns a Vec3 comprised of (x, y, z)", () => {
+        let vec = new Vec4();
+          vec._x = 1;
+          vec._y = 2;
+          vec._z = 3;
+        
+        let vec3 = vec.xyz;
+        
+        expect(vec3 instanceof Vec3).toEqual(true);
+        expect(vec3._x).toEqual(vec._x);
+        expect(vec3._y).toEqual(vec._y);
+        expect(vec3._z).toEqual(vec._z);
+      });
+    });
+
     describe("set", () => {
       test("sets the value of x, y and z", () => {
         let vec = new Vec4();
@@ -683,6 +786,22 @@ describe("Vec4", () => {
 
   //> xyw //
   describe("xyw", () => {
+    describe("get", () => {
+      test("returns a Vec3 comprised of (x, y, w)", () => {
+        let vec = new Vec4();
+          vec._x = 1;
+          vec._y = 2;
+          vec._w = 4;
+        
+        let vec3 = vec.xyw;
+        
+        expect(vec3 instanceof Vec3).toEqual(true);
+        expect(vec3._x).toEqual(vec._x);
+        expect(vec3._y).toEqual(vec._y);
+        expect(vec3._z).toEqual(vec._w);
+      });
+    });
+
     describe("set", () => {
       test("sets the value of x, y and w", () => {
         let vec = new Vec4();
@@ -742,6 +861,22 @@ describe("Vec4", () => {
 
   //> xzw //
   describe("xzw", () => {
+    describe("get", () => {
+      test("returns a Vec3 comprised of (x, z, w)", () => {
+        let vec = new Vec4();
+          vec._x = 1;
+          vec._z = 3;
+          vec._w = 4;
+        
+        let vec3 = vec.xzw;
+        
+        expect(vec3 instanceof Vec3).toEqual(true);
+        expect(vec3._x).toEqual(vec._x);
+        expect(vec3._y).toEqual(vec._z);
+        expect(vec3._z).toEqual(vec._w);
+      });
+    });
+
     describe("set", () => {
       test("sets the value of x, z and w", () => {
         let vec = new Vec4();
@@ -801,6 +936,22 @@ describe("Vec4", () => {
 
   //> yzw //
   describe("yzw", () => {
+    describe("get", () => {
+      test("returns a Vec3 comprised of (y, z, w)", () => {
+        let vec = new Vec4();
+          vec._y = 2;
+          vec._z = 3;
+          vec._w = 4;
+        
+        let vec3 = vec.yzw;
+        
+        expect(vec3 instanceof Vec3).toEqual(true);
+        expect(vec3._x).toEqual(vec._y);
+        expect(vec3._y).toEqual(vec._z);
+        expect(vec3._z).toEqual(vec._w);
+      });
+    });
+
     describe("set", () => {
       test("sets the value of y, z and w", () => {
         let vec = new Vec4();
@@ -860,6 +1011,24 @@ describe("Vec4", () => {
 
   //> xyzw //
   describe("xyzw", () => {
+    describe("get", () => {
+      test("returns a Vec4 comprised of (x, y, z, w)", () => {
+        let vec = new Vec4();
+          vec._x = 1;
+          vec._y = 2;
+          vec._z = 3;
+          vec._w = 4;
+        
+        let vec4 = vec.xyzw;
+        
+        expect(vec4 instanceof Vec4).toEqual(true);
+        expect(vec4._x).toEqual(vec._x);
+        expect(vec4._y).toEqual(vec._y);
+        expect(vec4._z).toEqual(vec._z);
+        expect(vec4._w).toEqual(vec._w);
+      });
+    });
+
     describe("set", () => {
       test("sets the value of x, y, z and w", () => {
         let vec = new Vec4();
