@@ -17,5 +17,5 @@ CONTROLS
 - Hold Mouse Left or Touch on Pyramid to **Grab the Pyramid**
   - (When Grabbed) Move Cursor or Drag to **Spin the Pyramid**
   - (On Release) Pyramid should maintain current rotational velocity
-- Mouse Left or Touch UI button to  Toggle between **perspective and**
+- Mouse Left or Touch UI button to toggle between **perspective and**
 **orthographic projections**, or **enable/disable debug**
