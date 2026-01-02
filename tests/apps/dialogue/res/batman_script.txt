@@ -1,0 +1,19 @@
+:firstMeeting/initialFollowup
+>SuperBatman/[kick][defend]
+₄Hee-ya!₄ What's going on here? Who are you?
+>MegaBatman
+I am ₂the₂ ₃Batman₃...
+>SuperBatman
+Is this some kind of trickery?! I am ₂the₂ ₃Batman₃!
+
+:initialFollowup/final
+>SuperBatman
+We should head back to the ₃Batcave₃ and get to the bottom of this.
+>MegaBatman
+Ok, ₁but I'm driving₁!
+>SuperBatman
+Ha!
+
+:final
+>SuperBatman
+Hmmm...
