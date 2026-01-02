@@ -378,16 +378,34 @@ a:hover {
     margin-top: 1.75rem;
   }
 
-  #content div.app-list ul li > span.soft {
+
+  #content div.app-list .list-header {
+    display: grid;
+    gap: 0.5rem;
+    grid: 1fr / auto 1fr;
+
+    align-items: center;
+  }
+
+  #content div.app-list .list-header a.button-link {
+    margin: 0px;
+  }
+
+  #content div.app-list .list-header span.soft {
     margin-left: 0.25rem;
     
     color: var(--theme-color-soft);
     font-size: 0.975rem;
   }
 
+
   #content div.app-list ul ul {
     margin: 0.5rem 0px 0px;
     padding: 0px 0px;
+  }
+
+  #content div.app-list > ul > li + li {
+    margin: 1.875rem 0px 0px;
   }
 
   #content div.app-list ul ul ul {

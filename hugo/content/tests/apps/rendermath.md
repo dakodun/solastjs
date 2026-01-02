@@ -3,6 +3,8 @@ title = "Render Math"
 date = 2025-11-20
 
 weight = 1
+
+subtitle = "(previously 'Silly Pyramid, The')"
 +++
 
 - Test of the math involved in rendering (for example, projection matrices)
