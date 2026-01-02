@@ -24,4 +24,4 @@ and texture manipulation with ImageArrays.
   - Mouse Left or Touch "Super Batman" to **initiate conversation**
     - Mouse Left or Touch anywhere to **advance text**
   - Mouse Left or Touch UI button to toggle between **fullscreen**,
-  **enable/disable debug**, or zoom camera in/out
+  **enable/disable debug**, or **zoom camera in/out**
