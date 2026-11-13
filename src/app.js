@@ -1,19 +1,22 @@
-import AC, {acSetContext} from './ac.js'
-import GL, {glSetContext} from './gl.js'
-import GLStates from './glstates.js'
-import SolError from './solerror.js';
-import EventQueue from './eventqueue.js';
-import InputManager from './inputmanager.js';
-import ResourceManager from './resourcemanager.js';
-import ResourceLoader from './resourceloader.js';
-import SceneManager from './scenemanager.js';
-import Timer from './timer.js';
-import VBOVertex from './vbovertex.js';
-import Vec2 from './vec2.js';
+import AC, { acSetContext } from "./ac.js"
+import GL, { glSetContext } from "./gl.js"
+import GLStates from "./glstates.js"
+import SolError from "./solerror.js";
+import EventQueue from "./eventqueue.js";
+import InputManager from "./inputmanager.js";
+import ResourceManager from "./resourcemanager.js";
+import ResourceLoader from "./resourceloader.js";
+import SceneManager from "./scenemanager.js";
+import Timer from "./timer.js";
+import VBOVertex from "./vbovertex.js";
+import Vec2 from "./vec2.js";
 
-import FullscreenEvent from './events/fullscreenevent.js';
-import OrientationEvent from './events/orientationevent.js';
-import SizeEvent from './events/sizeevent.js';
+import ExternalEvent from "./events/externalevent.js";
+import FullscreenEvent from "./events/fullscreenevent.js";
+import OrientationEvent from "./events/orientationevent.js";
+import SizeEvent from "./events/sizeevent.js";
+
+import * as enums from "./exportenums.js";
 
 class App {
   //> public properties //
@@ -36,14 +39,17 @@ class App {
   renderPasses = 1;
 
   eventQueue = new EventQueue();
+  eventQueueDeferred = new EventQueue();
 
   fillParent = true;
+  
+  _isPaused = false;
 
   //> constructor //
   constructor() {
     
   }
-
+  
   //> getters //
   get isFullscreen() {
     return (document.fullscreenElement !== null &&
@@ -57,47 +63,48 @@ class App {
     if (!this.context) {
       throw new SolError("unable to create webGL context");
     }
-
+    
     glSetContext(this.context);
     GL.viewport(0, 0, this.canvas.width, this.canvas.height);
     this._createDefaultShader();
-
+    
     // flip texture source data to bring it in line
     // with framebuffer texture rendering (so texture
     // coordinates are consistent)
-
+    
     GL.pixelStorei(GL.UNPACK_FLIP_Y_WEBGL, true);
-
+    
     this.inputManager.register(this);
-
+    
     if (screen.orientation) {
       screen.orientation.addEventListener("change", (e) => {
-        this.eventQueue.push(new OrientationEvent());
+        this.eventQueue.push(new OrientationEvent(), 0);
       }, true);
     }
-
+    
     // add event listeners that dispatch a fullscreen event
     // when an attempt to alter the fullscreen state has
     // been made
-
+    
     document.addEventListener("fullscreenchange", (e) => {
       this.eventQueue.push(new FullscreenEvent(true,
         (this.isFullscreen === true) ? FullscreenEvent.Status.ENTER :
-        FullscreenEvent.Status.EXIT));
+        FullscreenEvent.Status.EXIT), 0);
     }, true);
-
+    
     document.addEventListener("fullscreenerror", (e) => {
       this.eventQueue.push(new FullscreenEvent(false,
         (this.isFullscreen === true) ? FullscreenEvent.Status.ENTER :
-        FullscreenEvent.Status.EXIT));
+        FullscreenEvent.Status.EXIT), 0);
     }, true);
-
+    
     // 
-
+    
+    this.emitMessage("SOL_INITIALISED");
     this.updateCanvas();
     this.frameTimer.reset();
   }
-
+  
   initAudio() {
     // needs to be called seperately from other init
     // upon a user input (transient user activation)
@@ -109,63 +116,38 @@ class App {
     GLStates.defaultShader.delete();
     this.sceneManager.delete();
   }
-
+  
   run() {
+    // canvas size management and event handling should
+    // always be run regardless of pause state
+    
     let updateCanvas = this.updateCanvas();
     if (updateCanvas[0]) {
       let sizeEvent = new SizeEvent(
         new Vec2(this.canvas.width, this.canvas.height),
         new Vec2(  updateCanvas[1],    updateCanvas[2])
       );
-
+      
       this.canvas.width  = updateCanvas[1];
       this.canvas.height = updateCanvas[2];
-
-      this.eventQueue.push(sizeEvent);
+      
+      this.eventQueue.push(sizeEvent, 0);
     }
-
-    while (!this.eventQueue.empty()) {
-      let e = this.eventQueue.get();
-      this.handleEvent(e);
-      this.eventQueue.pop();
-    }
-
-    for (let i = 0; i < this.renderPasses; ++i) {
-			this.render(i);
-		}
     
-    this.input();
-    this.inputManager.process();
-
-    let frameTime = this.frameTimer.getElapsed() / 1000;
-    this.frameTimer.reset();
-
-    if (frameTime > this.frameLimit) {
-      let framesProcessed = 0;
-      let frameAccum = frameTime;
-
-      while (frameAccum >= this.frameLimit) {
-        this.process(this.frameLimit);
-        ++framesProcessed;
-        frameAccum -= this.frameLimit;
-
-        if ((this.frameSkip || framesProcessed >= this.frameMax) ||
-          (this.sceneManager.next !== null)) {
-
-          break;
-        }
-      }
-
-      this.postProcess(frameTime, framesProcessed);
+    this._processEvents();
+    
+    // how a frame is processed depends on whether the app
+    // is currently paused or not
+    
+    if (this._isPaused === false) {
+      this._runActive();
     } else {
-      this.process(frameTime);
-      this.postProcess(frameTime, 1);
+      this._runPaused();
     }
     
-    if (this.sceneManager.change()) {
-      this.frameTimer.reset();
-    }
-
+    // always restart the main "run" loop by requesting
+    // another frame regardless of pause status
+    
     requestAnimationFrame(() => { this.run(); });
   }
 
@@ -220,20 +202,8 @@ class App {
     return [false];
   }
 
-  handleEvent(e) {
-    switch(e.getType()) {
-      default : {
-        break;
-      }
-    }
-
-    if (this.sceneManager.current !== null) {
-      this.sceneManager.current.handleEventQueue(e);
-    }
-  }
-
   requestFullscreen(options = {}) {
-    // if app is not in fuillscreen state then attempt
+    // if app is not in fullscreen state then attempt
     // to enter it - must be in response to user input
     // (transient user activation)
 
@@ -267,8 +237,154 @@ class App {
       this.exitFullscreen();
     }
   }
-
+  
+  
+  emitMessage(command, data = null) {
+    if (window.solBridge !== undefined) {
+      window.solBridge.app = this;
+      window.solBridge.push({ command, data })
+    }
+  }
+  
   //> internal methods //
+  _processEvents() {
+    // logic to handle event processing, dealing with priorities,
+    // pausing and the deferred queue
+    
+    while (!this.eventQueue.isEmpty()) {
+      const { event, priority } = this.eventQueue.peek();
+      
+      // if the app is paused then either push the event onto
+      // the deferred queue or jsut ignore it completely
+      // and move to the next event
+      
+      if (this._isPaused === true && priority === 1) {
+        const event = this.eventQueue.shift();
+        this.eventQueueDeferred.push(event);
+        
+        continue;
+      } else if (this._isPaused === true && priority === 2) {
+        this.eventQueue.shift();
+        
+        continue;
+      }
+      
+      // if the app is NOT paused or the event is a priority 0
+      // (important -- processed even during pauses) then
+      // continue processing
+      
+      this._handleEvents(event);
+
+      if (this.sceneManager.current !== null) {
+        this.sceneManager.current.handleEventQueue(event);
+      }
+      
+      this.eventQueue.shift();
+    }
+    
+    if (this._isPaused === false) {
+      // when the app is NOT paused we want to process any events
+      // that were deferred during a pause (i.e., priority 1)
+      
+      while (!this.eventQueueDeferred.isEmpty()) {
+        const { event } = this.eventQueueDeferred.peek();
+        
+        this._handleEvents(event);
+
+        if (this.sceneManager.current !== null) {
+          this.sceneManager.current.handleEventQueue(event);
+        }
+        
+        this.eventQueueDeferred.shift();
+      }
+    }
+  }
+  
+  _handleEvents(event) {
+    switch(event.getType()) {
+      case enums.Event.EXTERNAL : {
+        this._handleExternal(event.command, event.data);
+        break;
+      } default : {
+        break;
+      }
+    }
+  }
+  
+  _handleExternal(command, data) {
+    switch(command) {
+      case "SOL_PAUSEAPP" : {
+        if (this._isPaused === false) {
+          this.frameTimer.pause();
+        } else {
+          this.frameTimer.resume();
+        }
+        
+        this._isPaused = !this._isPaused;
+        this.emitMessage("SOL_PAUSESTATUS", { state: this._isPaused });
+        break;
+      } default : {
+        break;
+      }
+    }
+  }
+  
+  _runActive() {
+    // an active frame (i.e., when the app is NOT paused) performs
+    // a full logic loop
+    
+    for (let i = 0; i < this.renderPasses; ++i) {
+			this.render(i);
+		}
+    
+    this.input();
+    this.inputManager.process();
+    
+    let frameTime = this.frameTimer.getElapsed() / 1000;
+    this.frameTimer.reset();
+    
+    if (frameTime > this.frameLimit) {
+      let framesProcessed = 0;
+      let frameAccum = frameTime;
+      
+      while (frameAccum >= this.frameLimit) {
+        this.process(this.frameLimit);
+        ++framesProcessed;
+        frameAccum -= this.frameLimit;
+        
+        const stopProcessing = (this.frameSkip ||
+          (framesProcessed >= this.frameMax && this.frameMax > 0)) ||
+          (this.sceneManager.next !== null)
+        
+        if (stopProcessing === true) {
+          break;
+        }
+      }
+      
+      this.postProcess(frameTime, framesProcessed);
+    } else {
+      this.process(frameTime);
+      this.postProcess(frameTime, 1);
+    }
+    
+    if (this.sceneManager.change()) {
+      this.frameTimer.reset();
+    }
+  }
+  
+  _runPaused() {
+    // [!] decide if we want to render when paused
+    // [!] we definitely need to render in response to
+    // certain events (such as a resize)
+    // [!] perhaps that is best decided in the current
+    // scene's handleEventQueue function
+    // [!] scene can choose to explicitly re-render
+    
+    for (let i = 0; i < this.renderPasses; ++i) {
+			this.render(i);
+		}
+  }
+  
   _createDefaultShader() {
     let shader = GLStates.defaultShader;
 
@@ -414,6 +530,112 @@ class App {
       GL.getAttribLocation(shader.program, "vertFlags");
     shader.attributeLocations.vertexNormal =
       GL.getAttribLocation(shader.program, "vertNormal");
+  }
+  
+  //> static methods //
+  static initComms() {
+    // 
+    
+    if (window.solBridge?.initialised === true) {
+      // if the messaging bridge has already been set up then
+      // nothing needs done
+      
+      return;
+    }
+    
+    const hostWindow = window.opener ||
+      (window.parent !== window ? window.parent : null)
+    
+    if (hostWindow !== null) {
+      // if we have a host window then our app is running
+      // in an iframe or a child window/tab
+      
+      try {
+        const parentBridge = hostWindow.solBridge || (hostWindow.solBridge = {});
+        App._bindDirectBridge(parentBridge);
+      } catch (error) {
+        // probably cross-origin
+      }
+    }
+    
+    // [!] handle cross-origin here if required --
+    // [!] via MessageChannel & MessagePort --
+    // [!] and return
+    
+    const localBridge = window.solBridge || (window.solBridge = {});
+    App._bindDirectBridge(localBridge);
+  }
+  
+  static _bindDirectBridge(targetBridge) {
+    // 
+    
+    const existingCallback = targetBridge.onMessage || null;
+    
+    targetBridge.initialised = true;
+    targetBridge._app = null;
+    targetBridge._callback = null;
+    targetBridge._backlogHost = [];
+    targetBridge._backlogApp = [];
+    
+    targetBridge.send = function (command, data = null) {
+      if (this._app === null) {
+        this._backlogApp.push({ command, data });
+      } else {
+        this._app.eventQueue.push(new ExternalEvent(command, data), 0);
+      }
+    };
+    
+    targetBridge.push = function (command, data = null) {
+      if (typeof this._callback === 'function') {
+        this._callback(command, data);
+      } else {
+        this._backlogHost.push({ command, data });
+      }
+    };
+    
+    Object.defineProperty(targetBridge, "onMessage", {
+      configurable: true,
+      enumerable: true,
+      
+      set(callback) {
+        this._callback = callback;
+        
+        while (this._backlogHost.length > 0) {
+          const { command, data } = this._backlogHost.shift();
+          this._callback(command, data);
+        }
+      },
+
+      get() {
+        return this._callback;
+      },
+    });
+    
+    Object.defineProperty(targetBridge, "app", {
+      configurable: true,
+      enumerable: true,
+      
+      set(app) {
+        this._app = app;
+        
+        while (this._backlogApp.length > 0) {
+          const { command, data } = this._backlogApp.shift();
+          this._app.eventQueue.push(new ExternalEvent(command, data), 0);
+        }
+      },
+
+      get() {
+        return this._app;
+      },
+    });
+    
+    // 
+    
+    window.solBridge = targetBridge;
+    
+    if (existingCallback) {
+      targetBridge.onMessage = existingCallback;
+    }
   }
 };
 
