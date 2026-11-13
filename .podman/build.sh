@@ -50,7 +50,7 @@ run() {
 
   set -x
   podman pod create --name sol-pod --volume ../:/workspace/solastjs \
-    --publish 8080:80
+    --publish 8080:80 --publish 44343:443
 
   podman run -dt --pod sol-pod --name sol-node localhost/sol-node-img
   podman run -dt --pod sol-pod --name sol-nginx localhost/sol-nginx-img
